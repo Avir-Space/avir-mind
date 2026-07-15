@@ -27,6 +27,7 @@ const config: Config = {
       colors: {
         // Structural surfaces
         page: "hsl(var(--page))",
+        background: "hsl(var(--page))", // alias so shadcn's bg-background resolves
         surface: "hsl(var(--surface))",
         card: {
           DEFAULT: "hsl(var(--card))",

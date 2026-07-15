@@ -1,0 +1,147 @@
+/* Satoshi is not on Google Fonts — load from Fontshare's free CDN.
+   Must precede the Tailwind directives. Instrument Serif + JetBrains Mono
+   are wired via next/font in layout.tsx. */
+@import url("https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  AVIR Mind design tokens.
+  Values are HSL triples so themes swap by re-binding variables.
+  :root is light mode; .dark overrides for dark mode. Both are first-class.
+
+  Severity colors live as literals in tailwind.config.ts (they never theme-swap).
+*/
+@layer base {
+  :root {
+    /* Surfaces */
+    --page: 0 0% 100%; /* #FFFFFF */
+    --surface: 240 5% 96%; /* #F6F6F7 */
+    --card: 0 0% 100%; /* #FFFFFF */
+    --card-foreground: 0 0% 4%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 4%;
+
+    /* Text ladder (dark ink on light) */
+    --foreground: 0 0% 4%; /* headline */
+    --body: 0 0% 28%;
+    --subtext: 0 0% 40%;
+    --label: 0 0% 46%;
+    --hint: 0 0% 58%;
+
+    /* Brand + intent */
+    --primary: 237 87% 49%; /* #1019EC electric blue */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 0 0% 10%;
+    --muted: 240 5% 96%;
+    --muted-foreground: 0 0% 40%;
+    --accent: 240 5% 94%;
+    --accent-foreground: 0 0% 10%;
+    --destructive: 0 72% 51%; /* severity Critical #DC2626 */
+    --destructive-foreground: 0 0% 100%;
+
+    /* Lines + controls */
+    --border: 0 0% 90%;
+    --border-strong: 0 0% 82%;
+    --input: 0 0% 88%;
+    --ring: 237 87% 49%;
+
+    --font-satoshi: "Satoshi", system-ui, -apple-system, sans-serif;
+  }
+
+  .dark {
+    /* Surfaces — near-black page (#0A0A0B), raised #141414, card #1A1A1A */
+    --page: 240 6% 4%;
+    --surface: 0 0% 8%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 100%;
+
+    /* Text ladder (light ink on dark) — approximates the reference alpha ramp */
+    --foreground: 0 0% 100%;
+    --body: 0 0% 63%;
+    --subtext: 0 0% 55%;
+    --label: 0 0% 45%;
+    --hint: 0 0% 35%;
+
+    --primary: 237 87% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 96%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 55%;
+    --accent: 0 0% 14%;
+    --accent-foreground: 0 0% 96%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 15%;
+    --border-strong: 0 0% 24%;
+    --input: 0 0% 18%;
+    --ring: 237 87% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-page font-sans text-sm text-body;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
+  }
+  /* Headline/display defaults */
+  h1,
+  h2,
+  h3 {
+    @apply text-foreground;
+  }
+
+  /* Tabular figures for all technical/mono data */
+  .font-mono,
+  code,
+  kbd {
+    font-feature-settings: "tnum" 1;
+  }
+
+  /* Eyebrow / section label utility used across the shell */
+  .eyebrow {
+    @apply font-mono text-eyebrow uppercase text-label;
+  }
+}
+
+@layer utilities {
+  /* The ONLY rounded elements in the product: severity dots. */
+  .severity-dot {
+    @apply inline-block h-2 w-2 shrink-0 rounded-full;
+  }
+  /* Hairline helpers matching the 0.5px reference lines */
+  .border-hairline {
+    border-width: 0.5px;
+  }
+  /* Custom scrollbars — dense, unobtrusive */
+  .avir-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border-strong)) transparent;
+  }
+  .avir-scroll::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .avir-scroll::-webkit-scrollbar-thumb {
+    background: hsl(var(--border-strong));
+  }
+  .avir-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
