@@ -16,7 +16,6 @@ export default function FlightOpsPage() {
         "Flight Ops will bring schedules and live movements alongside each aircraft's true dispatch state — so a scheduled departure is always checked against whether the tail is actually ready to fly.",
         "It becomes the operational heartbeat that maintenance, crew, and compliance all reconcile against.",
       ]}
-      phase={7}
     />
   );
 }

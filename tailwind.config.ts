@@ -101,19 +101,10 @@ const config: Config = {
         "3xl": ["40px", { lineHeight: "1.05" }],
         "4xl": ["56px", { lineHeight: "1.02" }],
       },
-      spacing: {
-        // --space-1..10 from the reference
-        1: "4px",
-        2: "8px",
-        3: "12px",
-        4: "16px",
-        5: "24px",
-        6: "32px",
-        7: "48px",
-        8: "64px",
-        9: "96px",
-        10: "128px",
-      },
+      // NOTE: we intentionally do NOT override the numeric `spacing` scale.
+      // Doing so remaps every h-*/w-*/p-*/gap-* utility (e.g. h-9 would become
+      // 96px instead of 36px). The AVIR density comes from the specific padding
+      // values chosen in components, using Tailwind's default 4px-step scale.
       borderWidth: {
         DEFAULT: "0.5px",
         hairline: "0.5px",

@@ -13,8 +13,11 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="max-w-md">
           <p className="eyebrow mb-4">Aviation Operating System</p>
           <h1 className="font-serif text-4xl leading-tight text-foreground">
-            Every aircraft, every signal, every decision — in one operational picture.
+            Every aircraft, every signal, every decision.
           </h1>
+          <p className="mt-3 font-serif text-2xl leading-snug text-subtext">
+            In one operational picture.
+          </p>
           <p className="mt-5 text-sm leading-relaxed text-subtext">
             AVIR Mind unifies fleet state, airworthiness, components, and compliance
             into a single source of truth — from charter operators to global carriers.

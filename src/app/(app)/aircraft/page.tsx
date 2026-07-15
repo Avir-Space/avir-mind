@@ -41,11 +41,17 @@ export default function AircraftPage() {
         meta={
           !isLoading && aircraft ? (
             <>
-              <span className="font-mono text-eyebrow uppercase text-label">
+              <span className="font-mono text-eyebrow uppercase tracking-wider text-label">
                 {aircraft.length} aircraft
               </span>
-              <span className="font-mono text-eyebrow uppercase text-severity-low">
+              <span className="text-hint" aria-hidden>
+                •
+              </span>
+              <span className="font-mono text-eyebrow uppercase tracking-wider text-severity-low">
                 {readyCount} dispatch-ready
+              </span>
+              <span className="text-hint" aria-hidden>
+                •
               </span>
               <LastUpdated at={dataUpdatedAt} />
             </>
@@ -88,7 +94,7 @@ export default function AircraftPage() {
                   <TableCell className="py-0">
                     <Link
                       href={`/aircraft/${a.id}`}
-                      className="flex items-center py-2.5 text-primary hover:underline"
+                      className="flex items-center py-3.5 text-primary hover:underline"
                     >
                       <MonoText className="text-primary">{a.tail_number}</MonoText>
                     </Link>

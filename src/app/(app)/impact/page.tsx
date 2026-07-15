@@ -16,7 +16,6 @@ export default function ImpactPage() {
         "Impact will quantify the outcomes AVIR drives — avoided AOG hours, recovered dispatch availability, reduced admin time, and the dollars behind each — attributed to specific decisions and events.",
         "It turns the platform from a system of record into a system of proof, showing exactly where the return is coming from.",
       ]}
-      phase={9}
     />
   );
 }

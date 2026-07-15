@@ -16,7 +16,6 @@ export default function CrewPage() {
         "Crew will track certifications, type ratings, currency windows, and duty availability — surfacing who can legally and practically cover a given assignment.",
         "Paired with flight ops and maintenance, it closes the loop between an aircraft being ready and a crew being ready to operate it.",
       ]}
-      phase={6}
     />
   );
 }

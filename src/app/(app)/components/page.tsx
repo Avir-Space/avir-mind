@@ -16,7 +16,6 @@ export default function ComponentsPage() {
         "Components will track serialized and life-limited parts through installs, removals, and transfers — with full genealogy, remaining life, and the aircraft each part is on right now.",
         "This becomes the backbone for airworthiness compliance and reliability analysis, connecting maintenance events to the exact hardware involved.",
       ]}
-      phase={4}
     />
   );
 }

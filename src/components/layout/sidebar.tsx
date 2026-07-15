@@ -1,9 +1,8 @@
 "use client";
 
-import { ChevronRight, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
 
 import { Logo } from "@/components/layout/logo";
 import { ThemeToggle } from "@/components/avir/theme-toggle";
@@ -23,7 +22,6 @@ function initials(email: string | null | undefined) {
 export function Sidebar() {
   const pathname = usePathname();
   const { user, orgName, orgRole, signOut } = useAuth();
-  const [dashOpen, setDashOpen] = useState(pathname.startsWith("/dashboards"));
 
   return (
     <aside className="flex h-full w-60 shrink-0 flex-col border-r border-border bg-surface/40">
@@ -43,56 +41,13 @@ export function Sidebar() {
               (item.href !== "/command-center" && pathname.startsWith(`${item.href}/`));
             const Icon = item.icon;
 
-            if (item.expandable) {
-              return (
-                <li key={item.href}>
-                  <button
-                    type="button"
-                    onClick={() => setDashOpen((o) => !o)}
-                    className={cn(
-                      "group flex w-full items-center gap-3 px-2.5 py-2 text-sm transition-colors duration-micro",
-                      active ? "text-foreground" : "text-subtext hover:text-foreground",
-                    )}
-                  >
-                    <Icon className="h-4 w-4 shrink-0" strokeWidth={1.75} />
-                    <span className="flex-1 text-left">{item.label}</span>
-                    <ChevronRight
-                      className={cn(
-                        "h-3.5 w-3.5 transition-transform duration-micro",
-                        dashOpen && "rotate-90",
-                      )}
-                    />
-                  </button>
-                  {dashOpen && (
-                    <ul className="ml-6 mt-0.5 space-y-0.5 border-l border-border pl-2">
-                      <li>
-                        <Link
-                          href="/dashboards"
-                          className={cn(
-                            "block px-2.5 py-1.5 text-sm transition-colors duration-micro",
-                            pathname === "/dashboards"
-                              ? "text-primary"
-                              : "text-subtext hover:text-foreground",
-                          )}
-                        >
-                          Overview
-                        </Link>
-                      </li>
-                    </ul>
-                  )}
-                </li>
-              );
-            }
-
             return (
               <li key={item.href}>
                 <Link
                   href={item.href}
                   className={cn(
                     "group relative flex items-center gap-3 px-2.5 py-2 text-sm transition-colors duration-micro",
-                    active
-                      ? "bg-card text-foreground"
-                      : "text-subtext hover:text-foreground",
+                    active ? "bg-card text-foreground" : "text-subtext hover:text-foreground",
                   )}
                 >
                   {active && (
@@ -100,11 +55,6 @@ export function Sidebar() {
                   )}
                   <Icon className="h-4 w-4 shrink-0" strokeWidth={1.75} />
                   <span className="flex-1">{item.label}</span>
-                  {item.phase && (
-                    <span className="font-mono text-[10px] uppercase tracking-wider text-hint">
-                      soon
-                    </span>
-                  )}
                 </Link>
               </li>
             );

@@ -118,7 +118,11 @@ export default function SignupPage() {
           </p>
         )}
 
-        <Button type="submit" className="w-full" disabled={loading}>
+        <Button
+          type="submit"
+          className="h-11 w-full text-[15px] hover:bg-[#0D14BE] active:bg-[#0A11A8]"
+          disabled={loading}
+        >
           {loading && <Loader2 className="h-4 w-4 animate-spin" />}
           Create account
         </Button>

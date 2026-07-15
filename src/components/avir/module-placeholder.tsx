@@ -14,7 +14,6 @@ export function ModulePlaceholder({
   icon,
   headline,
   paragraphs,
-  phase,
 }: {
   eyebrow?: string;
   title: string;
@@ -22,7 +21,6 @@ export function ModulePlaceholder({
   icon: LucideIcon;
   headline: string;
   paragraphs: [string, string];
-  phase?: number;
 }) {
   return (
     <div className="flex h-full flex-col">
@@ -30,9 +28,6 @@ export function ModulePlaceholder({
       <EmptyState icon={icon} headline={headline}>
         <p>{paragraphs[0]}</p>
         <p>{paragraphs[1]}</p>
-        {phase && (
-          <p className="font-mono text-eyebrow uppercase text-hint">Arrives in Phase {phase}</p>
-        )}
       </EmptyState>
     </div>
   );

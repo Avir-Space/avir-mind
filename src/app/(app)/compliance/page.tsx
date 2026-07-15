@@ -16,7 +16,6 @@ export default function CompliancePage() {
         "Compliance will track ADs, service bulletins, and recurring requirements against each aircraft and component — showing what's due, what's overdue, and the evidence trail behind every sign-off.",
         "The goal is an audit that takes minutes, not weeks: every requirement mapped to the exact aircraft and the record that closes it.",
       ]}
-      phase={8}
     />
   );
 }
