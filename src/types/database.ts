@@ -312,14 +312,474 @@ export type Database = {
         }
         Relationships: []
       }
+      task_acknowledgements: {
+        Row: {
+          acknowledged_at_utc: string
+          task_id: string
+          user_id: string
+        }
+        Insert: {
+          acknowledged_at_utc?: string
+          task_id: string
+          user_id: string
+        }
+        Update: {
+          acknowledged_at_utc?: string
+          task_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_acknowledgements_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_attachments: {
+        Row: {
+          created_at_utc: string
+          file_size_bytes: number
+          filename: string
+          id: string
+          mime_type: string
+          org_id: string
+          storage_path: string
+          task_id: string
+          uploaded_by_user_id: string
+        }
+        Insert: {
+          created_at_utc?: string
+          file_size_bytes: number
+          filename: string
+          id?: string
+          mime_type: string
+          org_id: string
+          storage_path: string
+          task_id: string
+          uploaded_by_user_id: string
+        }
+        Update: {
+          created_at_utc?: string
+          file_size_bytes?: number
+          filename?: string
+          id?: string
+          mime_type?: string
+          org_id?: string
+          storage_path?: string
+          task_id?: string
+          uploaded_by_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_attachments_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_attachments_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_dependencies: {
+        Row: {
+          created_at_utc: string
+          dependency_type: string
+          from_task_id: string
+          id: string
+          org_id: string
+          to_task_id: string
+        }
+        Insert: {
+          created_at_utc?: string
+          dependency_type?: string
+          from_task_id: string
+          id?: string
+          org_id: string
+          to_task_id: string
+        }
+        Update: {
+          created_at_utc?: string
+          dependency_type?: string
+          from_task_id?: string
+          id?: string
+          org_id?: string
+          to_task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_dependencies_from_task_id_fkey"
+            columns: ["from_task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_dependencies_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_dependencies_to_task_id_fkey"
+            columns: ["to_task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_events: {
+        Row: {
+          actor_user_id: string | null
+          body: string | null
+          created_at_utc: string
+          event_payload: Json
+          event_type: string
+          id: string
+          org_id: string
+          task_id: string
+        }
+        Insert: {
+          actor_user_id?: string | null
+          body?: string | null
+          created_at_utc?: string
+          event_payload?: Json
+          event_type: string
+          id?: string
+          org_id: string
+          task_id: string
+        }
+        Update: {
+          actor_user_id?: string | null
+          body?: string | null
+          created_at_utc?: string
+          event_payload?: Json
+          event_type?: string
+          id?: string
+          org_id?: string
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_events_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_events_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_sources: {
+        Row: {
+          first_seen_at_utc: string
+          id: string
+          last_seen_at_utc: string
+          source_reference_id: string | null
+          source_system: string
+          source_url: string | null
+          task_id: string
+        }
+        Insert: {
+          first_seen_at_utc?: string
+          id?: string
+          last_seen_at_utc?: string
+          source_reference_id?: string | null
+          source_system: string
+          source_url?: string | null
+          task_id: string
+        }
+        Update: {
+          first_seen_at_utc?: string
+          id?: string
+          last_seen_at_utc?: string
+          source_reference_id?: string | null
+          source_system?: string
+          source_url?: string | null
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_sources_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_type_catalog: {
+        Row: {
+          active: boolean
+          display_name: string
+          parent_type: string
+          sort_rank: number
+          sub_type: string
+        }
+        Insert: {
+          active?: boolean
+          display_name: string
+          parent_type: string
+          sort_rank?: number
+          sub_type: string
+        }
+        Update: {
+          active?: boolean
+          display_name?: string
+          parent_type?: string
+          sort_rank?: number
+          sub_type?: string
+        }
+        Relationships: []
+      }
+      task_work_logs: {
+        Row: {
+          created_at_utc: string
+          description: string | null
+          id: string
+          org_id: string
+          task_id: string
+          time_spent_minutes: number
+          updated_at_utc: string
+          user_id: string
+          work_date: string
+        }
+        Insert: {
+          created_at_utc?: string
+          description?: string | null
+          id?: string
+          org_id: string
+          task_id: string
+          time_spent_minutes: number
+          updated_at_utc?: string
+          user_id: string
+          work_date: string
+        }
+        Update: {
+          created_at_utc?: string
+          description?: string | null
+          id?: string
+          org_id?: string
+          task_id?: string
+          time_spent_minutes?: number
+          updated_at_utc?: string
+          user_id?: string
+          work_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_work_logs_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_work_logs_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tasks: {
+        Row: {
+          aircraft_id: string
+          aog: boolean
+          assignee_user_id: string | null
+          board_rank: number | null
+          canonical_group_id: string | null
+          created_at_utc: string
+          dispatch_blocking: boolean
+          due_at_utc: string | null
+          estimated_duration_hours: number | null
+          facility: string | null
+          id: string
+          org_id: string
+          parent_type: string
+          pinned: boolean
+          reporter_user_id: string | null
+          risk_band: string
+          started_at_utc: string | null
+          station_code: string | null
+          status: string
+          sub_type: string
+          title: string
+          updated_at_utc: string
+          why_summary: string | null
+        }
+        Insert: {
+          aircraft_id: string
+          aog?: boolean
+          assignee_user_id?: string | null
+          board_rank?: number | null
+          canonical_group_id?: string | null
+          created_at_utc?: string
+          dispatch_blocking?: boolean
+          due_at_utc?: string | null
+          estimated_duration_hours?: number | null
+          facility?: string | null
+          id?: string
+          org_id: string
+          parent_type: string
+          pinned?: boolean
+          reporter_user_id?: string | null
+          risk_band?: string
+          started_at_utc?: string | null
+          station_code?: string | null
+          status?: string
+          sub_type: string
+          title: string
+          updated_at_utc?: string
+          why_summary?: string | null
+        }
+        Update: {
+          aircraft_id?: string
+          aog?: boolean
+          assignee_user_id?: string | null
+          board_rank?: number | null
+          canonical_group_id?: string | null
+          created_at_utc?: string
+          dispatch_blocking?: boolean
+          due_at_utc?: string | null
+          estimated_duration_hours?: number | null
+          facility?: string | null
+          id?: string
+          org_id?: string
+          parent_type?: string
+          pinned?: boolean
+          reporter_user_id?: string | null
+          risk_band?: string
+          started_at_utc?: string | null
+          station_code?: string | null
+          status?: string
+          sub_type?: string
+          title?: string
+          updated_at_utc?: string
+          why_summary?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_aircraft_id_fkey"
+            columns: ["aircraft_id"]
+            isOneToOne: false
+            referencedRelation: "aircraft"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_parent_type_sub_type_fkey"
+            columns: ["parent_type", "sub_type"]
+            isOneToOne: false
+            referencedRelation: "task_type_catalog"
+            referencedColumns: ["parent_type", "sub_type"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      acknowledge_task: { Args: { p_task_id: string }; Returns: undefined }
+      assign_task: {
+        Args: { p_assignee_user_id: string; p_task_id: string }
+        Returns: undefined
+      }
+      create_task: {
+        Args: {
+          p_aircraft_id: string
+          p_aog?: boolean
+          p_dispatch_blocking?: boolean
+          p_due_at_utc?: string
+          p_estimated_duration_hours?: number
+          p_facility?: string
+          p_parent_type: string
+          p_risk_band?: string
+          p_source_reference_id?: string
+          p_source_system?: string
+          p_station_code?: string
+          p_sub_type: string
+          p_title: string
+          p_why_summary: string
+        }
+        Returns: string
+      }
+      create_task_event: {
+        Args: {
+          p_body?: string
+          p_event_payload?: Json
+          p_event_type: string
+          p_task_id: string
+        }
+        Returns: string
+      }
       current_user_org_ids: { Args: never; Returns: string[] }
+      get_command_center_queue: {
+        Args: {
+          p_assigned_to_me?: boolean
+          p_categories?: string[]
+          p_limit?: number
+          p_severity?: string[]
+          p_source_systems?: string[]
+          p_time_window_hours?: number
+        }
+        Returns: Json
+      }
+      get_fleet_board: {
+        Args: {
+          p_aircraft_types?: string[]
+          p_fleet_id?: string
+          p_parent_types?: string[]
+          p_risk_bands?: string[]
+          p_search?: string
+          p_station_codes?: string[]
+        }
+        Returns: Json
+      }
+      get_task_detail: { Args: { p_task_id: string }; Returns: Json }
       is_org_member: { Args: { p_org: string }; Returns: boolean }
+      log_work: {
+        Args: {
+          p_description: string
+          p_task_id: string
+          p_time_spent_minutes: number
+          p_work_date?: string
+        }
+        Returns: string
+      }
+      move_task_status: {
+        Args: { p_new_rank?: number; p_new_status: string; p_task_id: string }
+        Returns: undefined
+      }
       seed_avir_demo: { Args: { p_user_id: string }; Returns: string }
+      task_severity: {
+        Args: { p_aog: boolean; p_blocking: boolean; p_risk: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
