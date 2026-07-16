@@ -19,6 +19,7 @@ import {
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
+import { AircraftComponentsTab } from "@/components/components/aircraft-components-tab";
 import { AircraftSignalsTab } from "@/components/signals/aircraft-signals-tab";
 import { Button } from "@/components/ui/button";
 import { ConfidenceBadge } from "@/components/avir/confidence-badge";
@@ -44,6 +45,13 @@ const TABS: TabDef[] = [
     text: "Live telemetry, anomalies, and AI-detected signals for this aircraft will surface here — each with its source and confidence. Arrives in Phase 3.",
   },
   {
+    value: "components",
+    label: "Components",
+    icon: Cpu,
+    headline: "Components",
+    text: "",
+  },
+  {
     value: "ops-profile",
     label: "Ops Profile",
     icon: Gauge,
@@ -63,13 +71,6 @@ const TABS: TabDef[] = [
     icon: ShieldCheck,
     headline: "Airworthiness",
     text: "AD/SB applicability, recurring requirements, and compliance status for this tail — with the evidence trail behind every sign-off. Arrives in Phase 8.",
-  },
-  {
-    value: "components",
-    label: "Components",
-    icon: Cpu,
-    headline: "Components",
-    text: "The serialized and life-limited parts installed on this aircraft right now, with remaining life and full genealogy. Arrives in Phase 4.",
   },
   {
     value: "inventory",
@@ -232,6 +233,8 @@ export default function AircraftProfilePage() {
                 <TabsContent key={t.value} value={t.value}>
                   {t.value === "signals" ? (
                     <AircraftSignalsTab aircraftId={data.id} />
+                  ) : t.value === "components" ? (
+                    <AircraftComponentsTab aircraftId={data.id} />
                   ) : (
                     <div className="flex min-h-[40vh] flex-col items-center justify-center px-6 py-16 text-center">
                       <div className="mb-5 flex h-14 w-14 items-center justify-center border border-border bg-surface/40">

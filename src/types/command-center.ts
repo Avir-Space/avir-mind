@@ -1,3 +1,5 @@
+import type { PredictiveEvent } from "@/types/components";
+
 export type MaxSeverity = "critical" | "high" | "medium" | "low" | "info" | "insufficient_data" | null;
 
 export type AircraftPosition = {
@@ -20,6 +22,7 @@ export type StationRollup = {
   aircraft_inbound: number;
   active_signals_count: number;
   dispatch_blocking_count: number;
+  predictive_alerts_count: number;
   weather: null;
 };
 
@@ -49,6 +52,7 @@ export type CommandCenterSnapshot = {
   aircraft_positions: AircraftPosition[];
   station_rollups: StationRollup[];
   timeline_events: TimelineEvent[];
+  predictive_events: PredictiveEvent[];
 };
 
 export type DrawerPrimaryTask = {
@@ -118,4 +122,5 @@ export type DrawerTarget =
   | { kind: "aircraft"; aircraftId: string; tail: string }
   | { kind: "station"; stationCode: string }
   | { kind: "event"; event: TimelineEvent }
+  | { kind: "prediction"; prediction: PredictiveEvent }
   | null;

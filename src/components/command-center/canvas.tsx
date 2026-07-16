@@ -47,6 +47,10 @@ export function CommandCenterCanvas() {
   const timelineEvents = station
     ? events.filter((e) => positions.some((p) => p.aircraft_id === e.aircraft_id))
     : events;
+  const predEvents = snapshot?.predictive_events ?? [];
+  const predictiveEvents = station
+    ? predEvents.filter((e) => positions.some((p) => p.aircraft_id === e.aircraft_id))
+    : predEvents;
 
   // When pinned, a new click leaves the current drawer content in place.
   function open(target: DrawerTarget) {
@@ -136,9 +140,11 @@ export function CommandCenterCanvas() {
             <OpsTimeline
               positions={positions}
               events={timelineEvents}
+              predictiveEvents={predictiveEvents}
               windowHours={hours}
               now={Date.now()}
               onEventClick={(e) => open({ kind: "event", event: e })}
+              onPredictionClick={(p) => open({ kind: "prediction", prediction: p })}
             />
           </div>
         </div>

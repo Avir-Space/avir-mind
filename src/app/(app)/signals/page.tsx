@@ -11,7 +11,9 @@ import { PageHeader } from "@/components/avir/page-header";
 import { FleetSignalRefresh } from "@/components/signals/fleet-signal-refresh";
 import { FilterDropdown } from "@/components/signals/filter-dropdown";
 import { InsightTile } from "@/components/signals/insight-tile";
+import { PredictionCard } from "@/components/components/prediction-card";
 import { TaskCard } from "@/components/tasks/task-card";
+import { usePredictiveSignals } from "@/lib/queries/use-predictive-signals";
 import { FilterSegmented, FilterToggle } from "@/components/tasks/task-filter-bar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SEVERITY_CONFIG } from "@/lib/design/state";
@@ -36,6 +38,37 @@ const TIME_OPTIONS = [
   { value: "720", label: "30d" },
   { value: "", label: "All" },
 ];
+const CLASS_OPTIONS = [
+  { value: "", label: "All" },
+  { value: "observation", label: "Observations" },
+  { value: "prediction", label: "Predictions" },
+  { value: "insufficient_data", label: "Insufficient" },
+];
+
+function PredictionsList({ signalClass }: { signalClass: "prediction" | "insufficient_data" }) {
+  const { data, isLoading } = usePredictiveSignals(signalClass);
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 w-full" />)}
+      </div>
+    );
+  }
+  if (!data || data.length === 0) {
+    return (
+      <EmptyState icon={Inbox} headline={signalClass === "prediction" ? "No active predictions" : "No insufficient-data signals"}>
+        <p>Predictive signals are generated per aircraft from component history.</p>
+        <p>Open a component and use <span className="text-body">Refresh Predictions</span>.</p>
+      </EmptyState>
+    );
+  }
+  return (
+    <div className="space-y-3">
+      <p className="font-mono text-eyebrow uppercase text-label">{data.length} {signalClass === "prediction" ? "predictions" : "insufficient-data signals"}</p>
+      {data.map((p) => <PredictionCard key={p.id} signal={p} />)}
+    </div>
+  );
+}
 
 const LABELS: Record<string, string> = Object.fromEntries(
   [...SEVERITY_OPTIONS, ...CATEGORY_OPTIONS, ...SOURCE_OPTIONS].map((o) => [o.value, o.label]),
@@ -74,6 +107,8 @@ function SignalsInbox() {
   const [sources, setSources] = useState<string[]>([]);
   const [time, setTime] = useState("");
   const [needsYou, setNeedsYou] = useState(false);
+  const [sigClass, setSigClass] = useState("");
+  const predictionView = sigClass === "prediction" || sigClass === "insufficient_data";
 
   const filters: CommandCenterFilters = {
     severity,
@@ -184,6 +219,7 @@ function SignalsInbox() {
         {/* Sticky filter surface */}
         <div className="sticky top-0 z-20 border-y border-border bg-page shadow-[0_2px_10px_rgba(0,0,0,0.06)]">
           <div className="flex h-12 items-center gap-3 px-6">
+            <FilterSegmented label="Class" options={CLASS_OPTIONS} value={sigClass} onChange={setSigClass} />
             <FilterDropdown label="Severity" options={SEVERITY_OPTIONS} selected={severity} onChange={setSeverity} />
             <FilterDropdown label="Category" options={CATEGORY_OPTIONS} selected={categories} onChange={setCategories} />
             <FilterDropdown label="Source" options={SOURCE_OPTIONS} selected={sources} onChange={setSources} />
@@ -220,9 +256,11 @@ function SignalsInbox() {
           )}
         </div>
 
-        {/* Queue */}
+        {/* Queue (tasks) or predictions view, depending on class filter */}
         <div className="p-6">
-          {isLoading ? (
+          {predictionView ? (
+            <PredictionsList signalClass={sigClass as "prediction" | "insufficient_data"} />
+          ) : isLoading ? (
             <div className="space-y-2">
               {Array.from({ length: 8 }).map((_, i) => (
                 <Skeleton key={i} className="h-24 w-full" />

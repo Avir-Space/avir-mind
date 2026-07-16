@@ -1,10 +1,12 @@
 "use client";
 
-import { ArrowUpRight, Filter, Pin, Plane, Radio, X } from "lucide-react";
+import { ArrowUpRight, Filter, Pin, Plane, Radio, TrendingUp, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
 
 import { canvasState, SEVERITY_HEX, STATION_NAMES } from "@/lib/design/command-center";
+import { horizonLabel } from "@/lib/design/components";
+import type { PredictiveEvent } from "@/types/components";
 import { useAircraftDrawer } from "@/lib/queries/use-aircraft-drawer";
 import { useStationDrawer } from "@/lib/queries/use-station-drawer";
 import { useAuth } from "@/lib/providers/auth-provider";
@@ -332,6 +334,47 @@ function EventBody({ event }: { event: Extract<DrawerTarget, { kind: "event" }>[
   );
 }
 
+function PredictionBody({ prediction }: { prediction: PredictiveEvent }) {
+  const hex = SEVERITY_HEX[prediction.severity] ?? SEVERITY_HEX.info;
+  const horizon = horizonLabel(prediction.prediction_horizon);
+  return (
+    <>
+      <div className="flex items-center gap-2 px-4 py-3">
+        <TrendingUp className="h-4 w-4" style={{ color: hex }} />
+        <div>
+          <span className="font-mono text-[11px] uppercase tracking-wider" style={{ color: hex }}>
+            Predicted · {prediction.severity}
+          </span>
+          <p className="font-mono text-[11px] text-hint">
+            {prediction.tail_number}
+            {prediction.predicted_event_type ? ` · ${prediction.predicted_event_type}` : ""}
+          </p>
+        </div>
+      </div>
+      <Section label="Prediction">
+        <p className="text-sm text-foreground">{prediction.title}</p>
+      </Section>
+      {horizon && (
+        <Section label="Horizon">
+          <span className="inline-flex items-center gap-2 border border-primary/30 bg-primary/5 px-2 py-1 font-mono text-[12px] text-foreground">
+            {horizon}
+          </span>
+        </Section>
+      )}
+      <div className="flex flex-wrap gap-2 border-t border-border p-4">
+        <Link href={`/signals/${prediction.signal_id}`} className="inline-flex items-center gap-1.5 border border-primary px-3 py-1.5 text-sm text-primary transition-colors hover:bg-primary hover:text-primary-foreground">
+          <ArrowUpRight className="h-3.5 w-3.5" /> Open Prediction
+        </Link>
+        {prediction.component_id && (
+          <Link href={`/components/${prediction.component_id}`} className="inline-flex items-center gap-1.5 border border-border px-3 py-1.5 text-sm text-body transition-colors hover:border-border-strong">
+            Component
+          </Link>
+        )}
+      </div>
+    </>
+  );
+}
+
 export function CanvasDrawer({
   target,
   fleetId,
@@ -357,7 +400,11 @@ export function CanvasDrawer({
   }, [target, onClose]);
 
   if (!target) return null;
-  const heading = target.kind === "aircraft" ? "Aircraft" : target.kind === "station" ? "Station" : "Event";
+  const heading =
+    target.kind === "aircraft" ? "Aircraft"
+    : target.kind === "station" ? "Station"
+    : target.kind === "prediction" ? "Prediction"
+    : "Event";
 
   return (
     <>
@@ -392,6 +439,7 @@ export function CanvasDrawer({
             />
           )}
           {target.kind === "event" && <EventBody event={target.event} />}
+          {target.kind === "prediction" && <PredictionBody prediction={target.prediction} />}
         </div>
       </aside>
     </>

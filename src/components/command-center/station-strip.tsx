@@ -116,6 +116,12 @@ export function StationStrip({
                   <span className={cn("severity-dot", hasSignals ? "bg-severity-high" : "bg-border-strong")} />
                   {r.active_signals_count} sig
                 </span>
+                {(r.predictive_alerts_count ?? 0) > 0 && (
+                  <span className="inline-flex items-center gap-1 font-mono text-[10px] text-primary">
+                    <span className="severity-dot bg-primary" />
+                    {r.predictive_alerts_count} pred
+                  </span>
+                )}
                 {hasBlocking && (
                   <span className="inline-flex items-center gap-1 font-mono text-[10px] text-severity-critical">
                     <span className="severity-dot bg-severity-critical" />

@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { canvasState, SEVERITY_HEX } from "@/lib/design/command-center";
 import { cn } from "@/lib/utils";
 import type { AircraftPosition, TimelineEvent } from "@/types/command-center";
+import type { PredictiveEvent } from "@/types/components";
 
 const LABEL_W = 128; // px sticky tail column
 const PX_PER_HOUR = 90;
@@ -50,17 +51,27 @@ function NowLine({
 export function OpsTimeline({
   positions,
   events,
+  predictiveEvents,
   windowHours,
   now,
   onEventClick,
+  onPredictionClick,
 }: {
   positions: AircraftPosition[];
   events: TimelineEvent[];
+  predictiveEvents: PredictiveEvent[];
   windowHours: number;
   now: number;
   onEventClick: (e: TimelineEvent) => void;
+  onPredictionClick: (p: PredictiveEvent) => void;
 }) {
   const [groupByStation, setGroupByStation] = useState(false);
+
+  const predsBy = useMemo(() => {
+    const m = new Map<string, PredictiveEvent[]>();
+    for (const p of predictiveEvents) (m.get(p.aircraft_id) ?? m.set(p.aircraft_id, []).get(p.aircraft_id)!).push(p);
+    return m;
+  }, [predictiveEvents]);
 
   const startMs = now - LOOKBACK_MIN * 60_000;
   const durationMin = windowHours * 60 + LOOKBACK_MIN;
@@ -166,6 +177,26 @@ export function OpsTimeline({
               style={{ left: `${frac(new Date(s.event_time_utc).getTime()) * 100}%`, background: hex }}
               title={s.event_detail_json.title ?? "Signal"}
               aria-label={s.event_detail_json.title ?? "Signal"}
+            />
+          );
+        })}
+        {/* Predictive markers (striped) — horizons are typically beyond the visible
+            window, so they pin to the row's right edge; full range is in the drawer. */}
+        {(predsBy.get(row.aircraftId) ?? []).slice(0, 4).map((p, i) => {
+          const hex = SEVERITY_HEX[p.severity] ?? SEVERITY_HEX.info;
+          return (
+            <button
+              key={p.signal_id}
+              type="button"
+              onClick={() => onPredictionClick(p)}
+              className="absolute top-1 z-10 h-3 w-3 border"
+              style={{
+                right: `${4 + i * 16}px`,
+                borderColor: hex,
+                backgroundImage: `repeating-linear-gradient(45deg, ${hex}, ${hex} 2px, transparent 2px, transparent 4px)`,
+              }}
+              title={`Predicted: ${p.title}`}
+              aria-label={`Prediction: ${p.title}`}
             />
           );
         })}
