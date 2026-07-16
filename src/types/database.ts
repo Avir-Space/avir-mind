@@ -181,6 +181,171 @@ export type Database = {
           },
         ]
       }
+      asset_events: {
+        Row: {
+          asset_id: string
+          cost_usd: number | null
+          created_at_utc: string
+          documentation_reference: string | null
+          event_date: string
+          event_payload: Json | null
+          event_type: string | null
+          from_location_id: string | null
+          id: string
+          linked_task_id: string | null
+          org_id: string
+          performed_by: string | null
+          to_location_id: string | null
+        }
+        Insert: {
+          asset_id: string
+          cost_usd?: number | null
+          created_at_utc?: string
+          documentation_reference?: string | null
+          event_date: string
+          event_payload?: Json | null
+          event_type?: string | null
+          from_location_id?: string | null
+          id?: string
+          linked_task_id?: string | null
+          org_id: string
+          performed_by?: string | null
+          to_location_id?: string | null
+        }
+        Update: {
+          asset_id?: string
+          cost_usd?: number | null
+          created_at_utc?: string
+          documentation_reference?: string | null
+          event_date?: string
+          event_payload?: Json | null
+          event_type?: string | null
+          from_location_id?: string | null
+          id?: string
+          linked_task_id?: string | null
+          org_id?: string
+          performed_by?: string | null
+          to_location_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asset_events_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asset_events_from_location_id_fkey"
+            columns: ["from_location_id"]
+            isOneToOne: false
+            referencedRelation: "stock_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asset_events_linked_task_id_fkey"
+            columns: ["linked_task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asset_events_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asset_events_to_location_id_fkey"
+            columns: ["to_location_id"]
+            isOneToOne: false
+            referencedRelation: "stock_locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assets: {
+        Row: {
+          asset_name: string
+          asset_tag: string
+          asset_type: string | null
+          assigned_to_station: string | null
+          calibration_due_date: string | null
+          calibration_required: boolean | null
+          created_at_utc: string
+          current_status: string | null
+          id: string
+          location_id: string | null
+          manufacturer: string | null
+          model: string | null
+          next_service_due_date: string | null
+          notes: string | null
+          org_id: string
+          purchase_cost_usd: number | null
+          purchased_date: string | null
+          serial_number: string | null
+          updated_at_utc: string
+        }
+        Insert: {
+          asset_name: string
+          asset_tag: string
+          asset_type?: string | null
+          assigned_to_station?: string | null
+          calibration_due_date?: string | null
+          calibration_required?: boolean | null
+          created_at_utc?: string
+          current_status?: string | null
+          id?: string
+          location_id?: string | null
+          manufacturer?: string | null
+          model?: string | null
+          next_service_due_date?: string | null
+          notes?: string | null
+          org_id: string
+          purchase_cost_usd?: number | null
+          purchased_date?: string | null
+          serial_number?: string | null
+          updated_at_utc?: string
+        }
+        Update: {
+          asset_name?: string
+          asset_tag?: string
+          asset_type?: string | null
+          assigned_to_station?: string | null
+          calibration_due_date?: string | null
+          calibration_required?: boolean | null
+          created_at_utc?: string
+          current_status?: string | null
+          id?: string
+          location_id?: string | null
+          manufacturer?: string | null
+          model?: string | null
+          next_service_due_date?: string | null
+          notes?: string | null
+          org_id?: string
+          purchase_cost_usd?: number | null
+          purchased_date?: string | null
+          serial_number?: string | null
+          updated_at_utc?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assets_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "stock_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assets_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_events: {
         Row: {
           actor_user_id: string | null
@@ -866,6 +1031,80 @@ export type Database = {
         }
         Relationships: []
       }
+      parts: {
+        Row: {
+          alternative_part_numbers: string[] | null
+          ata_chapter: string | null
+          category: string | null
+          compatible_aircraft_types: string[] | null
+          compatible_component_types: string[] | null
+          created_at_utc: string
+          criticality: string | null
+          current_price_usd: number | null
+          description: string
+          hazmat_class: string | null
+          id: string
+          manufacturer: string
+          org_id: string
+          part_number: string
+          shelf_life_days: number | null
+          storage_conditions: string | null
+          typical_lead_time_days: number | null
+          unit_of_measure: string
+          updated_at_utc: string
+        }
+        Insert: {
+          alternative_part_numbers?: string[] | null
+          ata_chapter?: string | null
+          category?: string | null
+          compatible_aircraft_types?: string[] | null
+          compatible_component_types?: string[] | null
+          created_at_utc?: string
+          criticality?: string | null
+          current_price_usd?: number | null
+          description: string
+          hazmat_class?: string | null
+          id?: string
+          manufacturer: string
+          org_id: string
+          part_number: string
+          shelf_life_days?: number | null
+          storage_conditions?: string | null
+          typical_lead_time_days?: number | null
+          unit_of_measure: string
+          updated_at_utc?: string
+        }
+        Update: {
+          alternative_part_numbers?: string[] | null
+          ata_chapter?: string | null
+          category?: string | null
+          compatible_aircraft_types?: string[] | null
+          compatible_component_types?: string[] | null
+          created_at_utc?: string
+          criticality?: string | null
+          current_price_usd?: number | null
+          description?: string
+          hazmat_class?: string | null
+          id?: string
+          manufacturer?: string
+          org_id?: string
+          part_number?: string
+          shelf_life_days?: number | null
+          storage_conditions?: string | null
+          typical_lead_time_days?: number | null
+          unit_of_measure?: string
+          updated_at_utc?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parts_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       serial_genealogies: {
         Row: {
           birth_certificate_date: string | null
@@ -1223,6 +1462,355 @@ export type Database = {
             columns: ["superseded_by_signal_id"]
             isOneToOne: false
             referencedRelation: "signals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_holdings: {
+        Row: {
+          created_at_utc: string
+          id: string
+          last_consumed_at_utc: string | null
+          last_received_at_utc: string | null
+          location_id: string
+          max_stock_level: number | null
+          org_id: string
+          part_id: string
+          quantity_available: number
+          quantity_in_transit: number
+          quantity_reserved: number
+          reorder_point: number | null
+          updated_at_utc: string
+        }
+        Insert: {
+          created_at_utc?: string
+          id?: string
+          last_consumed_at_utc?: string | null
+          last_received_at_utc?: string | null
+          location_id: string
+          max_stock_level?: number | null
+          org_id: string
+          part_id: string
+          quantity_available?: number
+          quantity_in_transit?: number
+          quantity_reserved?: number
+          reorder_point?: number | null
+          updated_at_utc?: string
+        }
+        Update: {
+          created_at_utc?: string
+          id?: string
+          last_consumed_at_utc?: string | null
+          last_received_at_utc?: string | null
+          location_id?: string
+          max_stock_level?: number | null
+          org_id?: string
+          part_id?: string
+          quantity_available?: number
+          quantity_in_transit?: number
+          quantity_reserved?: number
+          reorder_point?: number | null
+          updated_at_utc?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_holdings_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "stock_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_holdings_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_holdings_part_id_fkey"
+            columns: ["part_id"]
+            isOneToOne: false
+            referencedRelation: "parts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_locations: {
+        Row: {
+          climate_controlled: boolean | null
+          created_at_utc: string
+          hazmat_certified: boolean | null
+          id: string
+          is_active: boolean | null
+          location_code: string
+          location_name: string
+          location_type: string | null
+          org_id: string
+          station_code: string | null
+          storage_capacity_m3: number | null
+          updated_at_utc: string
+        }
+        Insert: {
+          climate_controlled?: boolean | null
+          created_at_utc?: string
+          hazmat_certified?: boolean | null
+          id?: string
+          is_active?: boolean | null
+          location_code: string
+          location_name: string
+          location_type?: string | null
+          org_id: string
+          station_code?: string | null
+          storage_capacity_m3?: number | null
+          updated_at_utc?: string
+        }
+        Update: {
+          climate_controlled?: boolean | null
+          created_at_utc?: string
+          hazmat_certified?: boolean | null
+          id?: string
+          is_active?: boolean | null
+          location_code?: string
+          location_name?: string
+          location_type?: string | null
+          org_id?: string
+          station_code?: string | null
+          storage_capacity_m3?: number | null
+          updated_at_utc?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_locations_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_movements: {
+        Row: {
+          created_at_utc: string
+          from_location_id: string | null
+          id: string
+          linked_component_event_id: string | null
+          linked_task_id: string | null
+          movement_date_utc: string
+          movement_type: string | null
+          notes: string | null
+          org_id: string
+          part_id: string
+          performed_by_user_id: string | null
+          quantity: number
+          reference_number: string | null
+          to_location_id: string | null
+          unit_cost_usd: number | null
+        }
+        Insert: {
+          created_at_utc?: string
+          from_location_id?: string | null
+          id?: string
+          linked_component_event_id?: string | null
+          linked_task_id?: string | null
+          movement_date_utc?: string
+          movement_type?: string | null
+          notes?: string | null
+          org_id: string
+          part_id: string
+          performed_by_user_id?: string | null
+          quantity: number
+          reference_number?: string | null
+          to_location_id?: string | null
+          unit_cost_usd?: number | null
+        }
+        Update: {
+          created_at_utc?: string
+          from_location_id?: string | null
+          id?: string
+          linked_component_event_id?: string | null
+          linked_task_id?: string | null
+          movement_date_utc?: string
+          movement_type?: string | null
+          notes?: string | null
+          org_id?: string
+          part_id?: string
+          performed_by_user_id?: string | null
+          quantity?: number
+          reference_number?: string | null
+          to_location_id?: string | null
+          unit_cost_usd?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_from_location_id_fkey"
+            columns: ["from_location_id"]
+            isOneToOne: false
+            referencedRelation: "stock_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_linked_component_event_id_fkey"
+            columns: ["linked_component_event_id"]
+            isOneToOne: false
+            referencedRelation: "component_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_linked_task_id_fkey"
+            columns: ["linked_task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_part_id_fkey"
+            columns: ["part_id"]
+            isOneToOne: false
+            referencedRelation: "parts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_to_location_id_fkey"
+            columns: ["to_location_id"]
+            isOneToOne: false
+            referencedRelation: "stock_locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_parts: {
+        Row: {
+          created_at_utc: string
+          id: string
+          is_preferred: boolean | null
+          last_ordered_at_utc: string | null
+          last_price_usd: number | null
+          minimum_order_quantity: number | null
+          org_id: string
+          part_id: string
+          supplier_id: string
+          supplier_part_reference: string | null
+          typical_lead_time_days: number | null
+          typical_unit_price_usd: number | null
+        }
+        Insert: {
+          created_at_utc?: string
+          id?: string
+          is_preferred?: boolean | null
+          last_ordered_at_utc?: string | null
+          last_price_usd?: number | null
+          minimum_order_quantity?: number | null
+          org_id: string
+          part_id: string
+          supplier_id: string
+          supplier_part_reference?: string | null
+          typical_lead_time_days?: number | null
+          typical_unit_price_usd?: number | null
+        }
+        Update: {
+          created_at_utc?: string
+          id?: string
+          is_preferred?: boolean | null
+          last_ordered_at_utc?: string | null
+          last_price_usd?: number | null
+          minimum_order_quantity?: number | null
+          org_id?: string
+          part_id?: string
+          supplier_id?: string
+          supplier_part_reference?: string | null
+          typical_lead_time_days?: number | null
+          typical_unit_price_usd?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_parts_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_parts_part_id_fkey"
+            columns: ["part_id"]
+            isOneToOne: false
+            referencedRelation: "parts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_parts_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      suppliers: {
+        Row: {
+          approved_status: string | null
+          created_at_utc: string
+          id: string
+          last_order_at_utc: string | null
+          notes: string | null
+          org_id: string
+          performance_score: number | null
+          primary_contact_email: string | null
+          primary_contact_name: string | null
+          primary_contact_phone: string | null
+          supplier_code: string | null
+          supplier_name: string
+          supplier_type: string | null
+          typical_lead_time_days: number | null
+          updated_at_utc: string
+        }
+        Insert: {
+          approved_status?: string | null
+          created_at_utc?: string
+          id?: string
+          last_order_at_utc?: string | null
+          notes?: string | null
+          org_id: string
+          performance_score?: number | null
+          primary_contact_email?: string | null
+          primary_contact_name?: string | null
+          primary_contact_phone?: string | null
+          supplier_code?: string | null
+          supplier_name: string
+          supplier_type?: string | null
+          typical_lead_time_days?: number | null
+          updated_at_utc?: string
+        }
+        Update: {
+          approved_status?: string | null
+          created_at_utc?: string
+          id?: string
+          last_order_at_utc?: string | null
+          notes?: string | null
+          org_id?: string
+          performance_score?: number | null
+          primary_contact_email?: string | null
+          primary_contact_name?: string | null
+          primary_contact_phone?: string | null
+          supplier_code?: string | null
+          supplier_name?: string
+          supplier_type?: string | null
+          typical_lead_time_days?: number | null
+          updated_at_utc?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "suppliers_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
             referencedColumns: ["id"]
           },
         ]
@@ -1630,6 +2218,17 @@ export type Database = {
         }
         Returns: string
       }
+      adjust_holding: {
+        Args: {
+          d_avail: number
+          d_res: number
+          d_transit: number
+          p_loc: string
+          p_org: string
+          p_part: string
+        }
+        Returns: undefined
+      }
       assign_task: {
         Args: { p_assignee_user_id: string; p_task_id: string }
         Returns: undefined
@@ -1637,6 +2236,16 @@ export type Database = {
       compute_component_health: {
         Args: { p_component_id: string }
         Returns: number
+      }
+      consume_stock: {
+        Args: {
+          p_component_event_id?: string
+          p_location: string
+          p_part_id: string
+          p_quantity: number
+          p_task_id?: string
+        }
+        Returns: string
       }
       create_component: {
         Args: {
@@ -1694,6 +2303,11 @@ export type Database = {
         Args: { p_component_id: string }
         Returns: string
       }
+      generate_inventory_signals: { Args: never; Returns: number }
+      generate_inventory_signals_for_org: {
+        Args: { p_org: string }
+        Returns: number
+      }
       generate_predictive_signals_for_aircraft: {
         Args: {
           p_aircraft_id: string
@@ -1722,6 +2336,9 @@ export type Database = {
         Args: { p_aircraft_id: string }
         Returns: Json
       }
+      get_aircraft_parts: { Args: { p_aircraft_id: string }; Returns: Json }
+      get_asset_detail: { Args: { p_asset_id: string }; Returns: Json }
+      get_asset_service_calendar: { Args: { p_days?: number }; Returns: Json }
       get_command_center_insights: {
         Args: { p_limit?: number; p_severity?: string[] }
         Returns: Json
@@ -1762,11 +2379,22 @@ export type Database = {
         Returns: Json
       }
       get_genealogy_directory: { Args: never; Returns: Json }
+      get_inventory_dashboard: { Args: never; Returns: Json }
+      get_location_detail: { Args: { p_location_id: string }; Returns: Json }
+      get_locations_overview: { Args: never; Returns: Json }
+      get_low_stock_alerts: { Args: never; Returns: Json }
       get_or_create_demo_counterparty: { Args: never; Returns: string }
+      get_part_detail: { Args: { p_part_id: string }; Returns: Json }
+      get_parts_by_component_compatibility: {
+        Args: { p_component_type: string }
+        Returns: Json
+      }
+      get_parts_overview: { Args: never; Returns: Json }
       get_predictive_signals_summary: {
         Args: { p_fleet_id?: string }
         Returns: Json
       }
+      get_recent_movements: { Args: { p_limit?: number }; Returns: Json }
       get_serial_genealogy: {
         Args: {
           p_manufacturer: string
@@ -1784,6 +2412,9 @@ export type Database = {
         Args: { p_fleet_id?: string; p_station_code: string }
         Returns: Json
       }
+      get_stock_transfer_suggestions: { Args: never; Returns: Json }
+      get_supplier_detail: { Args: { p_supplier_id: string }; Returns: Json }
+      get_supplier_performance: { Args: never; Returns: Json }
       get_task_detail: { Args: { p_task_id: string }; Returns: Json }
       is_org_member: { Args: { p_org: string }; Returns: boolean }
       log_work: {
@@ -1804,6 +2435,15 @@ export type Database = {
         Args: { p_aircraft_id: string }
         Returns: string
       }
+      record_asset_event: {
+        Args: {
+          p_asset_id: string
+          p_attrs?: Json
+          p_event_date: string
+          p_event_type: string
+        }
+        Returns: string
+      }
       record_component_event: {
         Args: {
           p_attrs?: Json
@@ -1813,12 +2453,36 @@ export type Database = {
         }
         Returns: string
       }
+      record_stock_movement: {
+        Args: {
+          p_attrs?: Json
+          p_from_location?: string
+          p_movement_type: string
+          p_part_id: string
+          p_quantity: number
+          p_to_location?: string
+        }
+        Returns: string
+      }
+      reserve_stock: {
+        Args: {
+          p_location: string
+          p_part_id: string
+          p_quantity: number
+          p_task_id?: string
+        }
+        Returns: string
+      }
       seed_avir_demo: { Args: { p_user_id: string }; Returns: string }
       seed_demo_components: {
         Args: { p_org_id: string; p_user_id: string }
         Returns: number
       }
       seed_demo_flight_schedules: {
+        Args: { p_org_id: string; p_user_id: string }
+        Returns: number
+      }
+      seed_demo_inventory: {
         Args: { p_org_id: string; p_user_id: string }
         Returns: number
       }
@@ -1846,6 +2510,26 @@ export type Database = {
         }
         Returns: string
       }
+      transfer_stock: {
+        Args: {
+          p_from: string
+          p_part_id: string
+          p_quantity: number
+          p_reference?: string
+          p_to: string
+        }
+        Returns: string
+      }
+      unreserve_stock: {
+        Args: {
+          p_location: string
+          p_part_id: string
+          p_quantity: number
+          p_task_id?: string
+        }
+        Returns: string
+      }
+      upsert_part: { Args: { p_attrs: Json }; Returns: string }
       verify_genealogy_record: {
         Args: { p_genealogy_record_id: string; p_verification_source: string }
         Returns: undefined
