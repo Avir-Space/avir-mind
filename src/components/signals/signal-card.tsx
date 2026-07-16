@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { CategoryTag } from "@/components/tasks/category-tag";
+import { InventorySignalExtra } from "@/components/inventory/inventory-signal-extra";
+import { INVENTORY_SIGNAL_CATEGORIES } from "@/lib/design/inventory";
 import { EvidenceList } from "@/components/signals/evidence-list";
 import { SignalActionBar } from "@/components/signals/signal-action-bar";
 import { SignalConfidenceBadge } from "@/components/signals/signal-confidence-badge";
@@ -70,6 +72,9 @@ export function SignalCard({ signal }: { signal: Signal }) {
             <p className="text-sm text-foreground">{signal.recommendation}</p>
           </div>
         )}
+
+        {/* Inventory-aware footer */}
+        {INVENTORY_SIGNAL_CATEGORIES.has(signal.category) && <InventorySignalExtra signal={signal} />}
 
         {/* Suggested what-ifs */}
         {signal.suggested_actions?.length > 0 && (

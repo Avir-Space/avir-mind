@@ -20,6 +20,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 
 import { AircraftComponentsTab } from "@/components/components/aircraft-components-tab";
+import { AircraftPartsTab } from "@/components/inventory/aircraft-parts-tab";
 import { AircraftSignalsTab } from "@/components/signals/aircraft-signals-tab";
 import { Button } from "@/components/ui/button";
 import { ConfidenceBadge } from "@/components/avir/confidence-badge";
@@ -74,10 +75,10 @@ const TABS: TabDef[] = [
   },
   {
     value: "inventory",
-    label: "Inventory",
+    label: "Parts",
     icon: Package,
-    headline: "Inventory",
-    text: "Spares exposure and parts availability relevant to this aircraft, tied to its maintenance demand. Arrives in Phase 5.",
+    headline: "Parts",
+    text: "",
   },
   {
     value: "crew",
@@ -235,6 +236,8 @@ export default function AircraftProfilePage() {
                     <AircraftSignalsTab aircraftId={data.id} />
                   ) : t.value === "components" ? (
                     <AircraftComponentsTab aircraftId={data.id} />
+                  ) : t.value === "inventory" ? (
+                    <AircraftPartsTab aircraftId={data.id} />
                   ) : (
                     <div className="flex min-h-[40vh] flex-col items-center justify-center px-6 py-16 text-center">
                       <div className="mb-5 flex h-14 w-14 items-center justify-center border border-border bg-surface/40">
