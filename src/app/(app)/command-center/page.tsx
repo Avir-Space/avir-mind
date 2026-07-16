@@ -104,13 +104,13 @@ function CommandCenter() {
       if ((count ?? 0) > 0) return;
       if (typeof window !== "undefined") sessionStorage.setItem(key, "1");
       const { data: acs } = await supabase.from("aircraft").select("id").eq("org_id", orgId).limit(6);
-      for (const a of acs ?? []) {
-        try {
-          await generate(a.id as string, { force: false, runType: "scheduled" });
-        } catch {
-          // graceful — failures are recorded server-side
-        }
-      }
+      // Generate the 6 in parallel (per-org concurrency cap is 10) so they all
+      // complete within ~60s rather than sequentially over several minutes.
+      await Promise.all(
+        (acs ?? []).map((a) =>
+          generate(a.id as string, { force: false, runType: "scheduled" }).catch(() => {}),
+        ),
+      );
     })();
   }, [orgId, generate]);
 
