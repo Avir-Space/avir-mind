@@ -1,7 +1,8 @@
 "use client";
 
-import { Cpu, TrendingUp } from "lucide-react";
+import { Cpu, Link2, TrendingUp } from "lucide-react";
 import Link from "next/link";
+import { useMemo } from "react";
 
 import { HealthBar, HealthDot } from "@/components/components/health-bar";
 import { EmptyState } from "@/components/avir/empty-state";
@@ -9,10 +10,19 @@ import { MonoText } from "@/components/avir/mono-text";
 import { Skeleton } from "@/components/ui/skeleton";
 import { componentType, healthBand } from "@/lib/design/components";
 import { useAircraftComponents } from "@/lib/queries/use-aircraft-components";
+import { useGenealogyDirectory } from "@/lib/queries/use-genealogy";
 
 /** Aircraft Profile → Components tab: components installed on this tail. */
 export function AircraftComponentsTab({ aircraftId }: { aircraftId: string }) {
   const { data, isLoading } = useAircraftComponents(aircraftId);
+  const { data: genealogy } = useGenealogyDirectory();
+  const genByComponent = useMemo(() => {
+    const m = new Map<string, { records: number; verified: boolean }>();
+    for (const g of genealogy ?? []) {
+      if (g.current_component_id) m.set(g.current_component_id, { records: g.records_count, verified: g.verification_state !== "unverified" });
+    }
+    return m;
+  }, [genealogy]);
 
   if (isLoading) {
     return (
@@ -76,6 +86,12 @@ export function AircraftComponentsTab({ aircraftId }: { aircraftId: string }) {
                 {(c.current_cycles ?? 0).toLocaleString()}c · {Math.round(c.current_flight_hours ?? 0).toLocaleString()}h
               </MonoText>
               <div className="ml-auto flex items-center gap-4">
+                {genByComponent.get(c.id) && (
+                  <span className="inline-flex items-center gap-1 font-mono text-[11px] text-label" title="Genealogy records">
+                    {genByComponent.get(c.id)!.verified && <Link2 className="h-3 w-3 text-severity-low" />}
+                    {genByComponent.get(c.id)!.records} rec
+                  </span>
+                )}
                 {c.next_scheduled_event_type && (
                   <span className="font-mono text-[11px] text-subtext">{c.next_scheduled_event_type}</span>
                 )}

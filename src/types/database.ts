@@ -611,6 +611,211 @@ export type Database = {
           },
         ]
       }
+      genealogy_exports: {
+        Row: {
+          created_at_utc: string
+          export_downloaded_at_utc: string | null
+          export_format: string | null
+          export_purpose: string | null
+          export_recipient: string | null
+          export_snapshot_hash: string
+          exported_by_user_id: string
+          id: string
+          org_id: string
+          serial_genealogy_id: string
+        }
+        Insert: {
+          created_at_utc?: string
+          export_downloaded_at_utc?: string | null
+          export_format?: string | null
+          export_purpose?: string | null
+          export_recipient?: string | null
+          export_snapshot_hash: string
+          exported_by_user_id: string
+          id?: string
+          org_id: string
+          serial_genealogy_id: string
+        }
+        Update: {
+          created_at_utc?: string
+          export_downloaded_at_utc?: string | null
+          export_format?: string | null
+          export_purpose?: string | null
+          export_recipient?: string | null
+          export_snapshot_hash?: string
+          exported_by_user_id?: string
+          id?: string
+          org_id?: string
+          serial_genealogy_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "genealogy_exports_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genealogy_exports_serial_genealogy_id_fkey"
+            columns: ["serial_genealogy_id"]
+            isOneToOne: false
+            referencedRelation: "serial_genealogies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      genealogy_ownership_history: {
+        Row: {
+          created_at_utc: string
+          from_org_id: string | null
+          id: string
+          serial_genealogy_id: string
+          to_org_id: string
+          transfer_date_utc: string
+          transfer_documentation_refs: Json | null
+          transfer_reference: string | null
+          transfer_type: string | null
+        }
+        Insert: {
+          created_at_utc?: string
+          from_org_id?: string | null
+          id?: string
+          serial_genealogy_id: string
+          to_org_id: string
+          transfer_date_utc: string
+          transfer_documentation_refs?: Json | null
+          transfer_reference?: string | null
+          transfer_type?: string | null
+        }
+        Update: {
+          created_at_utc?: string
+          from_org_id?: string | null
+          id?: string
+          serial_genealogy_id?: string
+          to_org_id?: string
+          transfer_date_utc?: string
+          transfer_documentation_refs?: Json | null
+          transfer_reference?: string | null
+          transfer_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "genealogy_ownership_history_from_org_id_fkey"
+            columns: ["from_org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genealogy_ownership_history_serial_genealogy_id_fkey"
+            columns: ["serial_genealogy_id"]
+            isOneToOne: false
+            referencedRelation: "serial_genealogies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genealogy_ownership_history_to_org_id_fkey"
+            columns: ["to_org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      genealogy_records: {
+        Row: {
+          attachments: Json | null
+          confidence: string
+          content_hash: string
+          created_at_utc: string
+          id: string
+          previous_record_hash: string | null
+          record_date_utc: string
+          record_payload: Json
+          record_seq: number
+          record_type: string
+          serial_genealogy_id: string
+          source_aircraft_id: string | null
+          source_component_event_id: string | null
+          source_component_id: string | null
+          source_org_id: string | null
+          verification_source: string | null
+        }
+        Insert: {
+          attachments?: Json | null
+          confidence?: string
+          content_hash: string
+          created_at_utc?: string
+          id?: string
+          previous_record_hash?: string | null
+          record_date_utc: string
+          record_payload: Json
+          record_seq?: number
+          record_type: string
+          serial_genealogy_id: string
+          source_aircraft_id?: string | null
+          source_component_event_id?: string | null
+          source_component_id?: string | null
+          source_org_id?: string | null
+          verification_source?: string | null
+        }
+        Update: {
+          attachments?: Json | null
+          confidence?: string
+          content_hash?: string
+          created_at_utc?: string
+          id?: string
+          previous_record_hash?: string | null
+          record_date_utc?: string
+          record_payload?: Json
+          record_seq?: number
+          record_type?: string
+          serial_genealogy_id?: string
+          source_aircraft_id?: string | null
+          source_component_event_id?: string | null
+          source_component_id?: string | null
+          source_org_id?: string | null
+          verification_source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "genealogy_records_serial_genealogy_id_fkey"
+            columns: ["serial_genealogy_id"]
+            isOneToOne: false
+            referencedRelation: "serial_genealogies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genealogy_records_source_aircraft_id_fkey"
+            columns: ["source_aircraft_id"]
+            isOneToOne: false
+            referencedRelation: "aircraft"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genealogy_records_source_component_event_id_fkey"
+            columns: ["source_component_event_id"]
+            isOneToOne: false
+            referencedRelation: "component_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genealogy_records_source_component_id_fkey"
+            columns: ["source_component_id"]
+            isOneToOne: false
+            referencedRelation: "components"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "genealogy_records_source_org_id_fkey"
+            columns: ["source_org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       org_members: {
         Row: {
           created_at: string
@@ -660,6 +865,87 @@ export type Database = {
           plan?: string
         }
         Relationships: []
+      }
+      serial_genealogies: {
+        Row: {
+          birth_certificate_date: string | null
+          birth_certificate_reference: string | null
+          birth_manufacturer_facility: string | null
+          component_type: string
+          created_at_utc: string
+          current_component_id: string | null
+          current_owner_org_id: string | null
+          id: string
+          last_verified_at_utc: string | null
+          lifetime_cycles: number | null
+          lifetime_flight_hours: number | null
+          manufacturer: string
+          part_number: string
+          serial_number: string
+          total_findings: number | null
+          total_installations: number | null
+          total_overhauls: number | null
+          updated_at_utc: string
+          verification_state: string
+        }
+        Insert: {
+          birth_certificate_date?: string | null
+          birth_certificate_reference?: string | null
+          birth_manufacturer_facility?: string | null
+          component_type: string
+          created_at_utc?: string
+          current_component_id?: string | null
+          current_owner_org_id?: string | null
+          id?: string
+          last_verified_at_utc?: string | null
+          lifetime_cycles?: number | null
+          lifetime_flight_hours?: number | null
+          manufacturer: string
+          part_number: string
+          serial_number: string
+          total_findings?: number | null
+          total_installations?: number | null
+          total_overhauls?: number | null
+          updated_at_utc?: string
+          verification_state?: string
+        }
+        Update: {
+          birth_certificate_date?: string | null
+          birth_certificate_reference?: string | null
+          birth_manufacturer_facility?: string | null
+          component_type?: string
+          created_at_utc?: string
+          current_component_id?: string | null
+          current_owner_org_id?: string | null
+          id?: string
+          last_verified_at_utc?: string | null
+          lifetime_cycles?: number | null
+          lifetime_flight_hours?: number | null
+          manufacturer?: string
+          part_number?: string
+          serial_number?: string
+          total_findings?: number | null
+          total_installations?: number | null
+          total_overhauls?: number | null
+          updated_at_utc?: string
+          verification_state?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "serial_genealogies_current_component_id_fkey"
+            columns: ["current_component_id"]
+            isOneToOne: false
+            referencedRelation: "components"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "serial_genealogies_current_owner_org_id_fkey"
+            columns: ["current_owner_org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       signal_actions: {
         Row: {
@@ -1394,6 +1680,20 @@ export type Database = {
         Returns: string
       }
       current_user_org_ids: { Args: never; Returns: string[] }
+      export_genealogy_bundle: {
+        Args: {
+          p_format: string
+          p_purpose: string
+          p_recipient: string
+          p_serial_genealogy_id: string
+        }
+        Returns: Json
+      }
+      genealogy_build_record: { Args: { p_event_id: string }; Returns: string }
+      genealogy_upsert_serial: {
+        Args: { p_component_id: string }
+        Returns: string
+      }
       generate_predictive_signals_for_aircraft: {
         Args: {
           p_aircraft_id: string
@@ -1442,6 +1742,10 @@ export type Database = {
         Returns: Json
       }
       get_component_detail: { Args: { p_component_id: string }; Returns: Json }
+      get_component_genealogy: {
+        Args: { p_component_id: string }
+        Returns: Json
+      }
       get_components_for_aircraft: {
         Args: { p_aircraft_id: string }
         Returns: Json
@@ -1457,10 +1761,21 @@ export type Database = {
         }
         Returns: Json
       }
+      get_genealogy_directory: { Args: never; Returns: Json }
+      get_or_create_demo_counterparty: { Args: never; Returns: string }
       get_predictive_signals_summary: {
         Args: { p_fleet_id?: string }
         Returns: Json
       }
+      get_serial_genealogy: {
+        Args: {
+          p_manufacturer: string
+          p_part_number: string
+          p_serial_number: string
+        }
+        Returns: Json
+      }
+      get_serial_genealogy_by_id: { Args: { p_sid: string }; Returns: Json }
       get_signals_for_aircraft: {
         Args: { p_aircraft_id: string; p_include_resolved?: boolean }
         Returns: Json
@@ -1484,6 +1799,7 @@ export type Database = {
         Args: { p_new_rank?: number; p_new_status: string; p_task_id: string }
         Returns: undefined
       }
+      org_display_name: { Args: { p_org: string }; Returns: string }
       predictive_context_hash: {
         Args: { p_aircraft_id: string }
         Returns: string
@@ -1511,9 +1827,28 @@ export type Database = {
         Returns: number
       }
       signal_context_hash: { Args: { p_aircraft_id: string }; Returns: string }
+      sync_component_genealogy: {
+        Args: { p_component_id: string }
+        Returns: number
+      }
       task_severity: {
         Args: { p_aog: boolean; p_blocking: boolean; p_risk: string }
         Returns: string
+      }
+      transfer_serial_ownership: {
+        Args: {
+          p_documentation_refs?: Json
+          p_serial_genealogy_id: string
+          p_to_org_id: string
+          p_transfer_date_utc: string
+          p_transfer_reference: string
+          p_transfer_type: string
+        }
+        Returns: string
+      }
+      verify_genealogy_record: {
+        Args: { p_genealogy_record_id: string; p_verification_source: string }
+        Returns: undefined
       }
     }
     Enums: {

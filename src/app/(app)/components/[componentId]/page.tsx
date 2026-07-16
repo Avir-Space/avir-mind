@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 
+import { ComponentGenealogyTab } from "@/components/genealogy/component-genealogy-tab";
 import { AccuracyChart } from "@/components/components/accuracy-chart";
 import { HealthBar } from "@/components/components/health-bar";
 import { HealthTrendChart } from "@/components/components/health-trend-chart";
@@ -92,7 +93,6 @@ export default function ComponentDetailPage() {
   const activePreds = data.predictions.filter((p) => p.is_active);
   const byConf: Record<string, PredictiveSignal[]> = { high: [], medium: [], low: [] };
   for (const p of activePreds) (byConf[p.confidence] ??= []).push(p);
-  const genealogy = data.events.filter((e) => e.event_type === "installed" || e.event_type === "removed");
 
   async function refresh() {
     setRefreshing(true);
@@ -281,24 +281,9 @@ export default function ComponentDetailPage() {
             </div>
           </TabsContent>
 
-          {/* Genealogy */}
-          <TabsContent value="genealogy">
-            <div className="max-w-3xl">
-              <p className="text-sm text-subtext">Install / removal history within your organization. The cross-operator Genealogy Vault arrives in Phase 4.</p>
-              {genealogy.length === 0 ? (
-                <p className="mt-3 text-sm text-hint">No install/removal events recorded yet.</p>
-              ) : (
-                <ol className="mt-4 space-y-2">
-                  {genealogy.map((e) => (
-                    <li key={e.id} className="flex items-center gap-3 border-l-2 border-border pl-3">
-                      <span className="font-mono text-[13px] font-medium text-foreground">{e.event_type}</span>
-                      <span className="font-mono text-[11px] text-hint">{e.event_date_utc}</span>
-                      {e.station && <span className="font-mono text-[11px] text-subtext">{e.station}</span>}
-                    </li>
-                  ))}
-                </ol>
-              )}
-            </div>
+          {/* Genealogy — the real hash-chained vault */}
+          <TabsContent value="genealogy" className="-m-6">
+            <ComponentGenealogyTab componentId={c.id} />
           </TabsContent>
         </div>
       </Tabs>
