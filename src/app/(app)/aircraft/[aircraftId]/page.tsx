@@ -126,11 +126,11 @@ export default function AircraftProfilePage() {
       {/* Back link */}
       <div className="border-b border-border px-6 pt-4">
         <Link
-          href="/aircraft"
+          href="/fleet?view=list"
           className="inline-flex items-center gap-1 font-mono text-eyebrow uppercase text-label transition-colors hover:text-foreground"
         >
           <ChevronLeft className="h-3.5 w-3.5" />
-          All aircraft
+          Fleet
         </Link>
 
         {/* Header */}
@@ -146,8 +146,8 @@ export default function AircraftProfilePage() {
             <p className="mt-2 text-sm text-subtext">
               This tail doesn&apos;t exist or isn&apos;t in your organization.
             </p>
-            <Link href="/aircraft" className="mt-4 text-sm text-primary hover:underline">
-              Back to aircraft
+            <Link href="/fleet?view=list" className="mt-4 text-sm text-primary hover:underline">
+              Back to Fleet
             </Link>
           </div>
         ) : (

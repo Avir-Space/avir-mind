@@ -9,6 +9,17 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: false,
   },
+  async redirects() {
+    return [
+      // Phase 2.5 IA: Aircraft merged into Fleet's List view. Exact match only,
+      // so /aircraft/[id] (the Aircraft Profile) is untouched.
+      {
+        source: "/aircraft",
+        destination: "/fleet?view=list",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

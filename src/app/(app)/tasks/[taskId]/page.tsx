@@ -218,7 +218,7 @@ export default function TaskDetailPage() {
       <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
         <h1 className="font-serif text-2xl text-foreground">Task not found</h1>
         <p className="mt-2 text-sm text-subtext">This task doesn&apos;t exist or isn&apos;t in your organization.</p>
-        <Link href="/command-center" className="mt-4 text-sm text-primary hover:underline">Back to Command Center</Link>
+        <Link href="/signals" className="mt-4 text-sm text-primary hover:underline">Back to Signals</Link>
       </div>
     );
   }
@@ -228,8 +228,8 @@ export default function TaskDetailPage() {
   return (
     <div className="flex h-full flex-col">
       <div className="px-6 pt-4">
-        <Link href="/command-center" className="inline-flex items-center gap-1 font-mono text-eyebrow uppercase text-label transition-colors hover:text-foreground">
-          <ChevronLeft className="h-3.5 w-3.5" /> Command Center
+        <Link href="/signals" className="inline-flex items-center gap-1 font-mono text-eyebrow uppercase text-label transition-colors hover:text-foreground">
+          <ChevronLeft className="h-3.5 w-3.5" /> Signals
         </Link>
       </div>
       <TaskDetailHeader detail={detail} />

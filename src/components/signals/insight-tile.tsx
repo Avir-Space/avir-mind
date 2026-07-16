@@ -17,7 +17,7 @@ export function InsightTile({ insight }: { insight: Insight }) {
     const params = new URLSearchParams();
     if (typeof q.category === "string") params.set("category", q.category);
     if (Array.isArray(q.severity)) params.set("severity", (q.severity as string[]).join(","));
-    router.push(`/command-center${params.toString() ? `?${params}` : ""}`);
+    router.push(`/signals${params.toString() ? `?${params}` : ""}`);
   }
 
   return (

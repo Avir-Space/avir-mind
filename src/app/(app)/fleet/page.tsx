@@ -9,9 +9,11 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-import { Loader2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { LayoutGrid, List, Loader2 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 
+import { AircraftListView } from "@/components/fleet/aircraft-list-view";
 import { LastUpdated } from "@/components/avir/last-updated";
 import { PageHeader } from "@/components/avir/page-header";
 import { KanbanCard } from "@/components/tasks/kanban-card";
@@ -50,6 +52,7 @@ import { useTaskActions } from "@/lib/mutations/use-task-actions";
 import { useTaskRealtime } from "@/lib/realtime/use-task-realtime";
 import { useAuth } from "@/lib/providers/auth-provider";
 import { createClient } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
 import type { BoardCard, BoardColumnKey } from "@/types/tasks";
 
 const STATE_LABEL: Record<string, string> = {
@@ -60,16 +63,41 @@ const STATE_LABEL: Record<string, string> = {
 };
 
 type PendingMove = { card: BoardCard; from: string; to: string };
+type View = "board" | "list";
 
 export default function FleetPage() {
+  return (
+    <Suspense fallback={null}>
+      <Fleet />
+    </Suspense>
+  );
+}
+
+function Fleet() {
   const { orgId } = useAuth();
   useTaskRealtime(orgId);
   const { toast } = useToast();
   const { moveStatus } = useTaskActions();
+  const params = useSearchParams();
 
   const { data: fleets } = useFleets();
   const { data: allAircraft } = useAircraft();
 
+  // View: URL ?view= wins on first load, else localStorage, else Board.
+  const [view, setView] = useState<View>(() => (params.get("view") === "list" ? "list" : "board"));
+  const viewInit = useRef(false);
+  useEffect(() => {
+    if (viewInit.current) return;
+    viewInit.current = true;
+    if (params.get("view")) return;
+    const saved = typeof window !== "undefined" ? localStorage.getItem("avir_fleet_view") : null;
+    if (saved === "list" || saved === "board") setView(saved);
+  }, [params]);
+  useEffect(() => {
+    if (typeof window !== "undefined") localStorage.setItem("avir_fleet_view", view);
+  }, [view]);
+
+  // Shared filters (persist across the toggle — same component state).
   const [fleetId, setFleetId] = useState<string>("all");
   const [stations, setStations] = useState<string[]>([]);
   const [types, setTypes] = useState<string[]>([]);
@@ -167,40 +195,71 @@ export default function FleetPage() {
     <div className="flex h-full flex-col">
       <PageHeader
         eyebrow="Fleet"
-        title="Fleet Dashboard"
-        subtitle="Live operational board — every aircraft, grouped by state, with its highest-priority work."
+        title="Fleet"
+        subtitle="Every aircraft, live."
         meta={<LastUpdated at={dataUpdatedAt} />}
         actions={
-          <Select value={fleetId} onValueChange={setFleetId}>
-            <SelectTrigger className="w-56"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Fleets</SelectItem>
-              {(fleets ?? []).map((f) => (
-                <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-3">
+            {/* Board / List toggle */}
+            <div className="inline-flex border border-border">
+              <button
+                type="button"
+                onClick={() => setView("board")}
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs transition-colors",
+                  view === "board" ? "bg-primary text-primary-foreground" : "text-subtext hover:text-foreground",
+                )}
+              >
+                <LayoutGrid className="h-3.5 w-3.5" /> Board
+              </button>
+              <button
+                type="button"
+                onClick={() => setView("list")}
+                className={cn(
+                  "inline-flex items-center gap-1.5 border-l border-border px-2.5 py-1.5 text-xs transition-colors",
+                  view === "list" ? "bg-primary text-primary-foreground" : "text-subtext hover:text-foreground",
+                )}
+              >
+                <List className="h-3.5 w-3.5" /> List
+              </button>
+            </div>
+            <Select value={fleetId} onValueChange={setFleetId}>
+              <SelectTrigger className="w-52">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Fleets</SelectItem>
+                {(fleets ?? []).map((f) => (
+                  <SelectItem key={f.id} value={f.id}>
+                    {f.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         }
       />
 
-      {/* Insights strip */}
-      <div className="grid grid-cols-2 gap-3 px-6 py-5 lg:grid-cols-4">
-        {isLoading || !board ? (
-          [0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[84px]" />)
-        ) : (
-          board.insights.map((ins, i) => {
-            const sev = SEVERITY_CONFIG[ins.severity] ?? SEVERITY_CONFIG.info;
-            return (
-              <div key={i} className="border border-border bg-card p-4" style={{ borderTop: `2px solid ${sev.hex}` }}>
-                <p className="font-mono text-eyebrow uppercase text-label">{ins.title}</p>
-                <p className="mt-1.5 text-sm leading-snug text-foreground">{ins.one_liner}</p>
-              </div>
-            );
-          })
-        )}
-      </div>
+      {/* Insights strip — board view only */}
+      {view === "board" && (
+        <div className="grid grid-cols-2 gap-3 px-6 py-5 lg:grid-cols-4">
+          {isLoading || !board ? (
+            [0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[84px]" />)
+          ) : (
+            board.insights.map((ins, i) => {
+              const sev = SEVERITY_CONFIG[ins.severity] ?? SEVERITY_CONFIG.info;
+              return (
+                <div key={i} className="border border-border bg-card p-4" style={{ borderTop: `2px solid ${sev.hex}` }}>
+                  <p className="font-mono text-eyebrow uppercase text-label">{ins.title}</p>
+                  <p className="mt-1.5 text-sm leading-snug text-foreground">{ins.one_liner}</p>
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
 
-      {/* Filters */}
+      {/* Shared filter bar */}
       <TaskFilterBar>
         <FilterChipGroup label="Station" options={stationOptions} selected={stations} onChange={setStations} />
         <FilterChipGroup label="Type" options={typeOptions} selected={types} onChange={setTypes} />
@@ -223,30 +282,36 @@ export default function FleetPage() {
         <FilterSearch value={search} onChange={setSearch} placeholder="Tail or task…" />
       </TaskFilterBar>
 
-      {/* Board */}
-      <div className="flex-1 overflow-auto avir-scroll p-6">
-        {isLoading || !board ? (
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
-            {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-96" />)}
-          </div>
-        ) : (
-          <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
-            <div className="flex gap-4">
-              {BOARD_COLUMNS.map((col) => (
-                <KanbanColumn
-                  key={col.key}
-                  columnKey={col.key}
-                  label={col.label}
-                  cards={board.columns[col.key as BoardColumnKey] ?? []}
-                />
+      {/* Content */}
+      {view === "list" ? (
+        <div className="flex-1 overflow-y-auto avir-scroll">
+          <AircraftListView stations={stations} types={types} search={search} />
+        </div>
+      ) : (
+        <div className="flex-1 overflow-auto avir-scroll p-6">
+          {isLoading || !board ? (
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
+              {[0, 1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-96" />
               ))}
             </div>
-            <DragOverlay>
-              {activeCard ? <KanbanCard card={activeCard} columnKey="" /> : null}
-            </DragOverlay>
-          </DndContext>
-        )}
-      </div>
+          ) : (
+            <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
+              <div className="flex gap-4">
+                {BOARD_COLUMNS.map((col) => (
+                  <KanbanColumn
+                    key={col.key}
+                    columnKey={col.key}
+                    label={col.label}
+                    cards={board.columns[col.key as BoardColumnKey] ?? []}
+                  />
+                ))}
+              </div>
+              <DragOverlay>{activeCard ? <KanbanCard card={activeCard} columnKey="" /> : null}</DragOverlay>
+            </DndContext>
+          )}
+        </div>
+      )}
 
       {/* Confirm transition modal */}
       <Dialog open={!!pending} onOpenChange={(v) => !v && setPending(null)}>
@@ -256,8 +321,8 @@ export default function FleetPage() {
               {isMaintComplete ? "Confirm maintenance complete" : isTakeoff ? "Confirm departure" : "Confirm state change"}
             </DialogTitle>
             <DialogDescription>
-              {pending && (
-                isMaintComplete ? (
+              {pending &&
+                (isMaintComplete ? (
                   <>
                     Confirm maintenance complete for aircraft{" "}
                     <span className="text-foreground">{pending.card.tail_number}</span>. This moves it to{" "}
@@ -272,8 +337,7 @@ export default function FleetPage() {
                     Move <span className="text-foreground">{pending.card.tail_number}</span> from{" "}
                     <b>{STATE_LABEL[pending.from]}</b> to <b>{STATE_LABEL[pending.to]}</b>.
                   </>
-                )
-              )}
+                ))}
             </DialogDescription>
           </DialogHeader>
 
@@ -291,7 +355,9 @@ export default function FleetPage() {
           )}
 
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setPending(null)}>Cancel</Button>
+            <Button variant="ghost" onClick={() => setPending(null)}>
+              Cancel
+            </Button>
             <Button onClick={confirmMove} disabled={busy}>
               {busy && <Loader2 className="h-4 w-4 animate-spin" />}
               Confirm

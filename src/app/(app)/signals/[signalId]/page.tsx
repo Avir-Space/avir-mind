@@ -37,7 +37,7 @@ export default function SignalDetailPage() {
       <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
         <h1 className="font-serif text-2xl text-foreground">Signal not found</h1>
         <p className="mt-2 text-sm text-subtext">This signal doesn&apos;t exist or isn&apos;t in your organization.</p>
-        <Link href="/command-center" className="mt-4 text-sm text-primary hover:underline">Back to Command Center</Link>
+        <Link href="/signals" className="mt-4 text-sm text-primary hover:underline">Back to Signals</Link>
       </div>
     );
   }
@@ -49,7 +49,7 @@ export default function SignalDetailPage() {
     <div className="flex h-full flex-col">
       <div className="border-b border-border px-6 pb-5 pt-4" style={{ boxShadow: `inset 0 3px 0 ${sev.hex}` }}>
         <Link
-          href={s.aircraft_id ? `/aircraft/${s.aircraft_id}` : "/command-center"}
+          href={s.aircraft_id ? `/aircraft/${s.aircraft_id}` : "/signals"}
           className="inline-flex items-center gap-1 font-mono text-eyebrow uppercase text-label transition-colors hover:text-foreground"
         >
           <ChevronLeft className="h-3.5 w-3.5" /> {s.aircraft?.tail_number ?? "Back"}
