@@ -67,18 +67,20 @@ export function MapPanel({
         </button>
       </div>
 
-      {/* Legend + count — bottom-left */}
-      <div className="absolute bottom-3 left-3 z-[500] flex flex-wrap items-center gap-x-3 gap-y-1 border border-border bg-page/90 px-2.5 py-1.5 backdrop-blur">
+      {/* Legend + count — bottom-left, 12px margin, opaque backdrop for contrast */}
+      <div className="absolute bottom-3 left-3 z-[500] flex items-center gap-x-3 border border-border bg-page/90 px-2.5 py-1.5 shadow-sm backdrop-blur">
         {LEGEND.map(({ key }) => {
           const m = CANVAS_STATE[key]!;
           return (
-            <span key={key} className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-label">
-              <span className="h-2 w-2 rounded-full" style={{ background: m.hex }} />
+            <span key={key} className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider text-label">
+              <span className="h-1.5 w-1.5 rounded-full" style={{ background: m.hex }} />
               {m.label}
             </span>
           );
         })}
-        <span className="font-mono text-[10px] uppercase tracking-wider text-hint">· {plotted} plotted</span>
+        <span className="ml-1 border-l border-border pl-2 font-mono text-[11px] uppercase tracking-wider text-foreground">
+          {plotted} plotted
+        </span>
       </div>
     </div>
   );

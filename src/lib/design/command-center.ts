@@ -29,6 +29,25 @@ export const SEVERITY_HEX: Record<string, string> = {
   insufficient_data: "#6B7280",
 };
 
+/** Display names for the seeded station codes (best-effort; drawer sub-header). */
+export const STATION_NAMES: Record<string, string> = {
+  JFK: "New York JFK",
+  LAX: "Los Angeles",
+  ORD: "Chicago O'Hare",
+  DFW: "Dallas–Fort Worth",
+  DEL: "Delhi",
+  BOM: "Mumbai",
+  FRA: "Frankfurt",
+  ATL: "Atlanta",
+  DEN: "Denver",
+  SEA: "Seattle–Tacoma",
+  LHR: "London Heathrow",
+  MIA: "Miami",
+  BLR: "Bengaluru",
+  DXB: "Dubai",
+  DOH: "Doha",
+};
+
 export const TIME_WINDOWS = [
   { value: "now", label: "Now", hours: 2 },
   { value: "6h", label: "Next 6h", hours: 6 },

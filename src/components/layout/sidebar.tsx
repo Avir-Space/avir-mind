@@ -69,10 +69,10 @@ export function Sidebar() {
             <AvatarFallback>{initials(user?.email)}</AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-foreground">
+            <p className="truncate text-sm font-medium text-foreground" title={orgName ?? "AVIR Operations"}>
               {orgName ?? "AVIR Operations"}
             </p>
-            <p className="truncate font-mono text-[11px] text-label">
+            <p className="truncate font-mono text-[11px] text-label" title={user?.email ?? undefined}>
               {user?.email ?? "—"}
               {orgRole && <span className="ml-1 uppercase text-hint">· {orgRole}</span>}
             </p>

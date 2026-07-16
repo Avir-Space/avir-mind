@@ -58,6 +58,7 @@ export type DrawerPrimaryTask = {
   dispatch_blocking: boolean;
   aog: boolean;
   status: string;
+  assignee_user_id: string | null;
 };
 
 export type DrawerSignal = { signal_id: string; severity: string; title: string };
@@ -81,6 +82,7 @@ export type AircraftDrawerSummary = {
   current_station: string | null;
   state_confidence: string | null;
   state_source: string | null;
+  last_transition_at: string | null;
   next_event_type: string | null;
   next_event_at: string | null;
   active_signals_count: number;
@@ -88,7 +90,27 @@ export type AircraftDrawerSummary = {
   dispatch_blocking_count: number;
   primary_task: DrawerPrimaryTask | null;
   top_signals: DrawerSignal[];
+  next_flights: DrawerFlight[];
   next_flight: DrawerFlight | null;
+};
+
+export type StationDrawerAircraft = {
+  aircraft_id: string;
+  tail_number: string;
+  aircraft_type: string;
+  state: string;
+};
+
+export type StationDrawerSignal = DrawerSignal & { tail_number: string };
+
+export type StationDrawerSummary = {
+  station_code: string;
+  aircraft_on_ground: number;
+  aircraft_inbound: number;
+  aircraft_outbound_6h: number;
+  aircraft_here: StationDrawerAircraft[];
+  active_signals_count: number;
+  top_signals: StationDrawerSignal[];
 };
 
 /** What the universal right-side drawer is currently showing. */

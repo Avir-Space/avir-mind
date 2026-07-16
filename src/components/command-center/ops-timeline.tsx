@@ -6,8 +6,9 @@ import { canvasState, SEVERITY_HEX } from "@/lib/design/command-center";
 import { cn } from "@/lib/utils";
 import type { AircraftPosition, TimelineEvent } from "@/types/command-center";
 
-const LABEL_W = "8rem"; // 128px sticky label column
-const LOOKBACK_MIN = 60; // small margin left of "now"
+const LABEL_W = 128; // px sticky tail column
+const PX_PER_HOUR = 90;
+const LOOKBACK_MIN = 60;
 
 type Row = {
   aircraftId: string;
@@ -21,7 +22,15 @@ type Row = {
 type Leg = { left: number; width: number; label: string; status?: string };
 
 /** Ticks itself once a second so the now-line visibly advances. */
-function NowLine({ startMs, durationMs }: { startMs: number; durationMs: number }) {
+function NowLine({
+  startMs,
+  durationMs,
+  trackWidth,
+}: {
+  startMs: number;
+  durationMs: number;
+  trackWidth: number;
+}) {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
@@ -30,8 +39,8 @@ function NowLine({ startMs, durationMs }: { startMs: number; durationMs: number 
   const frac = Math.min(Math.max((now - startMs) / durationMs, 0), 1);
   return (
     <div
-      className="pointer-events-none absolute inset-y-0 z-20 w-px bg-primary"
-      style={{ left: `calc(${LABEL_W} + (100% - ${LABEL_W}) * ${frac})` }}
+      className="pointer-events-none absolute bottom-0 z-10 w-px bg-primary"
+      style={{ left: `${LABEL_W + frac * trackWidth}px`, top: 24 }}
     >
       <span className="absolute -top-[7px] -left-[3px] h-[7px] w-[7px] rotate-45 bg-primary" />
     </div>
@@ -54,7 +63,9 @@ export function OpsTimeline({
   const [groupByStation, setGroupByStation] = useState(false);
 
   const startMs = now - LOOKBACK_MIN * 60_000;
-  const durationMs = (windowHours * 60 + LOOKBACK_MIN) * 60_000;
+  const durationMin = windowHours * 60 + LOOKBACK_MIN;
+  const durationMs = durationMin * 60_000;
+  const trackWidth = (durationMin / 60) * PX_PER_HOUR;
   const frac = (t: number) => Math.min(Math.max((t - startMs) / durationMs, 0), 1);
 
   const rows: Row[] = useMemo(() => {
@@ -76,7 +87,6 @@ export function OpsTimeline({
     return [...map.values()].sort((a, b) => a.tail.localeCompare(b.tail));
   }, [positions, events]);
 
-  // Hour ticks across the window.
   const ticks = useMemo(() => {
     const out: { left: number; label: string }[] = [];
     const first = new Date(startMs);
@@ -130,54 +140,56 @@ export function OpsTimeline({
     return [...g.entries()].sort((a, b) => a[0].localeCompare(b[0])).map(([station, rs]) => ({ station, rows: rs }));
   }, [groupByStation, rows]);
 
-  function renderRow(row: Row) {
-    const meta = canvasState(row.state);
+  function Track({ row }: { row: Row }) {
     const legs = legsFor(row);
     const signals = row.events.filter((e) => e.event_type === "signal");
     return (
+      <div className="relative shrink-0" style={{ width: trackWidth }}>
+        {legs.map((leg, i) => (
+          <div
+            key={i}
+            className="absolute top-1/2 flex h-3.5 -translate-y-1/2 items-center overflow-hidden border border-primary/60 bg-primary/20 px-1"
+            style={{ left: `${leg.left * 100}%`, width: `${leg.width * 100}%` }}
+            title={leg.label}
+          >
+            <span className="truncate font-mono text-[9px] text-primary">{leg.label}</span>
+          </div>
+        ))}
+        {signals.map((s, i) => {
+          const hex = SEVERITY_HEX[s.event_detail_json.severity ?? "info"] ?? SEVERITY_HEX.info;
+          return (
+            <button
+              key={i}
+              type="button"
+              onClick={() => onEventClick(s)}
+              className="absolute top-1/2 z-10 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rotate-45 border border-black/30"
+              style={{ left: `${frac(new Date(s.event_time_utc).getTime()) * 100}%`, background: hex }}
+              title={s.event_detail_json.title ?? "Signal"}
+              aria-label={s.event_detail_json.title ?? "Signal"}
+            />
+          );
+        })}
+      </div>
+    );
+  }
+
+  function renderRow(row: Row) {
+    const meta = canvasState(row.state);
+    return (
       <div key={row.aircraftId} className="flex h-8 items-stretch border-b border-border/60">
-        {/* label */}
-        <div className="flex w-32 shrink-0 items-center gap-2 border-r border-border px-2">
+        <div className="sticky left-0 z-20 flex w-32 shrink-0 items-center gap-2 border-r border-border bg-page px-2">
           <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: meta.hex }} />
           <span className="truncate font-mono text-[11px] text-foreground">{row.tail}</span>
         </div>
-        {/* track */}
-        <div className="relative flex-1">
-          {/* flight legs */}
-          {legs.map((leg, i) => (
-            <div
-              key={i}
-              className="absolute top-1/2 flex h-3.5 -translate-y-1/2 items-center overflow-hidden border border-primary/60 bg-primary/20 px-1"
-              style={{ left: `${leg.left * 100}%`, width: `${leg.width * 100}%` }}
-              title={leg.label}
-            >
-              <span className="truncate font-mono text-[9px] text-primary">{leg.label}</span>
-            </div>
-          ))}
-          {/* signal markers */}
-          {signals.map((s, i) => {
-            const hex = SEVERITY_HEX[s.event_detail_json.severity ?? "info"] ?? SEVERITY_HEX.info;
-            return (
-              <button
-                key={i}
-                type="button"
-                onClick={() => onEventClick(s)}
-                className="absolute top-1/2 z-10 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rotate-45 border border-black/30"
-                style={{ left: `${frac(new Date(s.event_time_utc).getTime()) * 100}%`, background: hex }}
-                title={s.event_detail_json.title ?? "Signal"}
-                aria-label={s.event_detail_json.title ?? "Signal"}
-              />
-            );
-          })}
-        </div>
+        <Track row={row} />
       </div>
     );
   }
 
   return (
     <div className="flex h-full flex-col">
-      {/* header: title + grouping toggle */}
-      <div className="flex items-center justify-between border-b border-border px-6 py-1.5">
+      {/* header */}
+      <div className="flex shrink-0 items-center justify-between border-b border-border px-6 py-1.5">
         <span className="font-mono text-eyebrow uppercase tracking-wider text-label">
           Operational Timeline · next {windowHours}h
         </span>
@@ -199,39 +211,46 @@ export function OpsTimeline({
         </div>
       </div>
 
-      {/* axis */}
-      <div className="relative flex h-6 shrink-0 items-center border-b border-border">
-        <div className="w-32 shrink-0 border-r border-border" />
-        <div className="relative h-full flex-1">
-          {ticks.map((t, i) => (
-            <span
-              key={i}
-              className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 font-mono text-[9px] text-hint"
-              style={{ left: `${t.left * 100}%` }}
-            >
-              {t.label}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* rows + now-line */}
-      <div className="relative flex-1 overflow-y-auto avir-scroll">
-        <NowLine startMs={startMs} durationMs={durationMs} />
-        {rows.length === 0 ? (
-          <div className="flex h-full items-center px-6 text-xs text-hint">No aircraft in view.</div>
-        ) : groupByStation ? (
-          grouped.map((g) => (
-            <div key={g.station}>
-              <div className="sticky top-0 z-10 border-b border-border bg-surface/80 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-label backdrop-blur">
-                {g.station} · {g.rows.length}
-              </div>
-              {g.rows.map(renderRow)}
+      {/* one scroll container: vertical + horizontal, sticky axis + sticky tail column */}
+      <div className="relative flex-1 overflow-auto avir-scroll">
+        <div className="relative" style={{ width: LABEL_W + trackWidth }}>
+          {/* axis (sticky top) */}
+          <div className="sticky top-0 z-30 flex h-6 items-stretch border-b border-border bg-page">
+            <div className="sticky left-0 z-40 w-32 shrink-0 border-r border-border bg-page" />
+            <div className="relative shrink-0" style={{ width: trackWidth }}>
+              {ticks.map((t, i) => (
+                <span
+                  key={i}
+                  className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 font-mono text-[9px] text-hint"
+                  style={{ left: `${t.left * 100}%` }}
+                >
+                  {t.label}
+                </span>
+              ))}
             </div>
-          ))
-        ) : (
-          rows.map(renderRow)
-        )}
+          </div>
+
+          {/* now-line spans the full body height */}
+          <NowLine startMs={startMs} durationMs={durationMs} trackWidth={trackWidth} />
+
+          {/* rows */}
+          {rows.length === 0 ? (
+            <div className="flex h-24 items-center px-6 text-xs text-hint">No aircraft in view.</div>
+          ) : groupByStation ? (
+            grouped.map((g) => (
+              <div key={g.station}>
+                <div className="sticky top-6 z-20 flex h-6 items-center border-b border-border bg-surface/90 backdrop-blur">
+                  <span className="sticky left-0 px-2 font-mono text-[10px] uppercase tracking-wider text-label">
+                    {g.station} · {g.rows.length}
+                  </span>
+                </div>
+                {g.rows.map(renderRow)}
+              </div>
+            ))
+          ) : (
+            rows.map(renderRow)
+          )}
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Inbox, Sparkles } from "lucide-react";
+import { ArrowLeft, Inbox, Sparkles, X } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
@@ -9,14 +9,10 @@ import { EmptyState } from "@/components/avir/empty-state";
 import { LastUpdated } from "@/components/avir/last-updated";
 import { PageHeader } from "@/components/avir/page-header";
 import { FleetSignalRefresh } from "@/components/signals/fleet-signal-refresh";
+import { FilterDropdown } from "@/components/signals/filter-dropdown";
 import { InsightTile } from "@/components/signals/insight-tile";
 import { TaskCard } from "@/components/tasks/task-card";
-import {
-  FilterChipGroup,
-  FilterSegmented,
-  FilterToggle,
-  TaskFilterBar,
-} from "@/components/tasks/task-filter-bar";
+import { FilterSegmented, FilterToggle } from "@/components/tasks/task-filter-bar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SEVERITY_CONFIG } from "@/lib/design/state";
 import { CATEGORY_CONFIG, SOURCE_SYSTEM_CONFIG } from "@/lib/design/tasks";
@@ -36,11 +32,14 @@ const CATEGORY_OPTIONS = Object.keys(CATEGORY_CONFIG).map((k) => ({ value: k, la
 const SOURCE_OPTIONS = Object.entries(SOURCE_SYSTEM_CONFIG).map(([value, v]) => ({ value, label: v.label }));
 const TIME_OPTIONS = [
   { value: "24", label: "24h" },
-  { value: "48", label: "48h" },
   { value: "168", label: "7d" },
   { value: "720", label: "30d" },
   { value: "", label: "All" },
 ];
+
+const LABELS: Record<string, string> = Object.fromEntries(
+  [...SEVERITY_OPTIONS, ...CATEGORY_OPTIONS, ...SOURCE_OPTIONS].map((o) => [o.value, o.label]),
+);
 
 function StatTile({ label, value, tone }: { label: string; value: number; tone?: string }) {
   return (
@@ -66,7 +65,6 @@ function SignalsInbox() {
   const { generate } = useSignalActions();
   const params = useSearchParams();
 
-  // Drill-in from an insight tile seeds the initial filters.
   const [severity, setSeverity] = useState<string[]>(
     params.get("severity") ? params.get("severity")!.split(",") : [],
   );
@@ -105,8 +103,6 @@ function SignalsInbox() {
       if ((count ?? 0) > 0) return;
       if (typeof window !== "undefined") sessionStorage.setItem(key, "1");
       const { data: acs } = await supabase.from("aircraft").select("id").eq("org_id", orgId).limit(6);
-      // Generate the 6 in parallel (per-org concurrency cap is 10) so they all
-      // complete within ~60s rather than sequentially over several minutes.
       await Promise.all(
         (acs ?? []).map((a) =>
           generate(a.id as string, { force: false, runType: "scheduled" }).catch(() => {}),
@@ -114,6 +110,22 @@ function SignalsInbox() {
       );
     })();
   }, [orgId, generate]);
+
+  // Applied-filter chips (removable). Window included when not "All".
+  const chips: { key: string; label: string; remove: () => void }[] = [
+    ...severity.map((v) => ({ key: `sev-${v}`, label: LABELS[v] ?? v, remove: () => setSeverity(severity.filter((x) => x !== v)) })),
+    ...categories.map((v) => ({ key: `cat-${v}`, label: LABELS[v] ?? v, remove: () => setCategories(categories.filter((x) => x !== v)) })),
+    ...sources.map((v) => ({ key: `src-${v}`, label: LABELS[v] ?? v, remove: () => setSources(sources.filter((x) => x !== v)) })),
+    ...(time ? [{ key: "time", label: TIME_OPTIONS.find((t) => t.value === time)?.label ?? time, remove: () => setTime("") }] : []),
+  ];
+  const anyActive = chips.length > 0 || needsYou;
+  function clearAll() {
+    setSeverity([]);
+    setCategories([]);
+    setSources([]);
+    setTime("");
+    setNeedsYou(false);
+  }
 
   return (
     <div className="flex h-full flex-col">
@@ -134,69 +146,102 @@ function SignalsInbox() {
         actions={<FleetSignalRefresh orgId={orgId} />}
       />
 
-      {/* Stats strip */}
-      <div className="grid grid-cols-2 gap-3 px-6 pt-5 lg:grid-cols-4">
-        {isLoading || !stats ? (
-          [0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[76px]" />)
-        ) : (
-          <>
-            <StatTile label="Active Signals" value={stats.active_signals} />
-            <StatTile label="Blocking Dispatch" value={stats.blocking_dispatch} tone="text-severity-high" />
-            <StatTile label="AOG Aircraft" value={stats.aog_aircraft} tone="text-severity-critical" />
-            <StatTile label="Team Load" value={stats.team_load} />
-          </>
-        )}
-      </div>
+      {/* Single scroll region — stats + insights scroll away; filter row stays sticky */}
+      <div className="min-h-0 flex-1 overflow-y-auto avir-scroll">
+        {/* Stats strip */}
+        <div className="grid grid-cols-2 gap-3 px-6 pt-5 lg:grid-cols-4">
+          {isLoading || !stats ? (
+            [0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[76px]" />)
+          ) : (
+            <>
+              <StatTile label="Active Signals" value={stats.active_signals} />
+              <StatTile label="Blocking Dispatch" value={stats.blocking_dispatch} tone="text-severity-high" />
+              <StatTile label="AOG Aircraft" value={stats.aog_aircraft} tone="text-severity-critical" />
+              <StatTile label="Team Load" value={stats.team_load} />
+            </>
+          )}
+        </div>
 
-      {/* AI Insights strip — real fleet-wide signal patterns */}
-      <div className="px-6 py-5">
-        <p className="eyebrow mb-2 inline-flex items-center gap-1.5">
-          <Sparkles className="h-3 w-3 text-primary" /> AI Insights
-        </p>
-        {insights && insights.length > 0 ? (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {insights.map((ins, i) => (
-              <InsightTile key={i} insight={ins} />
-            ))}
-          </div>
-        ) : (
-          <div className="border border-dashed border-border px-4 py-3 text-sm text-hint">
-            No AI insights yet — signals are generated per aircraft. Use{" "}
-            <span className="text-body">Refresh AI Signals</span> to analyze the fleet.
-          </div>
-        )}
-      </div>
+        {/* AI Insights strip */}
+        <div className="px-6 py-5">
+          <p className="eyebrow mb-2 inline-flex items-center gap-1.5">
+            <Sparkles className="h-3 w-3 text-primary" /> AI Insights
+          </p>
+          {insights && insights.length > 0 ? (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {insights.map((ins, i) => (
+                <InsightTile key={i} insight={ins} />
+              ))}
+            </div>
+          ) : (
+            <div className="border border-dashed border-border px-4 py-3 text-sm text-hint">
+              No AI insights yet — signals are generated per aircraft. Use{" "}
+              <span className="text-body">Refresh AI Signals</span> to analyze the fleet.
+            </div>
+          )}
+        </div>
 
-      {/* Filters */}
-      <TaskFilterBar>
-        <FilterChipGroup label="Severity" options={SEVERITY_OPTIONS} selected={severity} onChange={setSeverity} />
-        <FilterChipGroup label="Category" options={CATEGORY_OPTIONS} selected={categories} onChange={setCategories} />
-        <FilterChipGroup label="Source" options={SOURCE_OPTIONS} selected={sources} onChange={setSources} />
-        <FilterSegmented label="Window" options={TIME_OPTIONS} value={time} onChange={setTime} />
-        <FilterToggle label="Needs YOU" active={needsYou} onChange={setNeedsYou} />
-      </TaskFilterBar>
+        {/* Sticky filter surface */}
+        <div className="sticky top-0 z-20 border-y border-border bg-page shadow-[0_2px_10px_rgba(0,0,0,0.06)]">
+          <div className="flex h-12 items-center gap-3 px-6">
+            <FilterDropdown label="Severity" options={SEVERITY_OPTIONS} selected={severity} onChange={setSeverity} />
+            <FilterDropdown label="Category" options={CATEGORY_OPTIONS} selected={categories} onChange={setCategories} />
+            <FilterDropdown label="Source" options={SOURCE_OPTIONS} selected={sources} onChange={setSources} />
+            <FilterSegmented label="Window" options={TIME_OPTIONS} value={time} onChange={setTime} />
+            <div className="ml-auto">
+              <FilterToggle label="Needs YOU" active={needsYou} onChange={setNeedsYou} />
+            </div>
+          </div>
+          {anyActive && (
+            <div className="flex flex-wrap items-center gap-1.5 border-t border-border px-6 py-1.5">
+              {needsYou && (
+                <button
+                  type="button"
+                  onClick={() => setNeedsYou(false)}
+                  className="inline-flex items-center gap-1 border border-primary bg-primary/10 px-1.5 py-0.5 text-[11px] text-primary"
+                >
+                  Needs YOU <X className="h-2.5 w-2.5" />
+                </button>
+              )}
+              {chips.map((c) => (
+                <button
+                  key={c.key}
+                  type="button"
+                  onClick={c.remove}
+                  className="inline-flex items-center gap-1 border border-border bg-card px-1.5 py-0.5 text-[11px] text-body transition-colors hover:border-border-strong"
+                >
+                  {c.label} <X className="h-2.5 w-2.5 text-label" />
+                </button>
+              ))}
+              <button type="button" onClick={clearAll} className="ml-auto text-[11px] text-primary hover:underline">
+                Clear all
+              </button>
+            </div>
+          )}
+        </div>
 
-      {/* Queue */}
-      <div className="flex-1 overflow-y-auto avir-scroll p-6">
-        {isLoading ? (
-          <div className="space-y-2">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <Skeleton key={i} className="h-24 w-full" />
-            ))}
-          </div>
-        ) : queue.length === 0 ? (
-          <EmptyState icon={Inbox} headline="No signals in this view">
-            <p>Nothing matches your current filters.</p>
-            <p>Try widening your filters or clearing the &quot;Needs YOU&quot; toggle.</p>
-          </EmptyState>
-        ) : (
-          <div className="space-y-2">
-            <p className="font-mono text-eyebrow uppercase text-label">{queue.length} signals</p>
-            {queue.map((item) => (
-              <TaskCard key={item.task_id} item={item} />
-            ))}
-          </div>
-        )}
+        {/* Queue */}
+        <div className="p-6">
+          {isLoading ? (
+            <div className="space-y-2">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <Skeleton key={i} className="h-24 w-full" />
+              ))}
+            </div>
+          ) : queue.length === 0 ? (
+            <EmptyState icon={Inbox} headline="No signals in this view">
+              <p>Nothing matches your current filters.</p>
+              <p>Try widening your filters or clearing the &quot;Needs YOU&quot; toggle.</p>
+            </EmptyState>
+          ) : (
+            <div className="space-y-2">
+              <p className="font-mono text-eyebrow uppercase text-label">{queue.length} signals</p>
+              {queue.map((item) => (
+                <TaskCard key={item.task_id} item={item} />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -15,17 +15,42 @@ type Props = {
   onSelect: (p: AircraftPosition) => void;
 };
 
-/** Fits the viewport to all plotted aircraft whenever the set changes. */
+/**
+ * Fits the viewport to all plotted aircraft whenever the set changes, and
+ * re-invalidates + re-fits when the map container resizes (e.g. the drawer
+ * opening compresses the canvas).
+ */
 function FitToFleet({ points }: { points: [number, number][] }) {
   const map = useMap();
-  useEffect(() => {
+  const fit = () => {
     if (points.length === 0) return;
     if (points.length === 1) {
       map.setView(points[0]!, 4);
       return;
     }
     map.fitBounds(L.latLngBounds(points), { padding: [48, 48], maxZoom: 5, animate: false });
+  };
+  useEffect(() => {
+    fit();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [points, map]);
+  useEffect(() => {
+    const el = map.getContainer();
+    let raf = 0;
+    const ro = new ResizeObserver(() => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        map.invalidateSize({ animate: false });
+        fit();
+      });
+    });
+    ro.observe(el);
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, points]);
   return null;
 }
 

@@ -9,7 +9,7 @@ import type { Insight } from "@/types/signals";
 /** AI Insights strip tile — real fleet-wide signal pattern; drills into Command Center. */
 export function InsightTile({ insight }: { insight: Insight }) {
   const router = useRouter();
-  const { icon: Icon, label } = categoryMeta(insight.category);
+  const { label } = categoryMeta(insight.category);
   const sev = SIGNAL_SEVERITY[insight.severity] ?? SIGNAL_SEVERITY.info;
 
   function drill() {
@@ -24,15 +24,18 @@ export function InsightTile({ insight }: { insight: Insight }) {
     <button
       type="button"
       onClick={drill}
-      className="border border-border bg-card p-4 text-left transition-colors duration-micro hover:border-border-strong"
-      style={{ borderTop: `2px solid ${sev.hex}` }}
+      className="flex h-[104px] items-stretch border border-border bg-card text-left transition-colors duration-micro hover:bg-surface/60"
     >
-      <div className="flex items-center gap-2">
-        <Icon className="h-3.5 w-3.5 text-label" strokeWidth={1.75} />
-        <span className="font-mono text-eyebrow uppercase text-label">{insight.title}</span>
-      </div>
-      <p className="mt-1.5 text-sm leading-snug text-foreground">{insight.one_liner}</p>
-      <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-hint">{label}</p>
+      {/* severity color bar */}
+      <span className="w-1 shrink-0" style={{ background: sev.hex }} aria-hidden />
+      <span className="flex min-w-0 flex-1 flex-col justify-between px-3 py-2.5">
+        <span className="flex items-center justify-between gap-2">
+          <span className="truncate font-mono text-[10px] uppercase tracking-wider text-label">{label}</span>
+          <span className="severity-dot shrink-0" style={{ backgroundColor: sev.hex }} />
+        </span>
+        <span className="truncate text-sm font-medium text-foreground">{insight.title}</span>
+        <span className="line-clamp-1 text-[13px] leading-snug text-subtext">{insight.one_liner}</span>
+      </span>
     </button>
   );
 }
