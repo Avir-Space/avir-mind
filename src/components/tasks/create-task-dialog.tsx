@@ -1,7 +1,7 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   Dialog,
@@ -39,6 +39,10 @@ export function CreateTaskDialog({
   stationCode,
   linkedTaskId,
   defaultParentType,
+  defaultTitle,
+  defaultWhy,
+  defaultRisk,
+  onCreated,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
@@ -46,6 +50,10 @@ export function CreateTaskDialog({
   stationCode?: string | null;
   linkedTaskId?: string;
   defaultParentType?: string;
+  defaultTitle?: string;
+  defaultWhy?: string;
+  defaultRisk?: string;
+  onCreated?: (taskId: string) => void;
 }) {
   const { orgId } = useAuth();
   const { createTask } = useTaskActions();
@@ -58,6 +66,18 @@ export function CreateTaskDialog({
   const [subType, setSubType] = useState("");
   const [risk, setRisk] = useState("medium");
   const [submitting, setSubmitting] = useState(false);
+
+  // Seed fields from defaults each time the dialog opens (e.g. from a signal).
+  useEffect(() => {
+    if (open) {
+      setTitle(defaultTitle ?? "");
+      setWhy(defaultWhy ?? "");
+      setParentType(defaultParentType ?? "powerplant");
+      setSubType("");
+      setRisk(defaultRisk ?? "medium");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   const subs = catalog?.[parentType] ?? [];
 
@@ -85,6 +105,7 @@ export function CreateTaskDialog({
           dependency_type: "blocks",
         });
       }
+      if (onCreated && newId) onCreated(newId);
       toast({ title: "Task created", description: title.trim() });
       onOpenChange(false);
       setTitle("");

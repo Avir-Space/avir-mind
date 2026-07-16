@@ -312,6 +312,242 @@ export type Database = {
         }
         Relationships: []
       }
+      signal_actions: {
+        Row: {
+          action_payload: Json | null
+          action_type: string
+          actor_user_id: string
+          created_at_utc: string
+          dismissal_reason: string | null
+          id: string
+          org_id: string
+          outcome_task_id: string | null
+          signal_id: string
+        }
+        Insert: {
+          action_payload?: Json | null
+          action_type: string
+          actor_user_id: string
+          created_at_utc?: string
+          dismissal_reason?: string | null
+          id?: string
+          org_id: string
+          outcome_task_id?: string | null
+          signal_id: string
+        }
+        Update: {
+          action_payload?: Json | null
+          action_type?: string
+          actor_user_id?: string
+          created_at_utc?: string
+          dismissal_reason?: string | null
+          id?: string
+          org_id?: string
+          outcome_task_id?: string | null
+          signal_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signal_actions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "signal_actions_outcome_task_id_fkey"
+            columns: ["outcome_task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "signal_actions_signal_id_fkey"
+            columns: ["signal_id"]
+            isOneToOne: false
+            referencedRelation: "signals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      signal_generation_runs: {
+        Row: {
+          aircraft_id: string | null
+          completed_at_utc: string | null
+          duration_ms: number | null
+          error: string | null
+          generation_context_hash: string | null
+          id: string
+          input_tokens: number | null
+          model_used: string | null
+          org_id: string
+          output_tokens: number | null
+          run_type: string | null
+          signals_generated: number | null
+          signals_suppressed: number | null
+          started_at_utc: string
+          status: string | null
+          total_cost_usd: number | null
+          trigger_reference: string | null
+        }
+        Insert: {
+          aircraft_id?: string | null
+          completed_at_utc?: string | null
+          duration_ms?: number | null
+          error?: string | null
+          generation_context_hash?: string | null
+          id?: string
+          input_tokens?: number | null
+          model_used?: string | null
+          org_id: string
+          output_tokens?: number | null
+          run_type?: string | null
+          signals_generated?: number | null
+          signals_suppressed?: number | null
+          started_at_utc?: string
+          status?: string | null
+          total_cost_usd?: number | null
+          trigger_reference?: string | null
+        }
+        Update: {
+          aircraft_id?: string | null
+          completed_at_utc?: string | null
+          duration_ms?: number | null
+          error?: string | null
+          generation_context_hash?: string | null
+          id?: string
+          input_tokens?: number | null
+          model_used?: string | null
+          org_id?: string
+          output_tokens?: number | null
+          run_type?: string | null
+          signals_generated?: number | null
+          signals_suppressed?: number | null
+          started_at_utc?: string
+          status?: string | null
+          total_cost_usd?: number | null
+          trigger_reference?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signal_generation_runs_aircraft_id_fkey"
+            columns: ["aircraft_id"]
+            isOneToOne: false
+            referencedRelation: "aircraft"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "signal_generation_runs_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      signals: {
+        Row: {
+          aircraft_id: string | null
+          category: string
+          confidence: string
+          confidence_reasoning: string
+          created_at_utc: string
+          evidence_refs: Json
+          generated_at_utc: string
+          generated_by_model: string
+          generation_context_hash: string
+          generation_ms: number | null
+          id: string
+          input_tokens: number | null
+          is_active: boolean
+          narrative: string
+          org_id: string
+          output_tokens: number | null
+          recommendation: string | null
+          resolution_note: string | null
+          resolved_at_utc: string | null
+          severity: string
+          suggested_actions: Json | null
+          superseded_by_signal_id: string | null
+          title: string
+          updated_at_utc: string
+        }
+        Insert: {
+          aircraft_id?: string | null
+          category: string
+          confidence: string
+          confidence_reasoning: string
+          created_at_utc?: string
+          evidence_refs?: Json
+          generated_at_utc?: string
+          generated_by_model: string
+          generation_context_hash: string
+          generation_ms?: number | null
+          id?: string
+          input_tokens?: number | null
+          is_active?: boolean
+          narrative: string
+          org_id: string
+          output_tokens?: number | null
+          recommendation?: string | null
+          resolution_note?: string | null
+          resolved_at_utc?: string | null
+          severity: string
+          suggested_actions?: Json | null
+          superseded_by_signal_id?: string | null
+          title: string
+          updated_at_utc?: string
+        }
+        Update: {
+          aircraft_id?: string | null
+          category?: string
+          confidence?: string
+          confidence_reasoning?: string
+          created_at_utc?: string
+          evidence_refs?: Json
+          generated_at_utc?: string
+          generated_by_model?: string
+          generation_context_hash?: string
+          generation_ms?: number | null
+          id?: string
+          input_tokens?: number | null
+          is_active?: boolean
+          narrative?: string
+          org_id?: string
+          output_tokens?: number | null
+          recommendation?: string | null
+          resolution_note?: string | null
+          resolved_at_utc?: string | null
+          severity?: string
+          suggested_actions?: Json | null
+          superseded_by_signal_id?: string | null
+          title?: string
+          updated_at_utc?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signals_aircraft_id_fkey"
+            columns: ["aircraft_id"]
+            isOneToOne: false
+            referencedRelation: "aircraft"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "signals_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "signals_superseded_by_signal_id_fkey"
+            columns: ["superseded_by_signal_id"]
+            isOneToOne: false
+            referencedRelation: "signals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       task_acknowledgements: {
         Row: {
           acknowledged_at_utc: string
@@ -705,6 +941,16 @@ export type Database = {
     }
     Functions: {
       acknowledge_task: { Args: { p_task_id: string }; Returns: undefined }
+      act_on_signal: {
+        Args: {
+          p_action_payload?: Json
+          p_action_type: string
+          p_dismissal_reason?: string
+          p_outcome_task_id?: string
+          p_signal_id: string
+        }
+        Returns: string
+      }
       assign_task: {
         Args: { p_assignee_user_id: string; p_task_id: string }
         Returns: undefined
@@ -738,6 +984,18 @@ export type Database = {
         Returns: string
       }
       current_user_org_ids: { Args: never; Returns: string[] }
+      generate_signals_for_aircraft: {
+        Args: {
+          p_aircraft_id: string
+          p_force_regenerate?: boolean
+          p_run_type?: string
+        }
+        Returns: Json
+      }
+      get_command_center_insights: {
+        Args: { p_limit?: number; p_severity?: string[] }
+        Returns: Json
+      }
       get_command_center_queue: {
         Args: {
           p_assigned_to_me?: boolean
@@ -760,6 +1018,10 @@ export type Database = {
         }
         Returns: Json
       }
+      get_signals_for_aircraft: {
+        Args: { p_aircraft_id: string; p_include_resolved?: boolean }
+        Returns: Json
+      }
       get_task_detail: { Args: { p_task_id: string }; Returns: Json }
       is_org_member: { Args: { p_org: string }; Returns: boolean }
       log_work: {
@@ -776,6 +1038,11 @@ export type Database = {
         Returns: undefined
       }
       seed_avir_demo: { Args: { p_user_id: string }; Returns: string }
+      seed_demo_tasks: {
+        Args: { p_org_id: string; p_user_id: string }
+        Returns: number
+      }
+      signal_context_hash: { Args: { p_aircraft_id: string }; Returns: string }
       task_severity: {
         Args: { p_aog: boolean; p_blocking: boolean; p_risk: string }
         Returns: string

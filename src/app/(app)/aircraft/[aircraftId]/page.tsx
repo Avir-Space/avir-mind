@@ -19,7 +19,7 @@ import {
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
-import { AircraftSignalsTab } from "@/components/tasks/aircraft-signals-tab";
+import { AircraftSignalsTab } from "@/components/signals/aircraft-signals-tab";
 import { Button } from "@/components/ui/button";
 import { ConfidenceBadge } from "@/components/avir/confidence-badge";
 import { LastUpdated } from "@/components/avir/last-updated";

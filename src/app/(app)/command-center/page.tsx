@@ -1,11 +1,14 @@
 "use client";
 
-import { Inbox } from "lucide-react";
-import { useState } from "react";
+import { Inbox, Sparkles } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
 
 import { EmptyState } from "@/components/avir/empty-state";
 import { LastUpdated } from "@/components/avir/last-updated";
 import { PageHeader } from "@/components/avir/page-header";
+import { FleetSignalRefresh } from "@/components/signals/fleet-signal-refresh";
+import { InsightTile } from "@/components/signals/insight-tile";
 import { TaskCard } from "@/components/tasks/task-card";
 import {
   FilterChipGroup,
@@ -17,8 +20,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { SEVERITY_CONFIG } from "@/lib/design/state";
 import { CATEGORY_CONFIG, SOURCE_SYSTEM_CONFIG } from "@/lib/design/tasks";
 import { useCommandCenter, type CommandCenterFilters } from "@/lib/queries/use-command-center";
+import { useSignalInsights } from "@/lib/queries/use-signal-insights";
+import { useSignalActions } from "@/lib/mutations/use-signal-actions";
 import { useTaskRealtime } from "@/lib/realtime/use-task-realtime";
+import { useSignalRealtime } from "@/lib/realtime/use-signal-realtime";
 import { useAuth } from "@/lib/providers/auth-provider";
+import { createClient } from "@/lib/supabase/client";
 
 const SEVERITY_OPTIONS = (["critical", "high", "medium", "low", "info"] as const).map((k) => ({
   value: k,
@@ -44,11 +51,27 @@ function StatTile({ label, value, tone }: { label: string; value: number; tone?:
 }
 
 export default function CommandCenterPage() {
+  return (
+    <Suspense fallback={null}>
+      <CommandCenter />
+    </Suspense>
+  );
+}
+
+function CommandCenter() {
   const { orgId } = useAuth();
   useTaskRealtime(orgId);
+  useSignalRealtime(orgId);
+  const { generate } = useSignalActions();
+  const params = useSearchParams();
 
-  const [severity, setSeverity] = useState<string[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
+  // Drill-in from an insight tile seeds the initial filters.
+  const [severity, setSeverity] = useState<string[]>(
+    params.get("severity") ? params.get("severity")!.split(",") : [],
+  );
+  const [categories, setCategories] = useState<string[]>(
+    params.get("category") ? [params.get("category")!] : [],
+  );
   const [sources, setSources] = useState<string[]>([]);
   const [time, setTime] = useState("");
   const [needsYou, setNeedsYou] = useState(false);
@@ -61,8 +84,35 @@ export default function CommandCenterPage() {
     assignedToMe: needsYou,
   };
   const { data, isLoading, dataUpdatedAt } = useCommandCenter(filters);
+  const { data: insights } = useSignalInsights();
   const stats = data?.stats;
   const queue = data?.queue ?? [];
+
+  // First-login: generate signals for up to 6 aircraft when the org has none.
+  const seeded = useRef(false);
+  useEffect(() => {
+    if (!orgId || seeded.current) return;
+    const key = `avir_sig_seed_${orgId}`;
+    if (typeof window !== "undefined" && sessionStorage.getItem(key)) return;
+    seeded.current = true;
+    (async () => {
+      const supabase = createClient();
+      const { count } = await supabase
+        .from("signals")
+        .select("id", { count: "exact", head: true })
+        .eq("org_id", orgId);
+      if ((count ?? 0) > 0) return;
+      if (typeof window !== "undefined") sessionStorage.setItem(key, "1");
+      const { data: acs } = await supabase.from("aircraft").select("id").eq("org_id", orgId).limit(6);
+      for (const a of acs ?? []) {
+        try {
+          await generate(a.id as string, { force: false, runType: "scheduled" });
+        } catch {
+          // graceful — failures are recorded server-side
+        }
+      }
+    })();
+  }, [orgId, generate]);
 
   return (
     <div className="flex h-full flex-col">
@@ -71,10 +121,11 @@ export default function CommandCenterPage() {
         title="Command Center"
         subtitle="Everything that needs attention, in one place."
         meta={<LastUpdated at={dataUpdatedAt} />}
+        actions={<FleetSignalRefresh orgId={orgId} />}
       />
 
       {/* Stats strip */}
-      <div className="grid grid-cols-2 gap-3 px-6 py-5 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 px-6 pt-5 lg:grid-cols-4">
         {isLoading || !stats ? (
           [0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[76px]" />)
         ) : (
@@ -84,6 +135,25 @@ export default function CommandCenterPage() {
             <StatTile label="AOG Aircraft" value={stats.aog_aircraft} tone="text-severity-critical" />
             <StatTile label="Team Load" value={stats.team_load} />
           </>
+        )}
+      </div>
+
+      {/* AI Insights strip — real fleet-wide signal patterns */}
+      <div className="px-6 py-5">
+        <p className="eyebrow mb-2 inline-flex items-center gap-1.5">
+          <Sparkles className="h-3 w-3 text-primary" /> AI Insights
+        </p>
+        {insights && insights.length > 0 ? (
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {insights.map((ins, i) => (
+              <InsightTile key={i} insight={ins} />
+            ))}
+          </div>
+        ) : (
+          <div className="border border-dashed border-border px-4 py-3 text-sm text-hint">
+            No AI insights yet — signals are generated per aircraft. Use{" "}
+            <span className="text-body">Refresh AI Signals</span> to analyze the fleet.
+          </div>
         )}
       </div>
 
