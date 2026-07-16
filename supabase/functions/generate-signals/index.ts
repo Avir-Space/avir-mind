@@ -11,12 +11,14 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import Anthropic from "npm:@anthropic-ai/sdk@0.68.0";
 
-// Model is a single constant — bump to "claude-opus-4-8" for the current
-// most-capable Opus (the spec named 4-6).
-const MODEL = "claude-opus-4-6";
-const MAX_TOKENS = 4000;
-const TEMPERATURE = 0.2;
-// Opus 4.6 pricing (USD per 1M tokens).
+// Current most-capable Opus (upgraded from the spec's 4-6). Note: Opus 4.8
+// rejects the `temperature` param (400), so we omit it — the model is already
+// low-variance for structured JSON extraction, and thinking is off by default.
+const MODEL = "claude-opus-4-8";
+// 3500 fits 2-5 signals with headroom; extractJson also salvages complete
+// signals from a truncated response so a rare cutoff never fails the whole run.
+const MAX_TOKENS = 3500;
+// Opus 4.8 pricing (USD per 1M tokens): $5 in / $25 out.
 const PRICE_IN = 5.0;
 const PRICE_OUT = 25.0;
 
@@ -84,14 +86,52 @@ function extractJson(text: string): { signals: SignalOut[] } {
   // Strip markdown fences if the model added them despite instructions.
   const fence = t.match(/```(?:json)?\s*([\s\S]*?)```/);
   if (fence) t = fence[1].trim();
-  // Fall back to first {...last }.
   if (!t.startsWith("{")) {
     const a = t.indexOf("{");
     const b = t.lastIndexOf("}");
     if (a >= 0 && b > a) t = t.slice(a, b + 1);
   }
-  const parsed = JSON.parse(t);
-  return { signals: Array.isArray(parsed?.signals) ? parsed.signals : [] };
+  try {
+    const parsed = JSON.parse(t);
+    return { signals: Array.isArray(parsed?.signals) ? parsed.signals : [] };
+  } catch {
+    // Truncated / malformed — salvage every complete signal object.
+    return { signals: salvageSignals(text) };
+  }
+}
+
+/** Recover complete {...} objects from the signals array of a truncated JSON. */
+function salvageSignals(text: string): SignalOut[] {
+  const i = text.indexOf('"signals"');
+  const arrStart = i >= 0 ? text.indexOf("[", i) : -1;
+  if (arrStart < 0) return [];
+  const out: SignalOut[] = [];
+  let depth = 0, objStart = -1, inStr = false, esc = false;
+  for (let k = arrStart + 1; k < text.length; k++) {
+    const ch = text[k];
+    if (inStr) {
+      if (esc) esc = false;
+      else if (ch === "\\") esc = true;
+      else if (ch === '"') inStr = false;
+      continue;
+    }
+    if (ch === '"') inStr = true;
+    else if (ch === "{") {
+      if (depth === 0) objStart = k;
+      depth++;
+    } else if (ch === "}") {
+      depth--;
+      if (depth === 0 && objStart >= 0) {
+        try {
+          out.push(JSON.parse(text.slice(objStart, k + 1)));
+        } catch {
+          // drop the incomplete trailing object
+        }
+        objStart = -1;
+      }
+    } else if (ch === "]" && depth === 0) break;
+  }
+  return out;
 }
 
 // A signal is grounded if it has >=1 primary evidence ref — except
@@ -161,14 +201,14 @@ Deno.serve(async (req: Request) => {
         .select("id, title, why_summary, parent_type, sub_type, status, risk_band, dispatch_blocking, aog, station_code, facility, due_at_utc, created_at_utc, task_sources(source_system, source_reference_id)")
         .eq("aircraft_id", aircraft_id)
         .order("created_at_utc", { ascending: false })
-        .limit(30),
+        .limit(20),
       admin
         .from("signals")
         .select("title, severity, resolution_note, resolved_at_utc")
         .eq("aircraft_id", aircraft_id)
         .not("resolved_at_utc", "is", null)
         .gte("resolved_at_utc", new Date(Date.now() - 7 * 864e5).toISOString())
-        .limit(20),
+        .limit(8),
     ]);
 
     const taskIds = (tasks ?? []).map((t: { id: string }) => t.id);
@@ -179,7 +219,7 @@ Deno.serve(async (req: Request) => {
         .select("task_id, event_type, body, event_payload, created_at_utc")
         .in("task_id", taskIds)
         .order("created_at_utc", { ascending: false })
-        .limit(100);
+        .limit(50);
       events = ev ?? [];
     }
 
@@ -200,7 +240,6 @@ Deno.serve(async (req: Request) => {
     const msg = await anthropic.messages.create({
       model: MODEL,
       max_tokens: MAX_TOKENS,
-      temperature: TEMPERATURE,
       system: SYSTEM_PROMPT,
       messages: [
         {
