@@ -7,6 +7,7 @@ import {
   Cpu,
   DollarSign,
   Gauge,
+  ListChecks,
   type LucideIcon,
   Package,
   Plane,
@@ -18,6 +19,8 @@ import {
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
+import { AircraftSignalsTab } from "@/components/tasks/aircraft-signals-tab";
+import { Button } from "@/components/ui/button";
 import { ConfidenceBadge } from "@/components/avir/confidence-badge";
 import { LastUpdated } from "@/components/avir/last-updated";
 import { MonoText } from "@/components/avir/mono-text";
@@ -159,6 +162,11 @@ export default function AircraftProfilePage() {
                   {data.ownership_type}
                 </Badge>
               )}
+              <Button asChild size="sm" variant="outline" className="ml-auto">
+                <Link href={`/aircraft/${data.id}/tasks`}>
+                  <ListChecks className="h-3.5 w-3.5" /> Task Board
+                </Link>
+              </Button>
             </div>
 
             {/* Data-trust strip */}
@@ -222,13 +230,17 @@ export default function AircraftProfilePage() {
               const Icon = t.icon;
               return (
                 <TabsContent key={t.value} value={t.value}>
-                  <div className="flex min-h-[40vh] flex-col items-center justify-center px-6 py-16 text-center">
-                    <div className="mb-5 flex h-14 w-14 items-center justify-center border border-border bg-surface/40">
-                      <Icon className="h-6 w-6 text-label" strokeWidth={1.5} />
+                  {t.value === "signals" ? (
+                    <AircraftSignalsTab aircraftId={data.id} />
+                  ) : (
+                    <div className="flex min-h-[40vh] flex-col items-center justify-center px-6 py-16 text-center">
+                      <div className="mb-5 flex h-14 w-14 items-center justify-center border border-border bg-surface/40">
+                        <Icon className="h-6 w-6 text-label" strokeWidth={1.5} />
+                      </div>
+                      <h2 className="font-serif text-xl text-foreground">{t.headline}</h2>
+                      <p className="mt-2 max-w-md text-sm leading-relaxed text-subtext">{t.text}</p>
                     </div>
-                    <h2 className="font-serif text-xl text-foreground">{t.headline}</h2>
-                    <p className="mt-2 max-w-md text-sm leading-relaxed text-subtext">{t.text}</p>
-                  </div>
+                  )}
                 </TabsContent>
               );
             })}
