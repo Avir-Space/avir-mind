@@ -222,6 +222,267 @@ export type Database = {
           },
         ]
       }
+      component_events: {
+        Row: {
+          aircraft_id: string | null
+          component_id: string
+          cost_usd: number | null
+          created_at_utc: string
+          cycles_at_event: number | null
+          documentation_reference: string | null
+          event_date_utc: string
+          event_payload: Json | null
+          event_type: string
+          facility: string | null
+          finding_description: string | null
+          finding_severity: string | null
+          flight_hours_at_event: number | null
+          id: string
+          linked_signal_id: string | null
+          linked_task_id: string | null
+          org_id: string
+          performed_by: string | null
+          source_reference_id: string | null
+          source_system: string
+          station: string | null
+        }
+        Insert: {
+          aircraft_id?: string | null
+          component_id: string
+          cost_usd?: number | null
+          created_at_utc?: string
+          cycles_at_event?: number | null
+          documentation_reference?: string | null
+          event_date_utc: string
+          event_payload?: Json | null
+          event_type: string
+          facility?: string | null
+          finding_description?: string | null
+          finding_severity?: string | null
+          flight_hours_at_event?: number | null
+          id?: string
+          linked_signal_id?: string | null
+          linked_task_id?: string | null
+          org_id: string
+          performed_by?: string | null
+          source_reference_id?: string | null
+          source_system?: string
+          station?: string | null
+        }
+        Update: {
+          aircraft_id?: string | null
+          component_id?: string
+          cost_usd?: number | null
+          created_at_utc?: string
+          cycles_at_event?: number | null
+          documentation_reference?: string | null
+          event_date_utc?: string
+          event_payload?: Json | null
+          event_type?: string
+          facility?: string | null
+          finding_description?: string | null
+          finding_severity?: string | null
+          flight_hours_at_event?: number | null
+          id?: string
+          linked_signal_id?: string | null
+          linked_task_id?: string | null
+          org_id?: string
+          performed_by?: string | null
+          source_reference_id?: string | null
+          source_system?: string
+          station?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "component_events_aircraft_id_fkey"
+            columns: ["aircraft_id"]
+            isOneToOne: false
+            referencedRelation: "aircraft"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "component_events_component_id_fkey"
+            columns: ["component_id"]
+            isOneToOne: false
+            referencedRelation: "components"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "component_events_linked_signal_id_fkey"
+            columns: ["linked_signal_id"]
+            isOneToOne: false
+            referencedRelation: "signals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "component_events_linked_task_id_fkey"
+            columns: ["linked_task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "component_events_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      component_health_history: {
+        Row: {
+          component_id: string
+          computed_at_utc: string
+          health_score: number
+          id: string
+          org_id: string
+          score_contributors: Json | null
+        }
+        Insert: {
+          component_id: string
+          computed_at_utc?: string
+          health_score: number
+          id?: string
+          org_id: string
+          score_contributors?: Json | null
+        }
+        Update: {
+          component_id?: string
+          computed_at_utc?: string
+          health_score?: number
+          id?: string
+          org_id?: string
+          score_contributors?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "component_health_history_component_id_fkey"
+            columns: ["component_id"]
+            isOneToOne: false
+            referencedRelation: "components"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "component_health_history_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      components: {
+        Row: {
+          aircraft_id: string | null
+          component_type: string
+          created_at_utc: string
+          current_cycles: number | null
+          current_flight_hours: number | null
+          cycles_since_new: number | null
+          cycles_since_overhaul: number | null
+          flight_hours_since_new: number | null
+          flight_hours_since_overhaul: number | null
+          health_score: number | null
+          health_score_updated_at_utc: string | null
+          id: string
+          installed_at_utc: string | null
+          limit_cycles: number | null
+          limit_flight_hours: number | null
+          manufacturer: string | null
+          next_scheduled_event_due_cycles: number | null
+          next_scheduled_event_due_date: string | null
+          next_scheduled_event_due_hours: number | null
+          next_scheduled_event_type: string | null
+          org_id: string
+          overhaul_interval_cycles: number | null
+          overhaul_interval_hours: number | null
+          part_number: string
+          position_code: string | null
+          removed_at_utc: string | null
+          serial_number: string
+          status: string
+          updated_at_utc: string
+        }
+        Insert: {
+          aircraft_id?: string | null
+          component_type: string
+          created_at_utc?: string
+          current_cycles?: number | null
+          current_flight_hours?: number | null
+          cycles_since_new?: number | null
+          cycles_since_overhaul?: number | null
+          flight_hours_since_new?: number | null
+          flight_hours_since_overhaul?: number | null
+          health_score?: number | null
+          health_score_updated_at_utc?: string | null
+          id?: string
+          installed_at_utc?: string | null
+          limit_cycles?: number | null
+          limit_flight_hours?: number | null
+          manufacturer?: string | null
+          next_scheduled_event_due_cycles?: number | null
+          next_scheduled_event_due_date?: string | null
+          next_scheduled_event_due_hours?: number | null
+          next_scheduled_event_type?: string | null
+          org_id: string
+          overhaul_interval_cycles?: number | null
+          overhaul_interval_hours?: number | null
+          part_number: string
+          position_code?: string | null
+          removed_at_utc?: string | null
+          serial_number: string
+          status?: string
+          updated_at_utc?: string
+        }
+        Update: {
+          aircraft_id?: string | null
+          component_type?: string
+          created_at_utc?: string
+          current_cycles?: number | null
+          current_flight_hours?: number | null
+          cycles_since_new?: number | null
+          cycles_since_overhaul?: number | null
+          flight_hours_since_new?: number | null
+          flight_hours_since_overhaul?: number | null
+          health_score?: number | null
+          health_score_updated_at_utc?: string | null
+          id?: string
+          installed_at_utc?: string | null
+          limit_cycles?: number | null
+          limit_flight_hours?: number | null
+          manufacturer?: string | null
+          next_scheduled_event_due_cycles?: number | null
+          next_scheduled_event_due_date?: string | null
+          next_scheduled_event_due_hours?: number | null
+          next_scheduled_event_type?: string | null
+          org_id?: string
+          overhaul_interval_cycles?: number | null
+          overhaul_interval_hours?: number | null
+          part_number?: string
+          position_code?: string | null
+          removed_at_utc?: string | null
+          serial_number?: string
+          status?: string
+          updated_at_utc?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "components_aircraft_id_fkey"
+            columns: ["aircraft_id"]
+            isOneToOne: false
+            referencedRelation: "aircraft"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "components_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fleet_aircraft: {
         Row: {
           aircraft_id: string
@@ -462,6 +723,7 @@ export type Database = {
         Row: {
           aircraft_id: string | null
           completed_at_utc: string | null
+          component_id: string | null
           duration_ms: number | null
           error: string | null
           generation_context_hash: string | null
@@ -470,6 +732,7 @@ export type Database = {
           model_used: string | null
           org_id: string
           output_tokens: number | null
+          run_kind: string
           run_type: string | null
           signals_generated: number | null
           signals_suppressed: number | null
@@ -481,6 +744,7 @@ export type Database = {
         Insert: {
           aircraft_id?: string | null
           completed_at_utc?: string | null
+          component_id?: string | null
           duration_ms?: number | null
           error?: string | null
           generation_context_hash?: string | null
@@ -489,6 +753,7 @@ export type Database = {
           model_used?: string | null
           org_id: string
           output_tokens?: number | null
+          run_kind?: string
           run_type?: string | null
           signals_generated?: number | null
           signals_suppressed?: number | null
@@ -500,6 +765,7 @@ export type Database = {
         Update: {
           aircraft_id?: string | null
           completed_at_utc?: string | null
+          component_id?: string | null
           duration_ms?: number | null
           error?: string | null
           generation_context_hash?: string | null
@@ -508,6 +774,7 @@ export type Database = {
           model_used?: string | null
           org_id?: string
           output_tokens?: number | null
+          run_kind?: string
           run_type?: string | null
           signals_generated?: number | null
           signals_suppressed?: number | null
@@ -525,6 +792,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "signal_generation_runs_component_id_fkey"
+            columns: ["component_id"]
+            isOneToOne: false
+            referencedRelation: "components"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "signal_generation_runs_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
@@ -535,8 +809,12 @@ export type Database = {
       }
       signals: {
         Row: {
+          accuracy_measured_at_utc: string | null
+          accuracy_notes: string | null
+          accuracy_result: string
           aircraft_id: string | null
           category: string
+          component_id: string | null
           confidence: string
           confidence_reasoning: string
           created_at_utc: string
@@ -545,24 +823,32 @@ export type Database = {
           generated_by_model: string
           generation_context_hash: string
           generation_ms: number | null
+          historical_baseline: Json | null
           id: string
           input_tokens: number | null
           is_active: boolean
           narrative: string
           org_id: string
           output_tokens: number | null
+          predicted_event_type: string | null
+          prediction_horizon: Json | null
           recommendation: string | null
           resolution_note: string | null
           resolved_at_utc: string | null
           severity: string
+          signal_class: string
           suggested_actions: Json | null
           superseded_by_signal_id: string | null
           title: string
           updated_at_utc: string
         }
         Insert: {
+          accuracy_measured_at_utc?: string | null
+          accuracy_notes?: string | null
+          accuracy_result?: string
           aircraft_id?: string | null
           category: string
+          component_id?: string | null
           confidence: string
           confidence_reasoning: string
           created_at_utc?: string
@@ -571,24 +857,32 @@ export type Database = {
           generated_by_model: string
           generation_context_hash: string
           generation_ms?: number | null
+          historical_baseline?: Json | null
           id?: string
           input_tokens?: number | null
           is_active?: boolean
           narrative: string
           org_id: string
           output_tokens?: number | null
+          predicted_event_type?: string | null
+          prediction_horizon?: Json | null
           recommendation?: string | null
           resolution_note?: string | null
           resolved_at_utc?: string | null
           severity: string
+          signal_class?: string
           suggested_actions?: Json | null
           superseded_by_signal_id?: string | null
           title: string
           updated_at_utc?: string
         }
         Update: {
+          accuracy_measured_at_utc?: string | null
+          accuracy_notes?: string | null
+          accuracy_result?: string
           aircraft_id?: string | null
           category?: string
+          component_id?: string | null
           confidence?: string
           confidence_reasoning?: string
           created_at_utc?: string
@@ -597,16 +891,20 @@ export type Database = {
           generated_by_model?: string
           generation_context_hash?: string
           generation_ms?: number | null
+          historical_baseline?: Json | null
           id?: string
           input_tokens?: number | null
           is_active?: boolean
           narrative?: string
           org_id?: string
           output_tokens?: number | null
+          predicted_event_type?: string | null
+          prediction_horizon?: Json | null
           recommendation?: string | null
           resolution_note?: string | null
           resolved_at_utc?: string | null
           severity?: string
+          signal_class?: string
           suggested_actions?: Json | null
           superseded_by_signal_id?: string | null
           title?: string
@@ -618,6 +916,13 @@ export type Database = {
             columns: ["aircraft_id"]
             isOneToOne: false
             referencedRelation: "aircraft"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "signals_component_id_fkey"
+            columns: ["component_id"]
+            isOneToOne: false
+            referencedRelation: "components"
             referencedColumns: ["id"]
           },
           {
@@ -1043,6 +1348,23 @@ export type Database = {
         Args: { p_assignee_user_id: string; p_task_id: string }
         Returns: undefined
       }
+      compute_component_health: {
+        Args: { p_component_id: string }
+        Returns: number
+      }
+      create_component: {
+        Args: {
+          p_aircraft_id: string
+          p_attrs?: Json
+          p_component_type: string
+          p_manufacturer?: string
+          p_part_number: string
+          p_position_code?: string
+          p_serial_number: string
+          p_status?: string
+        }
+        Returns: string
+      }
       create_task: {
         Args: {
           p_aircraft_id: string
@@ -1072,6 +1394,22 @@ export type Database = {
         Returns: string
       }
       current_user_org_ids: { Args: never; Returns: string[] }
+      generate_predictive_signals_for_aircraft: {
+        Args: {
+          p_aircraft_id: string
+          p_force_regenerate?: boolean
+          p_run_type?: string
+        }
+        Returns: Json
+      }
+      generate_predictive_signals_for_component: {
+        Args: {
+          p_component_id: string
+          p_force_regenerate?: boolean
+          p_run_type?: string
+        }
+        Returns: Json
+      }
       generate_signals_for_aircraft: {
         Args: {
           p_aircraft_id: string
@@ -1103,6 +1441,11 @@ export type Database = {
         Args: { p_fleet_id?: string; p_time_window_hours?: number }
         Returns: Json
       }
+      get_component_detail: { Args: { p_component_id: string }; Returns: Json }
+      get_components_for_aircraft: {
+        Args: { p_aircraft_id: string }
+        Returns: Json
+      }
       get_fleet_board: {
         Args: {
           p_aircraft_types?: string[]
@@ -1112,6 +1455,10 @@ export type Database = {
           p_search?: string
           p_station_codes?: string[]
         }
+        Returns: Json
+      }
+      get_predictive_signals_summary: {
+        Args: { p_fleet_id?: string }
         Returns: Json
       }
       get_signals_for_aircraft: {
@@ -1137,7 +1484,24 @@ export type Database = {
         Args: { p_new_rank?: number; p_new_status: string; p_task_id: string }
         Returns: undefined
       }
+      predictive_context_hash: {
+        Args: { p_aircraft_id: string }
+        Returns: string
+      }
+      record_component_event: {
+        Args: {
+          p_attrs?: Json
+          p_component_id: string
+          p_event_date: string
+          p_event_type: string
+        }
+        Returns: string
+      }
       seed_avir_demo: { Args: { p_user_id: string }; Returns: string }
+      seed_demo_components: {
+        Args: { p_org_id: string; p_user_id: string }
+        Returns: number
+      }
       seed_demo_flight_schedules: {
         Args: { p_org_id: string; p_user_id: string }
         Returns: number
