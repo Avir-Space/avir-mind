@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       aircraft: {
@@ -255,6 +280,69 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "fleets_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flight_schedules: {
+        Row: {
+          aircraft_id: string
+          created_at_utc: string
+          delay_minutes: number
+          destination_station: string
+          flight_number: string | null
+          id: string
+          org_id: string
+          origin_station: string
+          scheduled_arrival_utc: string
+          scheduled_departure_utc: string
+          source_system: string
+          status: string
+          updated_at_utc: string
+        }
+        Insert: {
+          aircraft_id: string
+          created_at_utc?: string
+          delay_minutes?: number
+          destination_station: string
+          flight_number?: string | null
+          id?: string
+          org_id: string
+          origin_station: string
+          scheduled_arrival_utc: string
+          scheduled_departure_utc: string
+          source_system?: string
+          status?: string
+          updated_at_utc?: string
+        }
+        Update: {
+          aircraft_id?: string
+          created_at_utc?: string
+          delay_minutes?: number
+          destination_station?: string
+          flight_number?: string | null
+          id?: string
+          org_id?: string
+          origin_station?: string
+          scheduled_arrival_utc?: string
+          scheduled_departure_utc?: string
+          source_system?: string
+          status?: string
+          updated_at_utc?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flight_schedules_aircraft_id_fkey"
+            columns: ["aircraft_id"]
+            isOneToOne: false
+            referencedRelation: "aircraft"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flight_schedules_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
@@ -992,6 +1080,10 @@ export type Database = {
         }
         Returns: Json
       }
+      get_aircraft_drawer_summary: {
+        Args: { p_aircraft_id: string }
+        Returns: Json
+      }
       get_command_center_insights: {
         Args: { p_limit?: number; p_severity?: string[] }
         Returns: Json
@@ -1005,6 +1097,10 @@ export type Database = {
           p_source_systems?: string[]
           p_time_window_hours?: number
         }
+        Returns: Json
+      }
+      get_command_center_snapshot: {
+        Args: { p_fleet_id?: string; p_time_window_hours?: number }
         Returns: Json
       }
       get_fleet_board: {
@@ -1038,6 +1134,10 @@ export type Database = {
         Returns: undefined
       }
       seed_avir_demo: { Args: { p_user_id: string }; Returns: string }
+      seed_demo_flight_schedules: {
+        Args: { p_org_id: string; p_user_id: string }
+        Returns: number
+      }
       seed_demo_tasks: {
         Args: { p_org_id: string; p_user_id: string }
         Returns: number
@@ -1175,6 +1275,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },
