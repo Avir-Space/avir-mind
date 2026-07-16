@@ -1118,6 +1118,10 @@ export type Database = {
         Args: { p_aircraft_id: string; p_include_resolved?: boolean }
         Returns: Json
       }
+      get_station_drawer_summary: {
+        Args: { p_fleet_id?: string; p_station_code: string }
+        Returns: Json
+      }
       get_task_detail: { Args: { p_task_id: string }; Returns: Json }
       is_org_member: { Args: { p_org: string }; Returns: boolean }
       log_work: {
