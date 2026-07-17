@@ -54,6 +54,7 @@ export function OpsTimeline({
   predictiveEvents,
   windowHours,
   now,
+  crewStatus,
   onEventClick,
   onPredictionClick,
 }: {
@@ -62,9 +63,12 @@ export function OpsTimeline({
   predictiveEvents: PredictiveEvent[];
   windowHours: number;
   now: number;
+  crewStatus?: Map<string, string>;
   onEventClick: (e: TimelineEvent) => void;
   onPredictionClick: (p: PredictiveEvent) => void;
 }) {
+  const crewHex = (s: string | undefined) =>
+    s === "assigned" ? "#16A34A" : s === "violation" ? "#DC2626" : s === "unassigned" ? "#EA580C" : "#6B7280";
   const [groupByStation, setGroupByStation] = useState(false);
 
   const predsBy = useMemo(() => {
@@ -211,6 +215,9 @@ export function OpsTimeline({
         <div className="sticky left-0 z-20 flex w-32 shrink-0 items-center gap-2 border-r border-border bg-page px-2">
           <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: meta.hex }} />
           <span className="truncate font-mono text-[11px] text-foreground">{row.tail}</span>
+          {crewStatus && crewStatus.get(row.aircraftId) && crewStatus.get(row.aircraftId) !== "none" && (
+            <span className="ml-auto h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: crewHex(crewStatus.get(row.aircraftId)) }} title={`crew: ${crewStatus.get(row.aircraftId)}`} />
+          )}
         </div>
         <Track row={row} />
       </div>

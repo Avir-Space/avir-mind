@@ -9,10 +9,12 @@ import type { StationRollup } from "@/types/command-center";
 export function StationStrip({
   rollups,
   selected,
+  crewByStation,
   onSelect,
 }: {
   rollups: StationRollup[];
   selected: string | null;
+  crewByStation?: Map<string, number>;
   onSelect: (station: string | null) => void;
 }) {
   const scroller = useRef<HTMLDivElement>(null);
@@ -110,7 +112,10 @@ export function StationStrip({
                   {r.aircraft_on_ground}g · {r.aircraft_inbound}in
                 </span>
               </div>
-              <div className="mt-1.5 font-mono text-[10px] uppercase tracking-wider text-hint">Weather: —</div>
+              <div className="mt-1.5 flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-hint">
+                <span>Weather: —</span>
+                {crewByStation && <span className="text-primary">· {crewByStation.get(r.station_code) ?? 0} crew</span>}
+              </div>
               <div className="mt-2 flex items-center gap-2">
                 <span className={cn("inline-flex items-center gap-1 font-mono text-[10px]", hasSignals ? "text-severity-high" : "text-hint")}>
                   <span className={cn("severity-dot", hasSignals ? "bg-severity-high" : "bg-border-strong")} />

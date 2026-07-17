@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { TIME_WINDOWS, type TimeWindowValue } from "@/lib/design/command-center";
 import { useCommandCenterSnapshot } from "@/lib/queries/use-command-center-snapshot";
+import { useCrewOverlay } from "@/lib/queries/use-crew";
 import { useFleets } from "@/lib/queries/use-fleets";
 import { useTaskRealtime } from "@/lib/realtime/use-task-realtime";
 import { useSignalRealtime } from "@/lib/realtime/use-signal-realtime";
@@ -34,12 +35,16 @@ export function CommandCenterCanvas() {
   const [station, setStation] = useState<string | null>(null);
   const [drawer, setDrawer] = useState<DrawerTarget>(null);
   const [pinned, setPinned] = useState(false);
+  const [crewOn, setCrewOn] = useState(false);
 
   const hours = TIME_WINDOWS.find((w) => w.value === win)?.hours ?? 12;
   const { data: snapshot, isLoading } = useCommandCenterSnapshot(
     fleetId === "all" ? null : fleetId,
     hours,
   );
+  const { data: crewOverlay } = useCrewOverlay(fleetId === "all" ? null : fleetId, crewOn);
+  const crewStatus = new Map((crewOverlay?.aircraft ?? []).map((a) => [a.aircraft_id, a.crew_status]));
+  const crewByStation = new Map((crewOverlay?.stations ?? []).map((s) => [s.station_code, s.crew_available]));
 
   const allPositions = snapshot?.aircraft_positions ?? [];
   const positions = station ? allPositions.filter((p) => p.station === station) : allPositions;
@@ -87,20 +92,30 @@ export function CommandCenterCanvas() {
               </SelectContent>
             </Select>
           </div>
-          <div className="inline-flex border border-border">
-            {TIME_WINDOWS.map((w) => (
-              <button
-                key={w.value}
-                type="button"
-                onClick={() => setWin(w.value)}
-                className={cn(
-                  "border-r border-border px-2.5 py-1 text-xs transition-colors last:border-r-0",
-                  win === w.value ? "bg-primary text-primary-foreground" : "text-subtext hover:text-foreground",
-                )}
-              >
-                {w.label}
-              </button>
-            ))}
+          <div className="flex items-center gap-2">
+            <div className="inline-flex border border-border">
+              {TIME_WINDOWS.map((w) => (
+                <button
+                  key={w.value}
+                  type="button"
+                  onClick={() => setWin(w.value)}
+                  className={cn(
+                    "border-r border-border px-2.5 py-1 text-xs transition-colors last:border-r-0",
+                    win === w.value ? "bg-primary text-primary-foreground" : "text-subtext hover:text-foreground",
+                  )}
+                >
+                  {w.label}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => setCrewOn((v) => !v)}
+              className={cn("border px-2.5 py-1 text-xs transition-colors", crewOn ? "border-primary bg-primary text-primary-foreground" : "border-border text-subtext hover:text-foreground")}
+              title="Overlay crew compliance"
+            >
+              Crew
+            </button>
           </div>
         </div>
       </div>
@@ -127,6 +142,7 @@ export function CommandCenterCanvas() {
             <StationStrip
               rollups={snapshot?.station_rollups ?? []}
               selected={station}
+              crewByStation={crewOn ? crewByStation : undefined}
               onSelect={(s) => {
                 setStation(s);
                 if (s) open({ kind: "station", stationCode: s });
@@ -143,6 +159,7 @@ export function CommandCenterCanvas() {
               predictiveEvents={predictiveEvents}
               windowHours={hours}
               now={Date.now()}
+              crewStatus={crewOn ? crewStatus : undefined}
               onEventClick={(e) => open({ kind: "event", event: e })}
               onPredictionClick={(p) => open({ kind: "prediction", prediction: p })}
             />
