@@ -24,7 +24,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const { user, orgName, orgRole, businessModel, orgs, switchOrg, signOut } = useAuth();
   const [switcherOpen, setSwitcherOpen] = useState(false);
-  const navItems = navForModel(businessModel);
+  const navItems = navForModel(businessModel).filter((i) => !i.founderOnly || orgRole === "owner");
 
   return (
     <aside className="flex h-full w-60 shrink-0 flex-col border-r border-border bg-surface/40">

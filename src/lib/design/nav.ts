@@ -4,6 +4,7 @@ import {
   Building2,
   Code2,
   ClipboardCheck,
+  Gauge,
   Cpu,
   FileSignature,
   FlaskConical,
@@ -31,6 +32,8 @@ export type NavItem = {
   expandable?: boolean;
   /** Which business models show this item. Omitted = all. */
   models?: BusinessModel[];
+  /** Only shown to the founder (owner) role. */
+  founderOnly?: boolean;
 };
 
 /**
@@ -59,6 +62,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Backtest", href: "/backtest", icon: FlaskConical, phase: 10 },
   { label: "Dashboards", href: "/dashboards", icon: LayoutDashboard },
   { label: "Developers", href: "/developers", icon: Code2, phase: 13 },
+  { label: "AVIR Index", href: "/admin/index", icon: Gauge, phase: 14, founderOnly: true },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 

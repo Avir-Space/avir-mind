@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Building2, CalendarClock, Fingerprint, KeyRound, MonitorSmartphone, PlaneTakeoff, ScrollText, ShieldCheck, SlidersHorizontal, Wrench, type LucideIcon } from "lucide-react";
+import { Bell, Building2, CalendarClock, Fingerprint, Gauge, KeyRound, MonitorSmartphone, PlaneTakeoff, ScrollText, ShieldCheck, SlidersHorizontal, Wrench, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 
 import { PageHeader } from "@/components/avir/page-header";
@@ -81,6 +81,14 @@ export default function SettingsPage() {
             {isAdmin && <Card href="/settings/api-keys" icon={KeyRound} title="API keys" desc="Scoped, rate-limited programmatic access." />}
             {isAdmin && <Card href="/settings/sso" icon={ShieldCheck} title="Single sign-on" desc="SAML 2.0 / OIDC enterprise identity." />}
             {isAdmin && <Card href="/settings/audit-log" icon={ScrollText} title="Audit log" desc="Security events + CSV export." />}
+          </div>
+        </section>
+
+        {/* Data sharing */}
+        <section>
+          <p className="eyebrow mb-2">Data sharing</p>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {isAdmin && <Card href="/settings/index-participation" icon={Gauge} title="AVIR Index participation" desc="Opt in per Index category — aggregate-only by default." />}
           </div>
         </section>
       </div>

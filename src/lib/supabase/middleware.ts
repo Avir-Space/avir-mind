@@ -5,7 +5,7 @@ import { createServerClient } from "@supabase/ssr";
 import type { Database } from "@/types/database";
 
 /** Routes reachable without a session. Everything else requires auth. */
-const PUBLIC_PATHS = ["/login", "/signup", "/forgot-password", "/auth"];
+const PUBLIC_PATHS = ["/login", "/signup", "/forgot-password", "/auth", "/index", "/embed"];
 
 function isPublic(pathname: string) {
   return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
