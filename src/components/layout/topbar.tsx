@@ -1,9 +1,12 @@
 "use client";
 
 import { Bell, Building2, Search } from "lucide-react";
+import Link from "next/link";
 
 import { RealtimeIndicator } from "@/components/avir/realtime-indicator";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useNotificationBadge } from "@/lib/queries/use-notifications";
+import { useNotificationRealtime } from "@/lib/realtime/use-notification-realtime";
 import { useAuth } from "@/lib/providers/auth-provider";
 
 function initials(email: string | null | undefined) {
@@ -15,7 +18,9 @@ function initials(email: string | null | undefined) {
 }
 
 export function Topbar() {
-  const { user, orgName } = useAuth();
+  const { user, orgName, orgId } = useAuth();
+  useNotificationRealtime(orgId);
+  const { data: unread = 0 } = useNotificationBadge();
 
   return (
     <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-border bg-page px-6">
@@ -46,18 +51,19 @@ export function Topbar() {
           </span>
         </div>
 
-        {/* Notification bell — icon only, unread state is a corner dot */}
-        <button
-          type="button"
-          aria-label="Notifications"
+        {/* Notification bell — unread count badge, links to the center */}
+        <Link
+          href="/notifications"
+          aria-label={`Notifications${unread ? ` (${unread} unread)` : ""}`}
           className="relative flex h-8 w-8 items-center justify-center text-label transition-colors duration-micro hover:text-foreground"
         >
           <Bell className="h-[18px] w-[18px]" strokeWidth={1.75} />
-          <span
-            className="severity-dot absolute right-1 top-1 ring-2 ring-page bg-primary"
-            aria-hidden
-          />
-        </button>
+          {unread > 0 && (
+            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 font-mono text-[9px] font-semibold leading-none text-primary-foreground ring-2 ring-page">
+              {unread > 9 ? "9+" : unread}
+            </span>
+          )}
+        </Link>
 
         <Avatar>
           <AvatarFallback>{initials(user?.email)}</AvatarFallback>

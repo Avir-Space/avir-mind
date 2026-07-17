@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { CalibrationFooter } from "@/components/calibration/calibration-footer";
+import { SignalNotifiedFooter } from "@/components/notifications/signal-notified-footer";
 import { DecisionAuditDrawer } from "@/components/compliance/decision-audit-drawer";
 import { CategoryTag } from "@/components/tasks/category-tag";
 import { InventorySignalExtra } from "@/components/inventory/inventory-signal-extra";
@@ -123,6 +124,7 @@ export function SignalCard({ signal }: { signal: Signal }) {
             <ShieldCheck className="h-3 w-3" /> View decision audit
           </button>
           <CalibrationFooter category={signal.category} confidence={signal.confidence} />
+          <SignalNotifiedFooter signalId={signal.id} />
         </div>
       </div>
 
