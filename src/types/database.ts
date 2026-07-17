@@ -846,6 +846,266 @@ export type Database = {
           },
         ]
       }
+      calibration_events: {
+        Row: {
+          accuracy_result: string | null
+          ai_decision_record_id: string | null
+          calibration_event_type: string
+          confidence_level: string
+          created_at_utc: string
+          event_at_utc: string
+          horizon_delta_days: number | null
+          id: string
+          matched_component_event_id: string | null
+          notes: string | null
+          org_id: string
+          signal_category: string
+          signal_class: string
+          signal_id: string
+        }
+        Insert: {
+          accuracy_result?: string | null
+          ai_decision_record_id?: string | null
+          calibration_event_type: string
+          confidence_level: string
+          created_at_utc?: string
+          event_at_utc?: string
+          horizon_delta_days?: number | null
+          id?: string
+          matched_component_event_id?: string | null
+          notes?: string | null
+          org_id: string
+          signal_category: string
+          signal_class: string
+          signal_id: string
+        }
+        Update: {
+          accuracy_result?: string | null
+          ai_decision_record_id?: string | null
+          calibration_event_type?: string
+          confidence_level?: string
+          created_at_utc?: string
+          event_at_utc?: string
+          horizon_delta_days?: number | null
+          id?: string
+          matched_component_event_id?: string | null
+          notes?: string | null
+          org_id?: string
+          signal_category?: string
+          signal_class?: string
+          signal_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calibration_events_ai_decision_record_id_fkey"
+            columns: ["ai_decision_record_id"]
+            isOneToOne: false
+            referencedRelation: "ai_decision_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calibration_events_matched_component_event_id_fkey"
+            columns: ["matched_component_event_id"]
+            isOneToOne: false
+            referencedRelation: "component_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calibration_events_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calibration_events_signal_id_fkey"
+            columns: ["signal_id"]
+            isOneToOne: false
+            referencedRelation: "signals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      calibration_publications: {
+        Row: {
+          created_at_utc: string
+          id: string
+          publication_channel: string
+          publication_content_hash: string
+          publication_metadata: Json | null
+          publication_url: string | null
+          published_at_utc: string
+          published_by_user_id: string
+          scoreboard_id: string
+        }
+        Insert: {
+          created_at_utc?: string
+          id?: string
+          publication_channel: string
+          publication_content_hash: string
+          publication_metadata?: Json | null
+          publication_url?: string | null
+          published_at_utc?: string
+          published_by_user_id: string
+          scoreboard_id: string
+        }
+        Update: {
+          created_at_utc?: string
+          id?: string
+          publication_channel?: string
+          publication_content_hash?: string
+          publication_metadata?: Json | null
+          publication_url?: string | null
+          published_at_utc?: string
+          published_by_user_id?: string
+          scoreboard_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calibration_publications_scoreboard_id_fkey"
+            columns: ["scoreboard_id"]
+            isOneToOne: false
+            referencedRelation: "calibration_scoreboards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      calibration_scoreboards: {
+        Row: {
+          confidence_notes: Json | null
+          created_at_utc: string
+          generated_at_utc: string
+          id: string
+          is_published: boolean
+          narrative: Json | null
+          org_id: string | null
+          published_at_utc: string | null
+          scoreboard_name: string
+          scoreboard_type: string
+          snapshot_ids: string[] | null
+          summary_stats: Json | null
+          window_days: number
+        }
+        Insert: {
+          confidence_notes?: Json | null
+          created_at_utc?: string
+          generated_at_utc?: string
+          id?: string
+          is_published?: boolean
+          narrative?: Json | null
+          org_id?: string | null
+          published_at_utc?: string | null
+          scoreboard_name: string
+          scoreboard_type: string
+          snapshot_ids?: string[] | null
+          summary_stats?: Json | null
+          window_days: number
+        }
+        Update: {
+          confidence_notes?: Json | null
+          created_at_utc?: string
+          generated_at_utc?: string
+          id?: string
+          is_published?: boolean
+          narrative?: Json | null
+          org_id?: string | null
+          published_at_utc?: string | null
+          scoreboard_name?: string
+          scoreboard_type?: string
+          snapshot_ids?: string[] | null
+          summary_stats?: Json | null
+          window_days?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calibration_scoreboards_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      calibration_snapshots: {
+        Row: {
+          accuracy_pct: number | null
+          action_rate: number | null
+          computed_at_utc: string
+          confidence_level: string
+          correct_count: number
+          coverage_pct: number | null
+          dismissal_rate: number | null
+          id: string
+          incorrect_count: number
+          model_identifier: string | null
+          org_id: string | null
+          partial_count: number
+          sample_size_status: string | null
+          signal_category: string
+          signal_class: string
+          signals_with_outcome: number
+          snapshot_date: string
+          snapshot_scope: string
+          total_signals: number
+          weighted_accuracy_pct: number | null
+          window_days: number
+        }
+        Insert: {
+          accuracy_pct?: number | null
+          action_rate?: number | null
+          computed_at_utc?: string
+          confidence_level: string
+          correct_count?: number
+          coverage_pct?: number | null
+          dismissal_rate?: number | null
+          id?: string
+          incorrect_count?: number
+          model_identifier?: string | null
+          org_id?: string | null
+          partial_count?: number
+          sample_size_status?: string | null
+          signal_category: string
+          signal_class: string
+          signals_with_outcome?: number
+          snapshot_date: string
+          snapshot_scope?: string
+          total_signals?: number
+          weighted_accuracy_pct?: number | null
+          window_days: number
+        }
+        Update: {
+          accuracy_pct?: number | null
+          action_rate?: number | null
+          computed_at_utc?: string
+          confidence_level?: string
+          correct_count?: number
+          coverage_pct?: number | null
+          dismissal_rate?: number | null
+          id?: string
+          incorrect_count?: number
+          model_identifier?: string | null
+          org_id?: string | null
+          partial_count?: number
+          sample_size_status?: string | null
+          signal_category?: string
+          signal_class?: string
+          signals_with_outcome?: number
+          snapshot_date?: string
+          snapshot_scope?: string
+          total_signals?: number
+          weighted_accuracy_pct?: number | null
+          window_days?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calibration_snapshots_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       component_events: {
         Row: {
           aircraft_id: string | null
@@ -1241,6 +1501,66 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      cross_tenant_calibration_snapshots: {
+        Row: {
+          accuracy_pct: number | null
+          computed_at_utc: string
+          confidence_level: string
+          correct_count: number
+          id: string
+          incorrect_count: number
+          minimum_participating_orgs: number
+          model_identifier: string | null
+          partial_count: number
+          participating_org_count: number
+          signal_category: string
+          signal_class: string
+          signals_with_outcome: number
+          snapshot_date: string
+          total_signals: number
+          weighted_accuracy_pct: number | null
+          window_days: number
+        }
+        Insert: {
+          accuracy_pct?: number | null
+          computed_at_utc?: string
+          confidence_level: string
+          correct_count: number
+          id?: string
+          incorrect_count: number
+          minimum_participating_orgs?: number
+          model_identifier?: string | null
+          partial_count: number
+          participating_org_count: number
+          signal_category: string
+          signal_class: string
+          signals_with_outcome: number
+          snapshot_date: string
+          total_signals: number
+          weighted_accuracy_pct?: number | null
+          window_days: number
+        }
+        Update: {
+          accuracy_pct?: number | null
+          computed_at_utc?: string
+          confidence_level?: string
+          correct_count?: number
+          id?: string
+          incorrect_count?: number
+          minimum_participating_orgs?: number
+          model_identifier?: string | null
+          partial_count?: number
+          participating_org_count?: number
+          signal_category?: string
+          signal_class?: string
+          signals_with_outcome?: number
+          snapshot_date?: string
+          total_signals?: number
+          weighted_accuracy_pct?: number | null
+          window_days?: number
+        }
+        Relationships: []
       }
       data_lineage_records: {
         Row: {
@@ -3934,6 +4254,10 @@ export type Database = {
         Args: { p_signal_id: string }
         Returns: string
       }
+      _latest_cal_date: {
+        Args: { p_org: string; p_window: number }
+        Returns: string
+      }
       _station_wx: { Args: { p_station: string }; Returns: Json }
       acknowledge_task: { Args: { p_task_id: string }; Returns: undefined }
       act_on_signal: {
@@ -3984,6 +4308,14 @@ export type Database = {
           p_role_on_flight: string
         }
         Returns: string
+      }
+      compute_calibration_snapshot: {
+        Args: {
+          p_org_id: string
+          p_snapshot_date?: string
+          p_window_days: number
+        }
+        Returns: Json
       }
       compute_component_health: {
         Args: { p_component_id: string }
@@ -4074,6 +4406,10 @@ export type Database = {
         }
         Returns: Json
       }
+      export_calibration_report: {
+        Args: { p_window_days?: number }
+        Returns: Json
+      }
       export_dsai_conformance_bundle: {
         Args: { p_from: string; p_to: string }
         Returns: Json
@@ -4098,6 +4434,15 @@ export type Database = {
       genealogy_build_record: { Args: { p_event_id: string }; Returns: string }
       genealogy_upsert_serial: {
         Args: { p_component_id: string }
+        Returns: string
+      }
+      generate_calibration_scoreboard: {
+        Args: {
+          p_narrative_style?: string
+          p_org_id?: string
+          p_scoreboard_type?: string
+          p_window_days?: number
+        }
         Returns: string
       }
       generate_compliance_signals: { Args: never; Returns: number }
@@ -4168,6 +4513,14 @@ export type Database = {
       get_aircraft_parts: { Args: { p_aircraft_id: string }; Returns: Json }
       get_asset_detail: { Args: { p_asset_id: string }; Returns: Json }
       get_asset_service_calendar: { Args: { p_days?: number }; Returns: Json }
+      get_calibration_badge_map: { Args: never; Returns: Json }
+      get_calibration_category_detail: {
+        Args: { p_category: string; p_window_days?: number }
+        Returns: Json
+      }
+      get_calibration_publications: { Args: never; Returns: Json }
+      get_calibration_scoreboards: { Args: never; Returns: Json }
+      get_calibration_trends: { Args: never; Returns: Json }
       get_command_center_insights: {
         Args: { p_limit?: number; p_severity?: string[] }
         Returns: Json
@@ -4272,6 +4625,11 @@ export type Database = {
       get_recent_movements: { Args: { p_limit?: number }; Returns: Json }
       get_reporting_calendar: { Args: never; Returns: Json }
       get_rule_configurations: { Args: never; Returns: Json }
+      get_scoreboard: { Args: { p_id: string }; Returns: Json }
+      get_scoreboard_content_hash: {
+        Args: { p_scoreboard_id: string }
+        Returns: string
+      }
       get_serial_genealogy: {
         Args: {
           p_manufacturer: string
@@ -4293,6 +4651,10 @@ export type Database = {
       get_supplier_detail: { Args: { p_supplier_id: string }; Returns: Json }
       get_supplier_performance: { Args: never; Returns: Json }
       get_task_detail: { Args: { p_task_id: string }; Returns: Json }
+      get_tenant_calibration_dashboard: {
+        Args: { p_window_days?: number }
+        Returns: Json
+      }
       get_weather_board: { Args: never; Returns: Json }
       get_weather_briefing: { Args: { p_flight_id: string }; Returns: Json }
       get_weather_overlay: { Args: never; Returns: Json }
@@ -4307,6 +4669,15 @@ export type Database = {
           p_work_date?: string
         }
         Returns: string
+      }
+      mark_prediction_outcome: {
+        Args: {
+          p_accuracy_result: string
+          p_component_event_id?: string
+          p_notes?: string
+          p_signal_id: string
+        }
+        Returns: Json
       }
       move_task_status: {
         Args: { p_new_rank?: number; p_new_status: string; p_task_id: string }
@@ -4325,6 +4696,17 @@ export type Database = {
         }
         Returns: Json
       }
+      publish_scoreboard: {
+        Args: {
+          p_channel: string
+          p_content_hash: string
+          p_metadata?: Json
+          p_scoreboard_id: string
+          p_url?: string
+        }
+        Returns: Json
+      }
+      recompute_all_calibration: { Args: { p_org_id?: string }; Returns: Json }
       record_asset_event: {
         Args: {
           p_asset_id: string
@@ -4367,6 +4749,10 @@ export type Database = {
         Args: { p_item_id: string; p_notes?: string }
         Returns: Json
       }
+      refresh_cross_tenant_calibration: {
+        Args: { p_snapshot_date?: string }
+        Returns: number
+      }
       reserve_stock: {
         Args: {
           p_location: string
@@ -4377,6 +4763,10 @@ export type Database = {
         Returns: string
       }
       seed_avir_demo: { Args: { p_user_id: string }; Returns: string }
+      seed_demo_calibration: {
+        Args: { p_org_id: string; p_user_id: string }
+        Returns: undefined
+      }
       seed_demo_compliance: {
         Args: { p_org_id: string; p_user_id: string }
         Returns: undefined
