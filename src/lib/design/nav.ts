@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   Boxes,
   Building2,
+  Code2,
   ClipboardCheck,
   Cpu,
   FileSignature,
@@ -57,6 +58,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Calibration", href: "/calibration", icon: TrendingUp, phase: 9 },
   { label: "Backtest", href: "/backtest", icon: FlaskConical, phase: 10 },
   { label: "Dashboards", href: "/dashboards", icon: LayoutDashboard },
+  { label: "Developers", href: "/developers", icon: Code2, phase: 13 },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 

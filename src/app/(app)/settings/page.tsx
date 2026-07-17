@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Building2, CalendarClock, PlaneTakeoff, SlidersHorizontal, Wrench, type LucideIcon } from "lucide-react";
+import { Bell, Building2, CalendarClock, Fingerprint, KeyRound, MonitorSmartphone, PlaneTakeoff, ScrollText, ShieldCheck, SlidersHorizontal, Wrench, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 
 import { PageHeader } from "@/components/avir/page-header";
@@ -69,6 +69,18 @@ export default function SettingsPage() {
             <Card href="/settings/notifications" icon={Bell} title="Notification preferences" desc="Your channels, quiet hours, and digests." />
             {isAdmin && <Card href="/settings/notifications/policies" icon={SlidersHorizontal} title="Notification policies" desc="Who gets notified, when, and by which channel." />}
             {isAdmin && <Card href="/settings/on-call" icon={CalendarClock} title="On-call scheduler" desc="Per-role on-call rotation and current shift." />}
+          </div>
+        </section>
+
+        {/* Security & Access */}
+        <section>
+          <p className="eyebrow mb-2">Security &amp; access</p>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <Card href="/settings/2fa" icon={Fingerprint} title="Two-factor auth" desc="TOTP authenticator + backup codes." />
+            <Card href="/settings/sessions" icon={MonitorSmartphone} title="Active sessions" desc="Web, mobile, and API sessions." />
+            {isAdmin && <Card href="/settings/api-keys" icon={KeyRound} title="API keys" desc="Scoped, rate-limited programmatic access." />}
+            {isAdmin && <Card href="/settings/sso" icon={ShieldCheck} title="Single sign-on" desc="SAML 2.0 / OIDC enterprise identity." />}
+            {isAdmin && <Card href="/settings/audit-log" icon={ScrollText} title="Audit log" desc="Security events + CSV export." />}
           </div>
         </section>
       </div>
