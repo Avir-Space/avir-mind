@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "AVIR Mind",
+    "slug": "avir-mind-mobile",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "avirmind",
+    "userInterfaceStyle": "automatic",
+    "splash": { "backgroundColor": "#0a0a0f" },
+    "ios": { "supportsTablet": true, "bundleIdentifier": "space.avir.mind" },
+    "android": { "package": "space.avir.mind" },
+    "extra": {
+      "supabaseUrl": "https://<ref>.supabase.co",
+      "supabaseAnonKey": "<anon key>",
+      "apiBaseUrl": "https://<ref>.supabase.co/functions/v1/api-v1"
+    }
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AVIR Mind API",
+    "version": "1.0.0",
+    "description": "Programmatic read + write access to AVIR Mind. Bearer API-key authenticated, scoped, and rate-limited. Every request is logged. All access is scoped to the API key's organization.",
+    "contact": { "name": "AVIR Space", "url": "https://avir.space" }
+  },
+  "servers": [{ "url": "https://api.avir.space/v1", "description": "Production" }],
+  "security": [{ "ApiKeyAuth": [] }],
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "avir_live_*", "description": "An AVIR API key with the required scope." }
+    },
+    "headers": {
+      "X-RateLimit-Limit": { "schema": { "type": "integer" }, "description": "Requests allowed per minute for this key." },
+      "X-RateLimit-Remaining": { "schema": { "type": "integer" }, "description": "Requests remaining in the current window." },
+      "X-Request-Id": { "schema": { "type": "string" }, "description": "Unique id for tracing this request." }
+    },
+    "schemas": {
+      "Signal": { "type": "object", "properties": { "id": { "type": "string", "format": "uuid" }, "aircraft_id": { "type": ["string", "null"], "format": "uuid" }, "category": { "type": "string" }, "severity": { "type": "string", "enum": ["critical", "high", "medium", "low", "info", "insufficient_data"] }, "title": { "type": "string" }, "narrative": { "type": "string" }, "confidence": { "type": "string", "enum": ["high", "medium", "low"] }, "is_active": { "type": "boolean" }, "generated_at_utc": { "type": "string", "format": "date-time" } } },
+      "Aircraft": { "type": "object", "properties": { "id": { "type": "string", "format": "uuid" }, "tail_number": { "type": "string" }, "aircraft_type": { "type": "string" }, "base_station": { "type": ["string", "null"] }, "ownership_type": { "type": ["string", "null"] } } },
+      "Task": { "type": "object", "properties": { "id": { "type": "string", "format": "uuid" }, "aircraft_id": { "type": "string", "format": "uuid" }, "title": { "type": "string" }, "status": { "type": "string" }, "parent_type": { "type": "string" }, "sub_type": { "type": "string" }, "dispatch_blocking": { "type": "boolean" } } },
+      "Component": { "type": "object", "properties": { "id": { "type": "string", "format": "uuid" }, "part_number": { "type": "string" }, "serial_number": { "type": "string" }, "component_type": { "type": "string" }, "status": { "type": "string" }, "health_score": { "type": ["integer", "null"] } } },
+      "Error": { "type": "object", "properties": { "error": { "type": "string" }, "message": { "type": "string" }, "request_id": { "type": "string" } } },
+      "Envelope": { "type": "object", "properties": { "data": {}, "request_id": { "type": "string" } } }
+    },
+    "responses": {
+      "Unauthorized": { "description": "Missing or invalid API key.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+      "Forbidden": { "description": "Key lacks the required scope.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+      "NotFound": { "description": "Resource not found.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+      "RateLimited": { "description": "Rate limit exceeded.", "headers": { "Retry-After": { "schema": { "type": "integer" } } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+    }
+  },
+  "paths": {
+    "/signals": {
+      "get": {
+        "summary": "List signals", "operationId": "listSignals", "tags": ["Signals"],
+        "security": [{ "ApiKeyAuth": ["read:signals"] }],
+        "parameters": [
+          { "name": "aircraft_id", "in": "query", "schema": { "type": "string", "format": "uuid" } },
+          { "name": "active", "in": "query", "schema": { "type": "boolean" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 100 } }
+        ],
+        "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "allOf": [{ "$ref": "#/components/schemas/Envelope" }, { "properties": { "data": { "type": "array", "items": { "$ref": "#/components/schemas/Signal" } } } }] } } } }, "401": { "$ref": "#/components/responses/Unauthorized" }, "403": { "$ref": "#/components/responses/Forbidden" }, "429": { "$ref": "#/components/responses/RateLimited" } }
+      }
+    },
+    "/signals/{id}": { "get": { "summary": "Get signal", "operationId": "getSignal", "tags": ["Signals"], "security": [{ "ApiKeyAuth": ["read:signals"] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }], "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Signal" } } } }, "404": { "$ref": "#/components/responses/NotFound" } } } },
+    "/signals/{id}/actions": { "post": { "summary": "Act on a signal", "operationId": "actOnSignal", "tags": ["Signals"], "security": [{ "ApiKeyAuth": ["write:signals"] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }], "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "action_type": { "type": "string", "enum": ["viewed", "acknowledged", "create_task", "dismissed", "marked_correct", "marked_incorrect"] } } } } } }, "responses": { "201": { "description": "Created" } } } },
+    "/aircraft": { "get": { "summary": "List aircraft", "operationId": "listAircraft", "tags": ["Aircraft"], "security": [{ "ApiKeyAuth": ["read:aircraft"] }], "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Aircraft" } } } } } } } },
+    "/aircraft/{id}": { "get": { "summary": "Get aircraft", "operationId": "getAircraft", "tags": ["Aircraft"], "security": [{ "ApiKeyAuth": ["read:aircraft"] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }], "responses": { "200": { "description": "OK" }, "404": { "$ref": "#/components/responses/NotFound" } } } },
+    "/aircraft/{id}/signals": { "get": { "summary": "Aircraft signals", "operationId": "getAircraftSignals", "tags": ["Aircraft"], "security": [{ "ApiKeyAuth": ["read:aircraft"] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "OK" } } } },
+    "/aircraft/{id}/tasks": { "get": { "summary": "Aircraft tasks", "operationId": "getAircraftTasks", "tags": ["Aircraft"], "security": [{ "ApiKeyAuth": ["read:aircraft"] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "OK" } } } },
+    "/aircraft/{id}/components": { "get": { "summary": "Aircraft components", "operationId": "getAircraftComponents", "tags": ["Aircraft"], "security": [{ "ApiKeyAuth": ["read:aircraft"] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "OK" } } } },
+    "/tasks": {
+      "get": { "summary": "List tasks", "operationId": "listTasks", "tags": ["Tasks"], "security": [{ "ApiKeyAuth": ["read:tasks"] }], "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Task" } } } } } } },
+      "post": { "summary": "Create task", "operationId": "createTask", "tags": ["Tasks"], "security": [{ "ApiKeyAuth": ["write:tasks"] }], "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["aircraft_id", "title", "parent_type", "sub_type"], "properties": { "aircraft_id": { "type": "string" }, "title": { "type": "string" }, "parent_type": { "type": "string" }, "sub_type": { "type": "string" }, "why_summary": { "type": "string" } } } } }, "responses": { "201": { "description": "Created" }, "400": { "description": "Validation error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } } } }
+    },
+    "/tasks/{id}": { "get": { "summary": "Get task", "operationId": "getTask", "tags": ["Tasks"], "security": [{ "ApiKeyAuth": ["read:tasks"] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "OK" }, "404": { "$ref": "#/components/responses/NotFound" } } } },
+    "/tasks/{id}/acknowledge": { "post": { "summary": "Acknowledge task", "operationId": "acknowledgeTask", "tags": ["Tasks"], "security": [{ "ApiKeyAuth": ["write:tasks"] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "OK" } } } },
+    "/components": { "get": { "summary": "List components", "operationId": "listComponents", "tags": ["Components"], "security": [{ "ApiKeyAuth": ["read:components"] }], "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Component" } } } } } } } },
+    "/components/{id}": { "get": { "summary": "Get component", "operationId": "getComponent", "tags": ["Components"], "security": [{ "ApiKeyAuth": ["read:components"] }], "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "200": { "description": "OK" }, "404": { "$ref": "#/components/responses/NotFound" } } } },
+    "/flights": { "get": { "summary": "List flights", "operationId": "listFlights", "tags": ["Flights"], "security": [{ "ApiKeyAuth": ["read:flights"] }], "responses": { "200": { "description": "OK" } } } },
+    "/crew": { "get": { "summary": "List crew", "operationId": "listCrew", "tags": ["Crew"], "security": [{ "ApiKeyAuth": ["read:crew"] }], "responses": { "200": { "description": "OK" } } } },
+    "/compliance/ads": { "get": { "summary": "List airworthiness directives", "operationId": "listADs", "tags": ["Compliance"], "security": [{ "ApiKeyAuth": ["read:compliance"] }], "responses": { "200": { "description": "OK" } } } },
+    "/calibration/snapshots": { "get": { "summary": "List calibration snapshots", "operationId": "listCalibrationSnapshots", "tags": ["Calibration"], "security": [{ "ApiKeyAuth": ["read:calibration"] }], "responses": { "200": { "description": "OK" } } } }
+  },
+  "webhooks": {
+    "signalCreated": { "post": { "summary": "signal.created", "description": "Delivered when a new signal fires. HMAC-signed with the subscription's signing secret (X-Avir-Signature header).", "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "event": { "type": "string", "const": "signal.created" }, "delivered_at": { "type": "string", "format": "date-time" }, "data": { "$ref": "#/components/schemas/Signal" } } } } } }, "responses": { "200": { "description": "Acknowledged" } } } }
+  }
+}

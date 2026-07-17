@@ -670,6 +670,143 @@ export type Database = {
           },
         ]
       }
+      api_keys: {
+        Row: {
+          created_at_utc: string
+          created_by_user_id: string
+          expires_at_utc: string | null
+          id: string
+          key_hash: string
+          key_name: string
+          key_prefix: string
+          last_used_at_utc: string | null
+          org_id: string
+          rate_limit_per_day: number
+          rate_limit_per_minute: number
+          revocation_reason: string | null
+          revoked_at_utc: string | null
+          scope: string[]
+        }
+        Insert: {
+          created_at_utc?: string
+          created_by_user_id: string
+          expires_at_utc?: string | null
+          id?: string
+          key_hash: string
+          key_name: string
+          key_prefix: string
+          last_used_at_utc?: string | null
+          org_id: string
+          rate_limit_per_day?: number
+          rate_limit_per_minute?: number
+          revocation_reason?: string | null
+          revoked_at_utc?: string | null
+          scope?: string[]
+        }
+        Update: {
+          created_at_utc?: string
+          created_by_user_id?: string
+          expires_at_utc?: string | null
+          id?: string
+          key_hash?: string
+          key_name?: string
+          key_prefix?: string
+          last_used_at_utc?: string | null
+          org_id?: string
+          rate_limit_per_day?: number
+          rate_limit_per_minute?: number
+          revocation_reason?: string | null
+          revoked_at_utc?: string | null
+          scope?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_keys_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      api_requests: {
+        Row: {
+          api_key_id: string | null
+          created_at_utc: string
+          duration_ms: number | null
+          error_message: string | null
+          id: string
+          ip_address: unknown
+          org_id: string
+          rate_limit_remaining: number | null
+          request_body_size_bytes: number | null
+          request_completed_at_utc: string | null
+          request_headers_summary: Json | null
+          request_method: string
+          request_path: string
+          request_started_at_utc: string
+          response_body_size_bytes: number | null
+          response_status_code: number | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          api_key_id?: string | null
+          created_at_utc?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string
+          ip_address?: unknown
+          org_id: string
+          rate_limit_remaining?: number | null
+          request_body_size_bytes?: number | null
+          request_completed_at_utc?: string | null
+          request_headers_summary?: Json | null
+          request_method: string
+          request_path: string
+          request_started_at_utc?: string
+          response_body_size_bytes?: number | null
+          response_status_code?: number | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          api_key_id?: string | null
+          created_at_utc?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string
+          ip_address?: unknown
+          org_id?: string
+          rate_limit_remaining?: number | null
+          request_body_size_bytes?: number | null
+          request_completed_at_utc?: string | null
+          request_headers_summary?: Json | null
+          request_method?: string
+          request_path?: string
+          request_started_at_utc?: string
+          response_body_size_bytes?: number | null
+          response_status_code?: number | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_requests_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "api_keys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "api_requests_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       asset_events: {
         Row: {
           asset_id: string
@@ -4062,6 +4199,53 @@ export type Database = {
           },
         ]
       }
+      security_audit_events: {
+        Row: {
+          created_at_utc: string
+          event_payload: Json | null
+          event_summary: string
+          event_type: string
+          id: string
+          ip_address: unknown
+          org_id: string
+          risk_score: number | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at_utc?: string
+          event_payload?: Json | null
+          event_summary: string
+          event_type: string
+          id?: string
+          ip_address?: unknown
+          org_id: string
+          risk_score?: number | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at_utc?: string
+          event_payload?: Json | null
+          event_summary?: string
+          event_type?: string
+          id?: string
+          ip_address?: unknown
+          org_id?: string
+          risk_score?: number | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "security_audit_events_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       serial_genealogies: {
         Row: {
           birth_certificate_date: string | null
@@ -4701,6 +4885,83 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "slack_workspace_configs_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sso_configurations: {
+        Row: {
+          allowed_email_domains: string[] | null
+          attribute_mappings: Json | null
+          certificate_pem: string | null
+          client_id: string | null
+          client_secret_encrypted: string | null
+          configured_at_utc: string
+          configured_by_user_id: string | null
+          created_at_utc: string
+          default_role: string | null
+          discovery_url: string | null
+          enforce_sso: boolean
+          entity_id: string | null
+          id: string
+          is_active: boolean
+          org_id: string
+          provider_name: string | null
+          provider_type: string | null
+          role_mappings: Json | null
+          sso_url: string | null
+          updated_at_utc: string
+        }
+        Insert: {
+          allowed_email_domains?: string[] | null
+          attribute_mappings?: Json | null
+          certificate_pem?: string | null
+          client_id?: string | null
+          client_secret_encrypted?: string | null
+          configured_at_utc?: string
+          configured_by_user_id?: string | null
+          created_at_utc?: string
+          default_role?: string | null
+          discovery_url?: string | null
+          enforce_sso?: boolean
+          entity_id?: string | null
+          id?: string
+          is_active?: boolean
+          org_id: string
+          provider_name?: string | null
+          provider_type?: string | null
+          role_mappings?: Json | null
+          sso_url?: string | null
+          updated_at_utc?: string
+        }
+        Update: {
+          allowed_email_domains?: string[] | null
+          attribute_mappings?: Json | null
+          certificate_pem?: string | null
+          client_id?: string | null
+          client_secret_encrypted?: string | null
+          configured_at_utc?: string
+          configured_by_user_id?: string | null
+          created_at_utc?: string
+          default_role?: string | null
+          discovery_url?: string | null
+          enforce_sso?: boolean
+          entity_id?: string | null
+          id?: string
+          is_active?: boolean
+          org_id?: string
+          provider_name?: string | null
+          provider_type?: string | null
+          role_mappings?: Json | null
+          sso_url?: string | null
+          updated_at_utc?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sso_configurations_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
@@ -5444,6 +5705,45 @@ export type Database = {
           },
         ]
       }
+      user_2fa_configurations: {
+        Row: {
+          backup_codes_encrypted: string | null
+          created_at_utc: string
+          id: string
+          is_active: boolean
+          last_used_at_utc: string | null
+          method_type: string | null
+          sms_phone: string | null
+          totp_secret_encrypted: string | null
+          user_id: string
+          verified_at_utc: string | null
+        }
+        Insert: {
+          backup_codes_encrypted?: string | null
+          created_at_utc?: string
+          id?: string
+          is_active?: boolean
+          last_used_at_utc?: string | null
+          method_type?: string | null
+          sms_phone?: string | null
+          totp_secret_encrypted?: string | null
+          user_id: string
+          verified_at_utc?: string | null
+        }
+        Update: {
+          backup_codes_encrypted?: string | null
+          created_at_utc?: string
+          id?: string
+          is_active?: boolean
+          last_used_at_utc?: string | null
+          method_type?: string | null
+          sms_phone?: string | null
+          totp_secret_encrypted?: string | null
+          user_id?: string
+          verified_at_utc?: string | null
+        }
+        Relationships: []
+      }
       user_org_preferences: {
         Row: {
           active_org_id: string | null
@@ -5521,6 +5821,68 @@ export type Database = {
           },
         ]
       }
+      user_sessions: {
+        Row: {
+          authenticated_at_utc: string
+          authentication_factors_used: string[] | null
+          created_at_utc: string
+          ended_at_utc: string | null
+          ended_reason: string | null
+          expires_at_utc: string | null
+          geo_city: string | null
+          geo_country_code: string | null
+          id: string
+          ip_address: unknown
+          last_activity_at_utc: string
+          org_id: string | null
+          session_type: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          authenticated_at_utc?: string
+          authentication_factors_used?: string[] | null
+          created_at_utc?: string
+          ended_at_utc?: string | null
+          ended_reason?: string | null
+          expires_at_utc?: string | null
+          geo_city?: string | null
+          geo_country_code?: string | null
+          id?: string
+          ip_address?: unknown
+          last_activity_at_utc?: string
+          org_id?: string | null
+          session_type?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          authenticated_at_utc?: string
+          authentication_factors_used?: string[] | null
+          created_at_utc?: string
+          ended_at_utc?: string | null
+          ended_reason?: string | null
+          expires_at_utc?: string | null
+          geo_city?: string | null
+          geo_country_code?: string | null
+          id?: string
+          ip_address?: unknown
+          last_activity_at_utc?: string
+          org_id?: string | null
+          session_type?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_sessions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       weather_observations: {
         Row: {
           created_at_utc: string
@@ -5567,6 +5929,53 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "weather_observations_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webhook_subscriptions: {
+        Row: {
+          created_at_utc: string
+          created_by_user_id: string | null
+          events: string[]
+          id: string
+          is_active: boolean
+          last_delivery_at_utc: string | null
+          last_delivery_status: number | null
+          org_id: string
+          signing_secret: string
+          target_url: string
+        }
+        Insert: {
+          created_at_utc?: string
+          created_by_user_id?: string | null
+          events?: string[]
+          id?: string
+          is_active?: boolean
+          last_delivery_at_utc?: string | null
+          last_delivery_status?: number | null
+          org_id: string
+          signing_secret: string
+          target_url: string
+        }
+        Update: {
+          created_at_utc?: string
+          created_by_user_id?: string | null
+          events?: string[]
+          id?: string
+          is_active?: boolean
+          last_delivery_at_utc?: string | null
+          last_delivery_status?: number | null
+          org_id?: string
+          signing_secret?: string
+          target_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_subscriptions_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
@@ -5951,6 +6360,15 @@ export type Database = {
         }
         Returns: string
       }
+      create_api_key: {
+        Args: {
+          p_expires_at?: string
+          p_name: string
+          p_rate_per_minute?: number
+          p_scopes?: string[]
+        }
+        Returns: Json
+      }
       create_backtest_project: { Args: { p: Json }; Returns: Json }
       create_component: {
         Args: {
@@ -6015,6 +6433,7 @@ export type Database = {
         }
         Returns: Json
       }
+      disable_2fa: { Args: { p_method: string }; Returns: Json }
       escalate_notification: { Args: { p_id: string }; Returns: Json }
       evaluate_duty_period: {
         Args: {
@@ -6139,6 +6558,7 @@ export type Database = {
         }
         Returns: Json
       }
+      get_2fa_status: { Args: never; Returns: Json }
       get_active_contracts: { Args: never; Returns: Json }
       get_active_mel_items_for_aircraft: {
         Args: { p_aircraft_id: string }
@@ -6166,8 +6586,15 @@ export type Database = {
         Args: { p_aircraft_id: string }
         Returns: Json
       }
+      get_api_keys: { Args: never; Returns: Json }
+      get_api_requests: { Args: { p_limit?: number }; Returns: Json }
+      get_api_usage_summary: { Args: never; Returns: Json }
       get_asset_detail: { Args: { p_asset_id: string }; Returns: Json }
       get_asset_service_calendar: { Args: { p_days?: number }; Returns: Json }
+      get_audit_events: {
+        Args: { p_days?: number; p_limit?: number; p_type?: string }
+        Returns: Json
+      }
       get_backtest_actual_events: { Args: { p_project: string }; Returns: Json }
       get_backtest_category_detail: {
         Args: { p_category: string; p_project: string }
@@ -6345,6 +6772,8 @@ export type Database = {
         Args: { p_aircraft_id: string; p_include_resolved?: boolean }
         Returns: Json
       }
+      get_sp_metadata: { Args: never; Returns: Json }
+      get_sso_configuration: { Args: never; Returns: Json }
       get_station_drawer_summary: {
         Args: { p_fleet_id?: string; p_station_code: string }
         Returns: Json
@@ -6358,15 +6787,28 @@ export type Database = {
         Returns: Json
       }
       get_user_notification_preferences: { Args: never; Returns: Json }
+      get_user_sessions: { Args: never; Returns: Json }
       get_weather_board: { Args: never; Returns: Json }
       get_weather_briefing: { Args: { p_flight_id: string }; Returns: Json }
       get_weather_overlay: { Args: never; Returns: Json }
+      get_webhooks: { Args: never; Returns: Json }
       get_wip_summary: { Args: never; Returns: Json }
       get_work_package_detail: { Args: { p_id: string }; Returns: Json }
       get_work_packages: { Args: never; Returns: Json }
       import_ad_from_authority: { Args: { p_ad: Json }; Returns: string }
       is_org_admin: { Args: { p_org: string }; Returns: boolean }
       is_org_member: { Args: { p_org: string }; Returns: boolean }
+      log_audit_event: {
+        Args: {
+          p_org: string
+          p_payload?: Json
+          p_risk?: number
+          p_summary: string
+          p_type: string
+          p_user?: string
+        }
+        Returns: string
+      }
       log_work: {
         Args: {
           p_description: string
@@ -6422,6 +6864,14 @@ export type Database = {
         Returns: Json
       }
       recompute_all_calibration: { Args: { p_org_id?: string }; Returns: Json }
+      record_2fa_config: {
+        Args: {
+          p_backup_codes?: string
+          p_method: string
+          p_sms_phone?: string
+        }
+        Returns: Json
+      }
       record_asset_event: {
         Args: {
           p_asset_id: string
@@ -6469,6 +6919,10 @@ export type Database = {
         Args: { p_snapshot_date?: string }
         Returns: number
       }
+      register_webhook: {
+        Args: { p_events: string[]; p_url: string }
+        Returns: Json
+      }
       reserve_stock: {
         Args: {
           p_location: string
@@ -6478,7 +6932,12 @@ export type Database = {
         }
         Returns: string
       }
+      revoke_api_key: {
+        Args: { p_id: string; p_reason?: string }
+        Returns: Json
+      }
       rotate_on_call_shift: { Args: { p_schedule_id: string }; Returns: Json }
+      save_sso_configuration: { Args: { p: Json }; Returns: Json }
       seed_avir_demo: { Args: { p_user_id: string }; Returns: string }
       seed_demo_backtest: {
         Args: { p_org_id: string; p_user_id: string }
@@ -6503,6 +6962,10 @@ export type Database = {
       seed_demo_crew: {
         Args: { p_org_id: string; p_user_id: string }
         Returns: number
+      }
+      seed_demo_enterprise: {
+        Args: { p_org_id: string; p_user_id: string }
+        Returns: undefined
       }
       seed_demo_flight_ops: {
         Args: { p_org_id: string; p_user_id: string }
@@ -6542,6 +7005,10 @@ export type Database = {
       task_severity: {
         Args: { p_aog: boolean; p_blocking: boolean; p_risk: string }
         Returns: string
+      }
+      terminate_session: {
+        Args: { p_all_except?: boolean; p_id: string }
+        Returns: Json
       }
       test_notification_policy: {
         Args: { p_context?: Json; p_id: string }
