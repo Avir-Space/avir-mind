@@ -14,12 +14,18 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import type { OrgRole } from "@/types/domain";
 
+export type OrgSummary = { id: string; name: string; role: string; primary_business_model: string; default_view_lens: string; is_active: boolean };
+
 type AuthContextValue = {
   user: User | null;
   session: Session | null;
   orgId: string | null;
   orgName: string | null;
   orgRole: OrgRole | null;
+  businessModel: string;
+  viewLens: string;
+  orgs: OrgSummary[];
+  switchOrg: (orgId: string) => Promise<void>;
   loading: boolean;
   signOut: () => Promise<void>;
 };
@@ -48,6 +54,9 @@ export function AuthProvider({
   const [orgId, setOrgId] = useState<string | null>(initialOrgId);
   const [orgName, setOrgName] = useState<string | null>(initialOrgName);
   const [orgRole, setOrgRole] = useState<OrgRole | null>(initialOrgRole);
+  const [businessModel, setBusinessModel] = useState<string>("operator");
+  const [viewLens, setViewLens] = useState<string>("fleet_operational");
+  const [orgs, setOrgs] = useState<OrgSummary[]>([]);
   const [loading, setLoading] = useState(!initialUser);
 
   useEffect(() => {
@@ -60,19 +69,21 @@ export function AuthProvider({
         setOrgRole(null);
         return;
       }
-      const { data } = await supabase
-        .from("org_members")
-        .select("org_id, role, orgs(name)")
-        .eq("user_id", currentUser.id)
-        .limit(1)
-        .maybeSingle();
+      // Active org honors the per-user preference (the operator/MRO toggle).
+      const [{ data: cfg }, { data: myOrgs }] = await Promise.all([
+        supabase.rpc("get_org_config"),
+        supabase.rpc("get_my_orgs"),
+      ]);
       if (!active) return;
-      if (data) {
-        setOrgId(data.org_id);
-        setOrgRole(data.role as OrgRole);
-        // orgs may be an object or array depending on the join cardinality.
-        const org = data.orgs as { name: string } | { name: string }[] | null;
-        setOrgName(Array.isArray(org) ? (org[0]?.name ?? null) : (org?.name ?? null));
+      const list = (myOrgs as unknown as OrgSummary[]) ?? [];
+      setOrgs(list);
+      const c = cfg as unknown as { org_id?: string; name?: string; primary_business_model?: string; default_view_lens?: string } | null;
+      if (c?.org_id) {
+        setOrgId(c.org_id);
+        setOrgName(c.name ?? null);
+        setBusinessModel(c.primary_business_model ?? "operator");
+        setViewLens(c.default_view_lens ?? "fleet_operational");
+        setOrgRole((list.find((o) => o.id === c.org_id)?.role as OrgRole) ?? null);
       }
     }
 
@@ -102,9 +113,16 @@ export function AuthProvider({
     window.location.assign("/login");
   }, [supabase]);
 
+  // Switch the active tenant view (operator ↔ MRO). Reloads so every query
+  // refetches against the new org — keeps the session (no re-login).
+  const switchOrg = useCallback(async (nextOrgId: string) => {
+    await supabase.rpc("set_active_org", { p_org_id: nextOrgId });
+    window.location.assign("/command-center");
+  }, [supabase]);
+
   const value = useMemo<AuthContextValue>(
-    () => ({ user, session, orgId, orgName, orgRole, loading, signOut }),
-    [user, session, orgId, orgName, orgRole, loading, signOut],
+    () => ({ user, session, orgId, orgName, orgRole, businessModel, viewLens, orgs, switchOrg, loading, signOut }),
+    [user, session, orgId, orgName, orgRole, businessModel, viewLens, orgs, switchOrg, loading, signOut],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

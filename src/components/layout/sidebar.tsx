@@ -1,14 +1,15 @@
 "use client";
 
-import { LogOut } from "lucide-react";
+import { Check, ChevronsUpDown, LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 import { Logo } from "@/components/layout/logo";
 import { ThemeToggle } from "@/components/avir/theme-toggle";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/lib/providers/auth-provider";
-import { NAV_ITEMS } from "@/lib/design/nav";
+import { navForModel } from "@/lib/design/nav";
 import { cn } from "@/lib/utils";
 
 function initials(email: string | null | undefined) {
@@ -21,7 +22,9 @@ function initials(email: string | null | undefined) {
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { user, orgName, orgRole, signOut } = useAuth();
+  const { user, orgName, orgRole, businessModel, orgs, switchOrg, signOut } = useAuth();
+  const [switcherOpen, setSwitcherOpen] = useState(false);
+  const navItems = navForModel(businessModel);
 
   return (
     <aside className="flex h-full w-60 shrink-0 flex-col border-r border-border bg-surface/40">
@@ -32,10 +35,37 @@ export function Sidebar() {
         </Link>
       </div>
 
+      {/* Tenant switcher (operator ↔ MRO) — only when the user has >1 org */}
+      {orgs.length > 1 && (
+        <div className="relative border-b border-border px-3 py-2">
+          <button type="button" onClick={() => setSwitcherOpen((v) => !v)}
+            className="flex w-full items-center gap-2 border border-border bg-card px-2.5 py-1.5 text-left transition-colors hover:border-border-strong">
+            <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", businessModel === "mro" ? "bg-severity-medium" : "bg-primary")} />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[12px] font-medium text-foreground">{orgName}</p>
+              <p className="font-mono text-[9px] uppercase tracking-wider text-hint">{businessModel} tenant</p>
+            </div>
+            <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-label" />
+          </button>
+          {switcherOpen && (
+            <div className="absolute inset-x-3 z-30 mt-1 border border-border bg-card shadow-lg">
+              {orgs.map((o) => (
+                <button key={o.id} type="button" onClick={() => { setSwitcherOpen(false); if (!o.is_active) switchOrg(o.id); }}
+                  className="flex w-full items-center gap-2 px-2.5 py-1.5 text-left hover:bg-surface/60">
+                  <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", o.primary_business_model === "mro" ? "bg-severity-medium" : "bg-primary")} />
+                  <div className="min-w-0 flex-1"><p className="truncate text-[12px] text-foreground">{o.name}</p><p className="font-mono text-[9px] uppercase text-hint">{o.primary_business_model}</p></div>
+                  {o.is_active && <Check className="h-3.5 w-3.5 text-primary" />}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto avir-scroll px-3 py-4">
         <ul className="space-y-0.5">
-          {NAV_ITEMS.map((item) => {
+          {navItems.map((item) => {
             const active =
               pathname === item.href ||
               (item.href !== "/command-center" && pathname.startsWith(`${item.href}/`));

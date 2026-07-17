@@ -20,7 +20,9 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 
 import { AircraftComplianceTab } from "@/components/compliance/aircraft-compliance-tab";
+import { AircraftServiceTab } from "@/components/mro/aircraft-service-tab";
 import { AircraftComponentsTab } from "@/components/components/aircraft-components-tab";
+import { useAuth } from "@/lib/providers/auth-provider";
 import { AircraftPartsTab } from "@/components/inventory/aircraft-parts-tab";
 import { AircraftSignalsTab } from "@/components/signals/aircraft-signals-tab";
 import { Button } from "@/components/ui/button";
@@ -123,6 +125,9 @@ function DetailField({ label, children }: { label: string; children: React.React
 export default function AircraftProfilePage() {
   const params = useParams<{ aircraftId: string }>();
   const { data, isLoading, isError } = useAircraftDetail(params.aircraftId);
+  const { businessModel } = useAuth();
+  const tabList: TabDef[] = businessModel === "operator" ? TABS
+    : [{ value: "service", label: "Service", icon: Wrench, headline: "Service Context", text: "" }, ...TABS];
 
   return (
     <div className="flex h-full flex-col">
@@ -221,7 +226,7 @@ export default function AircraftProfilePage() {
         <Tabs defaultValue="signals" className="flex min-h-0 flex-1 flex-col">
           <div className="border-b border-border px-6">
             <TabsList className="w-full justify-start">
-              {TABS.map((t) => (
+              {tabList.map((t) => (
                 <TabsTrigger key={t.value} value={t.value}>
                   {t.label}
                 </TabsTrigger>
@@ -229,7 +234,7 @@ export default function AircraftProfilePage() {
             </TabsList>
           </div>
           <div className="flex-1 overflow-y-auto avir-scroll">
-            {TABS.map((t) => {
+            {tabList.map((t) => {
               const Icon = t.icon;
               return (
                 <TabsContent key={t.value} value={t.value}>
@@ -241,6 +246,8 @@ export default function AircraftProfilePage() {
                     <AircraftPartsTab aircraftId={data.id} />
                   ) : t.value === "airworthiness" ? (
                     <AircraftComplianceTab aircraftId={data.id} />
+                  ) : t.value === "service" ? (
+                    <AircraftServiceTab aircraftId={data.id} />
                   ) : (
                     <div className="flex min-h-[40vh] flex-col items-center justify-center px-6 py-16 text-center">
                       <div className="mb-5 flex h-14 w-14 items-center justify-center border border-border bg-surface/40">
