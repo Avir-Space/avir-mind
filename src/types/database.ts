@@ -3015,6 +3015,365 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_channels: {
+        Row: {
+          channel_address: string
+          channel_type: string
+          created_at_utc: string
+          emergency_override: boolean
+          id: string
+          is_active: boolean
+          muted_until_utc: string | null
+          org_id: string
+          quiet_hours_end: string | null
+          quiet_hours_start: string | null
+          quiet_hours_timezone: string | null
+          updated_at_utc: string
+          user_id: string
+          verification_status: string
+          verified_at_utc: string | null
+        }
+        Insert: {
+          channel_address: string
+          channel_type: string
+          created_at_utc?: string
+          emergency_override?: boolean
+          id?: string
+          is_active?: boolean
+          muted_until_utc?: string | null
+          org_id: string
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          quiet_hours_timezone?: string | null
+          updated_at_utc?: string
+          user_id: string
+          verification_status?: string
+          verified_at_utc?: string | null
+        }
+        Update: {
+          channel_address?: string
+          channel_type?: string
+          created_at_utc?: string
+          emergency_override?: boolean
+          id?: string
+          is_active?: boolean
+          muted_until_utc?: string | null
+          org_id?: string
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          quiet_hours_timezone?: string | null
+          updated_at_utc?: string
+          user_id?: string
+          verification_status?: string
+          verified_at_utc?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_channels_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_digests: {
+        Row: {
+          content: Json | null
+          created_at_utc: string
+          delivery_status: string | null
+          digest_type: string | null
+          id: string
+          org_id: string
+          period_end_utc: string
+          period_start_utc: string
+          recipient_user_id: string
+          sent_at_utc: string | null
+        }
+        Insert: {
+          content?: Json | null
+          created_at_utc?: string
+          delivery_status?: string | null
+          digest_type?: string | null
+          id?: string
+          org_id: string
+          period_end_utc: string
+          period_start_utc: string
+          recipient_user_id: string
+          sent_at_utc?: string | null
+        }
+        Update: {
+          content?: Json | null
+          created_at_utc?: string
+          delivery_status?: string | null
+          digest_type?: string | null
+          id?: string
+          org_id?: string
+          period_end_utc?: string
+          period_start_utc?: string
+          recipient_user_id?: string
+          sent_at_utc?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_digests_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_events: {
+        Row: {
+          acknowledged_at_utc: string | null
+          acknowledgment_channel: string | null
+          channel_address: string
+          channel_type: string
+          created_at_utc: string
+          delivered_at_utc: string | null
+          delivery_error: string | null
+          delivery_provider_message_id: string | null
+          delivery_provider_response: Json | null
+          delivery_status: string
+          escalation_of_notification_id: string | null
+          id: string
+          notification_content: Json | null
+          org_id: string
+          policy_id: string | null
+          recipient_role_id: string | null
+          recipient_user_id: string
+          sent_at_utc: string | null
+          severity: string | null
+          trigger_source_id: string
+          trigger_source_type: string | null
+        }
+        Insert: {
+          acknowledged_at_utc?: string | null
+          acknowledgment_channel?: string | null
+          channel_address: string
+          channel_type: string
+          created_at_utc?: string
+          delivered_at_utc?: string | null
+          delivery_error?: string | null
+          delivery_provider_message_id?: string | null
+          delivery_provider_response?: Json | null
+          delivery_status?: string
+          escalation_of_notification_id?: string | null
+          id?: string
+          notification_content?: Json | null
+          org_id: string
+          policy_id?: string | null
+          recipient_role_id?: string | null
+          recipient_user_id: string
+          sent_at_utc?: string | null
+          severity?: string | null
+          trigger_source_id: string
+          trigger_source_type?: string | null
+        }
+        Update: {
+          acknowledged_at_utc?: string | null
+          acknowledgment_channel?: string | null
+          channel_address?: string
+          channel_type?: string
+          created_at_utc?: string
+          delivered_at_utc?: string | null
+          delivery_error?: string | null
+          delivery_provider_message_id?: string | null
+          delivery_provider_response?: Json | null
+          delivery_status?: string
+          escalation_of_notification_id?: string | null
+          id?: string
+          notification_content?: Json | null
+          org_id?: string
+          policy_id?: string | null
+          recipient_role_id?: string | null
+          recipient_user_id?: string
+          sent_at_utc?: string | null
+          severity?: string | null
+          trigger_source_id?: string
+          trigger_source_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_events_escalation_of_notification_id_fkey"
+            columns: ["escalation_of_notification_id"]
+            isOneToOne: false
+            referencedRelation: "notification_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_events_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_events_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "notification_policies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_events_recipient_role_id_fkey"
+            columns: ["recipient_role_id"]
+            isOneToOne: false
+            referencedRelation: "org_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_policies: {
+        Row: {
+          channel_preferences: Json | null
+          created_at_utc: string
+          created_by_user_id: string | null
+          escalation_ladder: Json | null
+          event_type: string
+          filter_criteria: Json | null
+          id: string
+          is_active: boolean
+          org_id: string
+          policy_name: string
+          quiet_hours_behavior: string
+          target_role_ids: string[] | null
+          target_user_ids: string[] | null
+          updated_at_utc: string
+        }
+        Insert: {
+          channel_preferences?: Json | null
+          created_at_utc?: string
+          created_by_user_id?: string | null
+          escalation_ladder?: Json | null
+          event_type: string
+          filter_criteria?: Json | null
+          id?: string
+          is_active?: boolean
+          org_id: string
+          policy_name: string
+          quiet_hours_behavior?: string
+          target_role_ids?: string[] | null
+          target_user_ids?: string[] | null
+          updated_at_utc?: string
+        }
+        Update: {
+          channel_preferences?: Json | null
+          created_at_utc?: string
+          created_by_user_id?: string | null
+          escalation_ladder?: Json | null
+          event_type?: string
+          filter_criteria?: Json | null
+          id?: string
+          is_active?: boolean
+          org_id?: string
+          policy_name?: string
+          quiet_hours_behavior?: string
+          target_role_ids?: string[] | null
+          target_user_ids?: string[] | null
+          updated_at_utc?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_policies_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      on_call_schedules: {
+        Row: {
+          created_at_utc: string
+          id: string
+          org_id: string
+          role_id: string
+          rotation_pattern: Json | null
+          schedule_name: string
+        }
+        Insert: {
+          created_at_utc?: string
+          id?: string
+          org_id: string
+          role_id: string
+          rotation_pattern?: Json | null
+          schedule_name: string
+        }
+        Update: {
+          created_at_utc?: string
+          id?: string
+          org_id?: string
+          role_id?: string
+          rotation_pattern?: Json | null
+          schedule_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "on_call_schedules_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "on_call_schedules_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "org_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      on_call_shifts: {
+        Row: {
+          created_at_utc: string
+          id: string
+          org_id: string
+          schedule_id: string
+          shift_end_utc: string
+          shift_start_utc: string
+          shift_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at_utc?: string
+          id?: string
+          org_id: string
+          schedule_id: string
+          shift_end_utc: string
+          shift_start_utc: string
+          shift_type?: string
+          user_id: string
+        }
+        Update: {
+          created_at_utc?: string
+          id?: string
+          org_id?: string
+          schedule_id?: string
+          shift_end_utc?: string
+          shift_start_utc?: string
+          shift_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "on_call_shifts_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "on_call_shifts_schedule_id_fkey"
+            columns: ["schedule_id"]
+            isOneToOne: false
+            referencedRelation: "on_call_schedules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       org_members: {
         Row: {
           created_at: string
@@ -3037,6 +3396,44 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "org_members_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      org_roles: {
+        Row: {
+          created_at_utc: string
+          id: string
+          org_id: string
+          role_code: string
+          role_description: string | null
+          role_display_name: string
+          typical_shift_pattern: string
+        }
+        Insert: {
+          created_at_utc?: string
+          id?: string
+          org_id: string
+          role_code: string
+          role_description?: string | null
+          role_display_name: string
+          typical_shift_pattern?: string
+        }
+        Update: {
+          created_at_utc?: string
+          id?: string
+          org_id?: string
+          role_code?: string
+          role_description?: string | null
+          role_display_name?: string
+          typical_shift_pattern?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "org_roles_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
@@ -3838,6 +4235,56 @@ export type Database = {
           },
         ]
       }
+      slack_workspace_configs: {
+        Row: {
+          bot_token_encrypted: string | null
+          created_at_utc: string
+          default_channel_id: string | null
+          default_channel_name: string | null
+          id: string
+          installed_at_utc: string | null
+          installed_by_user_id: string | null
+          is_active: boolean
+          org_id: string
+          workspace_id: string
+          workspace_name: string | null
+        }
+        Insert: {
+          bot_token_encrypted?: string | null
+          created_at_utc?: string
+          default_channel_id?: string | null
+          default_channel_name?: string | null
+          id?: string
+          installed_at_utc?: string | null
+          installed_by_user_id?: string | null
+          is_active?: boolean
+          org_id: string
+          workspace_id: string
+          workspace_name?: string | null
+        }
+        Update: {
+          bot_token_encrypted?: string | null
+          created_at_utc?: string
+          default_channel_id?: string | null
+          default_channel_name?: string | null
+          id?: string
+          installed_at_utc?: string | null
+          installed_by_user_id?: string | null
+          is_active?: boolean
+          org_id?: string
+          workspace_id?: string
+          workspace_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "slack_workspace_configs_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stock_holdings: {
         Row: {
           created_at_utc: string
@@ -4574,6 +5021,57 @@ export type Database = {
           },
         ]
       }
+      user_role_assignments: {
+        Row: {
+          created_at_utc: string
+          effective_from_utc: string
+          effective_to_utc: string | null
+          id: string
+          is_primary: boolean
+          notes: string | null
+          org_id: string
+          role_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at_utc?: string
+          effective_from_utc?: string
+          effective_to_utc?: string | null
+          id?: string
+          is_primary?: boolean
+          notes?: string | null
+          org_id: string
+          role_id: string
+          user_id: string
+        }
+        Update: {
+          created_at_utc?: string
+          effective_from_utc?: string
+          effective_to_utc?: string | null
+          id?: string
+          is_primary?: boolean
+          notes?: string | null
+          org_id?: string
+          role_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_role_assignments_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_role_assignments_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "org_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       weather_observations: {
         Row: {
           created_at_utc: string
@@ -4702,11 +5200,30 @@ export type Database = {
         Args: { p_signal_id: string }
         Returns: string
       }
+      _channels_for_severity: {
+        Args: { p_prefs: Json; p_severity: string }
+        Returns: string[]
+      }
       _latest_cal_date: {
         Args: { p_org: string; p_window: number }
         Returns: string
       }
+      _policy_matches: {
+        Args: { p_context: Json; p_filter: Json }
+        Returns: boolean
+      }
+      _resolve_policy_recipients: {
+        Args: { p_org: string; p_role_ids: string[]; p_user_ids: string[] }
+        Returns: {
+          role_id: string
+          user_id: string
+        }[]
+      }
       _station_wx: { Args: { p_station: string }; Returns: Json }
+      acknowledge_notification: {
+        Args: { p_channel?: string; p_id: string }
+        Returns: Json
+      }
       acknowledge_task: { Args: { p_task_id: string }; Returns: undefined }
       act_on_signal: {
         Args: {
@@ -4802,6 +5319,7 @@ export type Database = {
         Args: { p_attrs?: Json; p_flight_id: string }
         Returns: string
       }
+      create_notification_policy: { Args: { p: Json }; Returns: string }
       create_regulatory_report_draft: {
         Args: { p_attrs?: Json; p_type: string }
         Returns: string
@@ -4844,6 +5362,7 @@ export type Database = {
         }
         Returns: Json
       }
+      escalate_notification: { Args: { p_id: string }; Returns: Json }
       evaluate_duty_period: {
         Args: {
           p_augmented?: boolean
@@ -4852,6 +5371,17 @@ export type Database = {
           p_night_operations?: boolean
           p_proposed_end_utc: string
           p_proposed_start_utc: string
+        }
+        Returns: Json
+      }
+      evaluate_notification_policies: {
+        Args: {
+          p_context: Json
+          p_dry_run?: boolean
+          p_event_type: string
+          p_org: string
+          p_source_id: string
+          p_source_type: string
         }
         Returns: Json
       }
@@ -5087,7 +5617,24 @@ export type Database = {
       get_locations_overview: { Args: never; Returns: Json }
       get_low_stock_alerts: { Args: never; Returns: Json }
       get_model_version_report: { Args: never; Returns: Json }
+      get_notification_badge: { Args: never; Returns: Json }
+      get_notification_history: {
+        Args: {
+          p_channel?: string
+          p_days?: number
+          p_limit?: number
+          p_status?: string
+        }
+        Returns: Json
+      }
+      get_notification_policies: { Args: never; Returns: Json }
+      get_on_call_current_shift: {
+        Args: { p_at?: string; p_role_id: string }
+        Returns: string
+      }
+      get_on_call_schedules: { Args: never; Returns: Json }
       get_or_create_demo_counterparty: { Args: never; Returns: string }
+      get_org_roles: { Args: never; Returns: Json }
       get_part_detail: { Args: { p_part_id: string }; Returns: Json }
       get_parts_by_component_compatibility: {
         Args: { p_component_type: string }
@@ -5116,6 +5663,7 @@ export type Database = {
         Returns: Json
       }
       get_serial_genealogy_by_id: { Args: { p_sid: string }; Returns: Json }
+      get_signal_notifications: { Args: { p_source_id: string }; Returns: Json }
       get_signals_for_aircraft: {
         Args: { p_aircraft_id: string; p_include_resolved?: boolean }
         Returns: Json
@@ -5132,6 +5680,7 @@ export type Database = {
         Args: { p_window_days?: number }
         Returns: Json
       }
+      get_user_notification_preferences: { Args: never; Returns: Json }
       get_weather_board: { Args: never; Returns: Json }
       get_weather_briefing: { Args: { p_flight_id: string }; Returns: Json }
       get_weather_overlay: { Args: never; Returns: Json }
@@ -5160,11 +5709,16 @@ export type Database = {
         Args: { p_new_rank?: number; p_new_status: string; p_task_id: string }
         Returns: undefined
       }
+      mute_notifications_temporarily: {
+        Args: { p_minutes?: number }
+        Returns: Json
+      }
       org_display_name: { Args: { p_org: string }; Returns: string }
       predictive_context_hash: {
         Args: { p_aircraft_id: string }
         Returns: string
       }
+      process_notification_escalations: { Args: never; Returns: number }
       propose_assignment: {
         Args: {
           p_crew_member_id: string
@@ -5239,12 +5793,17 @@ export type Database = {
         }
         Returns: string
       }
+      rotate_on_call_shift: { Args: { p_schedule_id: string }; Returns: Json }
       seed_avir_demo: { Args: { p_user_id: string }; Returns: string }
       seed_demo_backtest: {
         Args: { p_org_id: string; p_user_id: string }
         Returns: undefined
       }
       seed_demo_calibration: {
+        Args: { p_org_id: string; p_user_id: string }
+        Returns: undefined
+      }
+      seed_demo_comms: {
         Args: { p_org_id: string; p_user_id: string }
         Returns: undefined
       }
@@ -5293,6 +5852,10 @@ export type Database = {
         Args: { p_aog: boolean; p_blocking: boolean; p_risk: string }
         Returns: string
       }
+      test_notification_policy: {
+        Args: { p_context?: Json; p_id: string }
+        Returns: Json
+      }
       transfer_serial_ownership: {
         Args: {
           p_documentation_refs?: Json
@@ -5336,9 +5899,17 @@ export type Database = {
         Args: { p_notes?: string; p_release_id: string; p_status: string }
         Returns: undefined
       }
+      update_notification_policy: {
+        Args: { p: Json; p_id: string }
+        Returns: string
+      }
       update_rule_configuration: {
         Args: { p_id: string; p_rule_stack: Json }
         Returns: undefined
+      }
+      update_user_notification_channels: {
+        Args: { p_address: string; p_attrs?: Json; p_channel_type: string }
+        Returns: string
       }
       upsert_part: { Args: { p_attrs: Json }; Returns: string }
       validate_backtest_readiness: {
@@ -5348,6 +5919,10 @@ export type Database = {
       verify_genealogy_record: {
         Args: { p_genealogy_record_id: string; p_verification_source: string }
         Returns: undefined
+      }
+      verify_notification_channel: {
+        Args: { p_channel_id: string }
+        Returns: Json
       }
     }
     Enums: {
