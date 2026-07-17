@@ -3227,6 +3227,219 @@ export type Database = {
           },
         ]
       }
+      index_computations: {
+        Row: {
+          computation_completed_at_utc: string | null
+          computation_notes: string | null
+          computation_period_end: string
+          computation_period_start: string
+          computation_started_at_utc: string
+          computed_metadata: Json | null
+          computed_value: number
+          confidence_interval_lower: number | null
+          confidence_interval_upper: number | null
+          created_at_utc: string
+          id: string
+          index_definition_id: string
+          meets_minimum_threshold: boolean
+          methodology_hash: string
+          participating_tenant_count: number
+          source_data_summary: Json | null
+        }
+        Insert: {
+          computation_completed_at_utc?: string | null
+          computation_notes?: string | null
+          computation_period_end: string
+          computation_period_start: string
+          computation_started_at_utc?: string
+          computed_metadata?: Json | null
+          computed_value: number
+          confidence_interval_lower?: number | null
+          confidence_interval_upper?: number | null
+          created_at_utc?: string
+          id?: string
+          index_definition_id: string
+          meets_minimum_threshold: boolean
+          methodology_hash: string
+          participating_tenant_count: number
+          source_data_summary?: Json | null
+        }
+        Update: {
+          computation_completed_at_utc?: string | null
+          computation_notes?: string | null
+          computation_period_end?: string
+          computation_period_start?: string
+          computation_started_at_utc?: string
+          computed_metadata?: Json | null
+          computed_value?: number
+          confidence_interval_lower?: number | null
+          confidence_interval_upper?: number | null
+          created_at_utc?: string
+          id?: string
+          index_definition_id?: string
+          meets_minimum_threshold?: boolean
+          methodology_hash?: string
+          participating_tenant_count?: number
+          source_data_summary?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "index_computations_index_definition_id_fkey"
+            columns: ["index_definition_id"]
+            isOneToOne: false
+            referencedRelation: "index_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      index_definitions: {
+        Row: {
+          activation_gated: boolean
+          computation_frequency: string
+          created_at_utc: string
+          description: string | null
+          higher_is_better: boolean
+          id: string
+          index_category: string | null
+          index_code: string
+          index_name: string
+          is_publicly_visible: boolean
+          methodology_document_url: string | null
+          minimum_participating_tenants: number
+          minimum_signal_volume_for_category: number
+          unit: string | null
+        }
+        Insert: {
+          activation_gated?: boolean
+          computation_frequency?: string
+          created_at_utc?: string
+          description?: string | null
+          higher_is_better?: boolean
+          id?: string
+          index_category?: string | null
+          index_code: string
+          index_name: string
+          is_publicly_visible?: boolean
+          methodology_document_url?: string | null
+          minimum_participating_tenants?: number
+          minimum_signal_volume_for_category?: number
+          unit?: string | null
+        }
+        Update: {
+          activation_gated?: boolean
+          computation_frequency?: string
+          created_at_utc?: string
+          description?: string | null
+          higher_is_better?: boolean
+          id?: string
+          index_category?: string | null
+          index_code?: string
+          index_name?: string
+          is_publicly_visible?: boolean
+          methodology_document_url?: string | null
+          minimum_participating_tenants?: number
+          minimum_signal_volume_for_category?: number
+          unit?: string | null
+        }
+        Relationships: []
+      }
+      index_publications: {
+        Row: {
+          confidence_interval_lower: number | null
+          confidence_interval_upper: number | null
+          content_hash: string
+          correction_notes: string | null
+          created_at_utc: string
+          detailed_narrative: Json | null
+          headline_narrative: string
+          headline_value: number
+          id: string
+          index_computation_id: string
+          index_definition_id: string
+          methodology_reference: string | null
+          participating_tenant_count: number
+          period_end: string
+          period_label: string
+          period_start: string
+          previous_publication_hash: string | null
+          publication_channels: string[] | null
+          publication_version: number
+          published_at_utc: string
+          published_by_user_id: string
+          superseded_by_publication_id: string | null
+        }
+        Insert: {
+          confidence_interval_lower?: number | null
+          confidence_interval_upper?: number | null
+          content_hash: string
+          correction_notes?: string | null
+          created_at_utc?: string
+          detailed_narrative?: Json | null
+          headline_narrative: string
+          headline_value: number
+          id?: string
+          index_computation_id: string
+          index_definition_id: string
+          methodology_reference?: string | null
+          participating_tenant_count: number
+          period_end: string
+          period_label: string
+          period_start: string
+          previous_publication_hash?: string | null
+          publication_channels?: string[] | null
+          publication_version: number
+          published_at_utc?: string
+          published_by_user_id: string
+          superseded_by_publication_id?: string | null
+        }
+        Update: {
+          confidence_interval_lower?: number | null
+          confidence_interval_upper?: number | null
+          content_hash?: string
+          correction_notes?: string | null
+          created_at_utc?: string
+          detailed_narrative?: Json | null
+          headline_narrative?: string
+          headline_value?: number
+          id?: string
+          index_computation_id?: string
+          index_definition_id?: string
+          methodology_reference?: string | null
+          participating_tenant_count?: number
+          period_end?: string
+          period_label?: string
+          period_start?: string
+          previous_publication_hash?: string | null
+          publication_channels?: string[] | null
+          publication_version?: number
+          published_at_utc?: string
+          published_by_user_id?: string
+          superseded_by_publication_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "index_publications_index_computation_id_fkey"
+            columns: ["index_computation_id"]
+            isOneToOne: false
+            referencedRelation: "index_computations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "index_publications_index_definition_id_fkey"
+            columns: ["index_definition_id"]
+            isOneToOne: false
+            referencedRelation: "index_definitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "index_publications_superseded_by_publication_id_fkey"
+            columns: ["superseded_by_publication_id"]
+            isOneToOne: false
+            referencedRelation: "index_publications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       life_limited_parts: {
         Row: {
           component_id: string
@@ -3853,6 +4066,53 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_embed_configurations: {
+        Row: {
+          allowed_index_codes: string[] | null
+          api_key_id: string | null
+          created_at_utc: string
+          embed_style: string | null
+          embed_theme: string | null
+          id: string
+          is_active: boolean
+          partner_domain: string
+          partner_name: string
+          traffic_stats: Json | null
+        }
+        Insert: {
+          allowed_index_codes?: string[] | null
+          api_key_id?: string | null
+          created_at_utc?: string
+          embed_style?: string | null
+          embed_theme?: string | null
+          id?: string
+          is_active?: boolean
+          partner_domain: string
+          partner_name: string
+          traffic_stats?: Json | null
+        }
+        Update: {
+          allowed_index_codes?: string[] | null
+          api_key_id?: string | null
+          created_at_utc?: string
+          embed_style?: string | null
+          embed_theme?: string | null
+          id?: string
+          is_active?: boolean
+          partner_domain?: string
+          partner_name?: string
+          traffic_stats?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_embed_configurations_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "api_keys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       parts: {
         Row: {
           alternative_part_numbers: string[] | null
@@ -3923,6 +4183,68 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      press_releases: {
+        Row: {
+          approved_at_utc: string | null
+          content_hash: string
+          created_at_utc: string
+          distributed_at_utc: string | null
+          distribution_targets: Json | null
+          generated_at_utc: string
+          id: string
+          index_publication_id: string | null
+          media_contact_json: Json | null
+          release_body_markdown: string
+          release_boilerplate: string | null
+          release_dateline: string | null
+          release_status: string
+          release_title: string
+          reviewed_by_user_id: string | null
+        }
+        Insert: {
+          approved_at_utc?: string | null
+          content_hash: string
+          created_at_utc?: string
+          distributed_at_utc?: string | null
+          distribution_targets?: Json | null
+          generated_at_utc?: string
+          id?: string
+          index_publication_id?: string | null
+          media_contact_json?: Json | null
+          release_body_markdown: string
+          release_boilerplate?: string | null
+          release_dateline?: string | null
+          release_status?: string
+          release_title: string
+          reviewed_by_user_id?: string | null
+        }
+        Update: {
+          approved_at_utc?: string | null
+          content_hash?: string
+          created_at_utc?: string
+          distributed_at_utc?: string | null
+          distribution_targets?: Json | null
+          generated_at_utc?: string
+          id?: string
+          index_publication_id?: string | null
+          media_contact_json?: Json | null
+          release_body_markdown?: string
+          release_boilerplate?: string | null
+          release_dateline?: string | null
+          release_status?: string
+          release_title?: string
+          reviewed_by_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "press_releases_index_publication_id_fkey"
+            columns: ["index_publication_id"]
+            isOneToOne: false
+            referencedRelation: "index_publications"
             referencedColumns: ["id"]
           },
         ]
@@ -5705,6 +6027,66 @@ export type Database = {
           },
         ]
       }
+      tenant_index_consent: {
+        Row: {
+          allow_named_participation: boolean
+          consent_status: string
+          consented_at_utc: string | null
+          consented_by_user_id: string | null
+          created_at_utc: string
+          data_visibility_scope: string
+          id: string
+          index_definition_id: string
+          org_id: string
+          updated_at_utc: string
+          withdrawal_reason: string | null
+          withdrawn_at_utc: string | null
+        }
+        Insert: {
+          allow_named_participation?: boolean
+          consent_status: string
+          consented_at_utc?: string | null
+          consented_by_user_id?: string | null
+          created_at_utc?: string
+          data_visibility_scope?: string
+          id?: string
+          index_definition_id: string
+          org_id: string
+          updated_at_utc?: string
+          withdrawal_reason?: string | null
+          withdrawn_at_utc?: string | null
+        }
+        Update: {
+          allow_named_participation?: boolean
+          consent_status?: string
+          consented_at_utc?: string | null
+          consented_by_user_id?: string | null
+          created_at_utc?: string
+          data_visibility_scope?: string
+          id?: string
+          index_definition_id?: string
+          org_id?: string
+          updated_at_utc?: string
+          withdrawal_reason?: string | null
+          withdrawn_at_utc?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_index_consent_index_definition_id_fkey"
+            columns: ["index_definition_id"]
+            isOneToOne: false
+            referencedRelation: "index_definitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenant_index_consent_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_2fa_configurations: {
         Row: {
           backup_codes_encrypted: string | null
@@ -6258,6 +6640,7 @@ export type Database = {
         Args: { p_prefs: Json; p_severity: string }
         Returns: string[]
       }
+      _is_founder: { Args: never; Returns: boolean }
       _latest_cal_date: {
         Args: { p_org: string; p_window: number }
         Returns: string
@@ -6345,6 +6728,14 @@ export type Database = {
         Args: { p_flight_id: string }
         Returns: Json
       }
+      compute_index: {
+        Args: {
+          p_index_definition_id: string
+          p_period_end: string
+          p_period_start: string
+        }
+        Returns: string
+      }
       compute_llp_status: { Args: never; Returns: number }
       compute_sla_performance: {
         Args: { p_contract_id: string; p_end?: string; p_start?: string }
@@ -6357,6 +6748,16 @@ export type Database = {
           p_part_id: string
           p_quantity: number
           p_task_id?: string
+        }
+        Returns: string
+      }
+      correct_index_publication: {
+        Args: {
+          p_confirmed_content_hash: string
+          p_correction_notes: string
+          p_new_computation_id: string
+          p_prior_publication_id: string
+          p_step_up_verified?: boolean
         }
         Returns: string
       }
@@ -6434,6 +6835,10 @@ export type Database = {
         Returns: Json
       }
       disable_2fa: { Args: { p_method: string }; Returns: Json }
+      draft_press_release: {
+        Args: { p_index_publication_id: string }
+        Returns: string
+      }
       escalate_notification: { Args: { p_id: string }; Returns: Json }
       evaluate_duty_period: {
         Args: {
@@ -6533,6 +6938,10 @@ export type Database = {
       generate_operational_signals_for_org: {
         Args: { p_org: string }
         Returns: number
+      }
+      generate_partner_embed_snippet: {
+        Args: { p_partner_id: string }
+        Returns: Json
       }
       generate_predictive_signals_for_aircraft: {
         Args: {
@@ -6711,6 +7120,22 @@ export type Database = {
         Returns: Json
       }
       get_genealogy_directory: { Args: never; Returns: Json }
+      get_index_computations: {
+        Args: { p_index_definition_id: string }
+        Returns: Json
+      }
+      get_index_consents: { Args: never; Returns: Json }
+      get_index_internal_preview: { Args: never; Returns: Json }
+      get_index_participation: { Args: never; Returns: Json }
+      get_index_public_view: { Args: never; Returns: Json }
+      get_index_publications: {
+        Args: { p_index_definition_id: string }
+        Returns: Json
+      }
+      get_index_publish_hash: {
+        Args: { p_index_computation_id: string }
+        Returns: string
+      }
       get_inventory_dashboard: { Args: never; Returns: Json }
       get_llp_alerts: { Args: { p_threshold_pct?: number }; Returns: Json }
       get_location_detail: { Args: { p_location_id: string }; Returns: Json }
@@ -6738,6 +7163,7 @@ export type Database = {
       get_org_config: { Args: never; Returns: Json }
       get_org_roles: { Args: never; Returns: Json }
       get_part_detail: { Args: { p_part_id: string }; Returns: Json }
+      get_partner_embeds: { Args: never; Returns: Json }
       get_parts_by_component_compatibility: {
         Args: { p_component_type: string }
         Returns: Json
@@ -6747,6 +7173,7 @@ export type Database = {
         Args: { p_fleet_id?: string }
         Returns: Json
       }
+      get_press_releases: { Args: never; Returns: Json }
       get_recent_flight_events: { Args: { p_limit?: number }; Returns: Json }
       get_recent_movements: { Args: { p_limit?: number }; Returns: Json }
       get_reporting_calendar: { Args: never; Returns: Json }
@@ -6795,6 +7222,14 @@ export type Database = {
       get_wip_summary: { Args: never; Returns: Json }
       get_work_package_detail: { Args: { p_id: string }; Returns: Json }
       get_work_packages: { Args: never; Returns: Json }
+      grant_index_consent: {
+        Args: {
+          p_allow_named?: boolean
+          p_index_definition_id: string
+          p_visibility?: string
+        }
+        Returns: Json
+      }
       import_ad_from_authority: { Args: { p_ad: Json }; Returns: string }
       is_org_admin: { Args: { p_org: string }; Returns: boolean }
       is_org_member: { Args: { p_org: string }; Returns: boolean }
@@ -6853,6 +7288,15 @@ export type Database = {
         }
         Returns: Json
       }
+      publish_index: {
+        Args: {
+          p_confirmed_content_hash: string
+          p_index_computation_id: string
+          p_publication_channels: string[]
+          p_step_up_verified?: boolean
+        }
+        Returns: string
+      }
       publish_scoreboard: {
         Args: {
           p_channel: string
@@ -6864,6 +7308,10 @@ export type Database = {
         Returns: Json
       }
       recompute_all_calibration: { Args: { p_org_id?: string }; Returns: Json }
+      recompute_all_indices: {
+        Args: { p_period_end?: string; p_period_start?: string }
+        Returns: number
+      }
       record_2fa_config: {
         Args: {
           p_backup_codes?: string
@@ -6975,6 +7423,10 @@ export type Database = {
         Args: { p_org_id: string; p_user_id: string }
         Returns: number
       }
+      seed_demo_index: {
+        Args: { p_mro_org: string; p_operator_org: string; p_user_id: string }
+        Returns: undefined
+      }
       seed_demo_inventory: {
         Args: { p_org_id: string; p_user_id: string }
         Returns: number
@@ -7069,6 +7521,10 @@ export type Database = {
         Args: { p_notes?: string; p_release_id: string; p_status: string }
         Returns: undefined
       }
+      update_index_definition: {
+        Args: { p: Json; p_id: string }
+        Returns: Json
+      }
       update_notification_policy: {
         Args: { p: Json; p_id: string }
         Returns: string
@@ -7096,6 +7552,10 @@ export type Database = {
       }
       verify_notification_channel: {
         Args: { p_channel_id: string }
+        Returns: Json
+      }
+      withdraw_index_consent: {
+        Args: { p_index_definition_id: string; p_reason?: string }
         Returns: Json
       }
     }
