@@ -346,6 +346,64 @@ export type Database = {
           },
         ]
       }
+      assignments: {
+        Row: {
+          assigned_at_utc: string
+          assigned_by_user_id: string | null
+          assignment_status: string | null
+          created_at_utc: string
+          crew_member_id: string
+          flight_schedule_id: string
+          id: string
+          org_id: string
+          role_on_flight: string | null
+        }
+        Insert: {
+          assigned_at_utc?: string
+          assigned_by_user_id?: string | null
+          assignment_status?: string | null
+          created_at_utc?: string
+          crew_member_id: string
+          flight_schedule_id: string
+          id?: string
+          org_id: string
+          role_on_flight?: string | null
+        }
+        Update: {
+          assigned_at_utc?: string
+          assigned_by_user_id?: string | null
+          assignment_status?: string | null
+          created_at_utc?: string
+          crew_member_id?: string
+          flight_schedule_id?: string
+          id?: string
+          org_id?: string
+          role_on_flight?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignments_crew_member_id_fkey"
+            columns: ["crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignments_flight_schedule_id_fkey"
+            columns: ["flight_schedule_id"]
+            isOneToOne: false
+            referencedRelation: "flight_schedules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignments_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_events: {
         Row: {
           actor_user_id: string | null
@@ -641,6 +699,219 @@ export type Database = {
           },
           {
             foreignKeyName: "components_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crew_members: {
+        Row: {
+          created_at_utc: string
+          date_of_birth: string | null
+          email: string | null
+          employee_id: string
+          employment_status: string | null
+          first_name: string
+          hire_date: string | null
+          home_base_station: string | null
+          id: string
+          last_name: string
+          notes: string | null
+          org_id: string
+          phone: string | null
+          primary_jurisdiction: string | null
+          role: string | null
+          seniority_number: number | null
+          updated_at_utc: string
+        }
+        Insert: {
+          created_at_utc?: string
+          date_of_birth?: string | null
+          email?: string | null
+          employee_id: string
+          employment_status?: string | null
+          first_name: string
+          hire_date?: string | null
+          home_base_station?: string | null
+          id?: string
+          last_name: string
+          notes?: string | null
+          org_id: string
+          phone?: string | null
+          primary_jurisdiction?: string | null
+          role?: string | null
+          seniority_number?: number | null
+          updated_at_utc?: string
+        }
+        Update: {
+          created_at_utc?: string
+          date_of_birth?: string | null
+          email?: string | null
+          employee_id?: string
+          employment_status?: string | null
+          first_name?: string
+          hire_date?: string | null
+          home_base_station?: string | null
+          id?: string
+          last_name?: string
+          notes?: string | null
+          org_id?: string
+          phone?: string | null
+          primary_jurisdiction?: string | null
+          role?: string | null
+          seniority_number?: number | null
+          updated_at_utc?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crew_members_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crew_qualifications: {
+        Row: {
+          created_at_utc: string
+          crew_member_id: string
+          currency_details: Json | null
+          expiry_date: string | null
+          id: string
+          issued_date: string
+          issuing_reference: string | null
+          last_currency_event_date: string | null
+          org_id: string
+          qualification_id: string
+          status: string | null
+          updated_at_utc: string
+        }
+        Insert: {
+          created_at_utc?: string
+          crew_member_id: string
+          currency_details?: Json | null
+          expiry_date?: string | null
+          id?: string
+          issued_date: string
+          issuing_reference?: string | null
+          last_currency_event_date?: string | null
+          org_id: string
+          qualification_id: string
+          status?: string | null
+          updated_at_utc?: string
+        }
+        Update: {
+          created_at_utc?: string
+          crew_member_id?: string
+          currency_details?: Json | null
+          expiry_date?: string | null
+          id?: string
+          issued_date?: string
+          issuing_reference?: string | null
+          last_currency_event_date?: string | null
+          org_id?: string
+          qualification_id?: string
+          status?: string | null
+          updated_at_utc?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crew_qualifications_crew_member_id_fkey"
+            columns: ["crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crew_qualifications_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crew_qualifications_qualification_id_fkey"
+            columns: ["qualification_id"]
+            isOneToOne: false
+            referencedRelation: "qualifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      duty_periods: {
+        Row: {
+          augmented_crew: boolean | null
+          created_at_utc: string
+          crew_member_id: string
+          crossing_time_zones: number | null
+          duty_type: string | null
+          end_utc: string
+          flight_time_minutes: number | null
+          id: string
+          linked_flight_schedule_ids: string[] | null
+          night_operations: boolean | null
+          org_id: string
+          release_utc: string | null
+          report_utc: string | null
+          start_utc: string
+          station_from: string | null
+          station_to: string | null
+          status: string | null
+          updated_at_utc: string
+        }
+        Insert: {
+          augmented_crew?: boolean | null
+          created_at_utc?: string
+          crew_member_id: string
+          crossing_time_zones?: number | null
+          duty_type?: string | null
+          end_utc: string
+          flight_time_minutes?: number | null
+          id?: string
+          linked_flight_schedule_ids?: string[] | null
+          night_operations?: boolean | null
+          org_id: string
+          release_utc?: string | null
+          report_utc?: string | null
+          start_utc: string
+          station_from?: string | null
+          station_to?: string | null
+          status?: string | null
+          updated_at_utc?: string
+        }
+        Update: {
+          augmented_crew?: boolean | null
+          created_at_utc?: string
+          crew_member_id?: string
+          crossing_time_zones?: number | null
+          duty_type?: string | null
+          end_utc?: string
+          flight_time_minutes?: number | null
+          id?: string
+          linked_flight_schedule_ids?: string[] | null
+          night_operations?: boolean | null
+          org_id?: string
+          release_utc?: string | null
+          report_utc?: string | null
+          start_utc?: string
+          station_from?: string | null
+          station_to?: string | null
+          status?: string | null
+          updated_at_utc?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "duty_periods_crew_member_id_fkey"
+            columns: ["crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "duty_periods_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
@@ -1098,6 +1369,183 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "parts_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      qualifications: {
+        Row: {
+          applicable_aircraft_types: string[] | null
+          applicable_roles: string[] | null
+          created_at_utc: string
+          id: string
+          issuing_authority: string | null
+          org_id: string
+          qualification_code: string
+          qualification_name: string
+          qualification_type: string | null
+          validity_duration_days: number | null
+        }
+        Insert: {
+          applicable_aircraft_types?: string[] | null
+          applicable_roles?: string[] | null
+          created_at_utc?: string
+          id?: string
+          issuing_authority?: string | null
+          org_id: string
+          qualification_code: string
+          qualification_name: string
+          qualification_type?: string | null
+          validity_duration_days?: number | null
+        }
+        Update: {
+          applicable_aircraft_types?: string[] | null
+          applicable_roles?: string[] | null
+          created_at_utc?: string
+          id?: string
+          issuing_authority?: string | null
+          org_id?: string
+          qualification_code?: string
+          qualification_name?: string
+          qualification_type?: string | null
+          validity_duration_days?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qualifications_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rule_check_results: {
+        Row: {
+          check_type: string | null
+          crew_member_id: string
+          duty_period_id: string | null
+          evaluated_at_utc: string
+          fatigue_score: number | null
+          id: string
+          org_id: string
+          overall_result: string | null
+          rule_config_id: string | null
+          rule_evaluations: Json | null
+          violations: string[] | null
+          warnings: string[] | null
+        }
+        Insert: {
+          check_type?: string | null
+          crew_member_id: string
+          duty_period_id?: string | null
+          evaluated_at_utc?: string
+          fatigue_score?: number | null
+          id?: string
+          org_id: string
+          overall_result?: string | null
+          rule_config_id?: string | null
+          rule_evaluations?: Json | null
+          violations?: string[] | null
+          warnings?: string[] | null
+        }
+        Update: {
+          check_type?: string | null
+          crew_member_id?: string
+          duty_period_id?: string | null
+          evaluated_at_utc?: string
+          fatigue_score?: number | null
+          id?: string
+          org_id?: string
+          overall_result?: string | null
+          rule_config_id?: string | null
+          rule_evaluations?: Json | null
+          violations?: string[] | null
+          warnings?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rule_check_results_crew_member_id_fkey"
+            columns: ["crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rule_check_results_duty_period_id_fkey"
+            columns: ["duty_period_id"]
+            isOneToOne: false
+            referencedRelation: "duty_periods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rule_check_results_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rule_check_results_rule_config_id_fkey"
+            columns: ["rule_config_id"]
+            isOneToOne: false
+            referencedRelation: "rule_configurations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rule_configurations: {
+        Row: {
+          applicable_aircraft_types: string[] | null
+          applicable_roles: string[] | null
+          cba_overlay_name: string | null
+          created_at_utc: string
+          effective_from: string
+          effective_to: string | null
+          id: string
+          is_active: boolean | null
+          org_id: string
+          regulator: string
+          rule_config_name: string
+          rule_stack: Json
+          updated_at_utc: string
+        }
+        Insert: {
+          applicable_aircraft_types?: string[] | null
+          applicable_roles?: string[] | null
+          cba_overlay_name?: string | null
+          created_at_utc?: string
+          effective_from: string
+          effective_to?: string | null
+          id?: string
+          is_active?: boolean | null
+          org_id: string
+          regulator: string
+          rule_config_name: string
+          rule_stack: Json
+          updated_at_utc?: string
+        }
+        Update: {
+          applicable_aircraft_types?: string[] | null
+          applicable_roles?: string[] | null
+          cba_overlay_name?: string | null
+          created_at_utc?: string
+          effective_from?: string
+          effective_to?: string | null
+          id?: string
+          is_active?: boolean | null
+          org_id?: string
+          regulator?: string
+          rule_config_name?: string
+          rule_stack?: Json
+          updated_at_utc?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rule_configurations_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
@@ -2233,6 +2681,19 @@ export type Database = {
         Args: { p_assignee_user_id: string; p_task_id: string }
         Returns: undefined
       }
+      check_crew_currency: {
+        Args: { p_crew_member_id: string; p_flight_schedule_id: string }
+        Returns: Json
+      }
+      commit_assignment: {
+        Args: {
+          p_crew_member_id: string
+          p_flight_schedule_id: string
+          p_override_warnings?: boolean
+          p_role_on_flight: string
+        }
+        Returns: string
+      }
       compute_component_health: {
         Args: { p_component_id: string }
         Returns: number
@@ -2289,6 +2750,17 @@ export type Database = {
         Returns: string
       }
       current_user_org_ids: { Args: never; Returns: string[] }
+      evaluate_duty_period: {
+        Args: {
+          p_augmented?: boolean
+          p_crew_member_id: string
+          p_duty_type: string
+          p_night_operations?: boolean
+          p_proposed_end_utc: string
+          p_proposed_start_utc: string
+        }
+        Returns: Json
+      }
       export_genealogy_bundle: {
         Args: {
           p_format: string
@@ -2302,6 +2774,11 @@ export type Database = {
       genealogy_upsert_serial: {
         Args: { p_component_id: string }
         Returns: string
+      }
+      generate_crew_signals: { Args: never; Returns: number }
+      generate_crew_signals_for_org: {
+        Args: { p_org: string }
+        Returns: number
       }
       generate_inventory_signals: { Args: never; Returns: number }
       generate_inventory_signals_for_org: {
@@ -2367,6 +2844,24 @@ export type Database = {
         Args: { p_aircraft_id: string }
         Returns: Json
       }
+      get_crew_detail: { Args: { p_crew_member_id: string }; Returns: Json }
+      get_crew_directory: { Args: never; Returns: Json }
+      get_crew_overlay: { Args: { p_fleet_id?: string }; Returns: Json }
+      get_crew_roster: {
+        Args: {
+          p_end_date: string
+          p_home_base?: string
+          p_role?: string[]
+          p_start_date: string
+        }
+        Returns: Json
+      }
+      get_crew_stats: { Args: never; Returns: Json }
+      get_expiring_qualifications: { Args: { p_days?: number }; Returns: Json }
+      get_fatigue_forecast: {
+        Args: { p_crew_member_id: string; p_forecast_days?: number }
+        Returns: Json
+      }
       get_fleet_board: {
         Args: {
           p_aircraft_types?: string[]
@@ -2395,6 +2890,7 @@ export type Database = {
         Returns: Json
       }
       get_recent_movements: { Args: { p_limit?: number }; Returns: Json }
+      get_rule_configurations: { Args: never; Returns: Json }
       get_serial_genealogy: {
         Args: {
           p_manufacturer: string
@@ -2416,6 +2912,7 @@ export type Database = {
       get_supplier_detail: { Args: { p_supplier_id: string }; Returns: Json }
       get_supplier_performance: { Args: never; Returns: Json }
       get_task_detail: { Args: { p_task_id: string }; Returns: Json }
+      is_org_admin: { Args: { p_org: string }; Returns: boolean }
       is_org_member: { Args: { p_org: string }; Returns: boolean }
       log_work: {
         Args: {
@@ -2434,6 +2931,14 @@ export type Database = {
       predictive_context_hash: {
         Args: { p_aircraft_id: string }
         Returns: string
+      }
+      propose_assignment: {
+        Args: {
+          p_crew_member_id: string
+          p_flight_schedule_id: string
+          p_role_on_flight: string
+        }
+        Returns: Json
       }
       record_asset_event: {
         Args: {
@@ -2475,6 +2980,10 @@ export type Database = {
       }
       seed_avir_demo: { Args: { p_user_id: string }; Returns: string }
       seed_demo_components: {
+        Args: { p_org_id: string; p_user_id: string }
+        Returns: number
+      }
+      seed_demo_crew: {
         Args: { p_org_id: string; p_user_id: string }
         Returns: number
       }
@@ -2528,6 +3037,10 @@ export type Database = {
           p_task_id?: string
         }
         Returns: string
+      }
+      update_rule_configuration: {
+        Args: { p_id: string; p_rule_stack: Json }
+        Returns: undefined
       }
       upsert_part: { Args: { p_attrs: Json }; Returns: string }
       verify_genealogy_record: {
