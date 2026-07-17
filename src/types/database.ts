@@ -846,6 +846,454 @@ export type Database = {
           },
         ]
       }
+      backtest_actual_events: {
+        Row: {
+          actual_event_time_utc: string
+          actual_event_type: string
+          backtest_project_id: string
+          created_at_utc: string
+          entity_external_id: string
+          event_description: string | null
+          id: string
+          org_id: string
+          severity_at_occurrence: string | null
+          source_data_source_id: string | null
+          was_predictable_in_hindsight: boolean | null
+        }
+        Insert: {
+          actual_event_time_utc: string
+          actual_event_type: string
+          backtest_project_id: string
+          created_at_utc?: string
+          entity_external_id: string
+          event_description?: string | null
+          id?: string
+          org_id: string
+          severity_at_occurrence?: string | null
+          source_data_source_id?: string | null
+          was_predictable_in_hindsight?: boolean | null
+        }
+        Update: {
+          actual_event_time_utc?: string
+          actual_event_type?: string
+          backtest_project_id?: string
+          created_at_utc?: string
+          entity_external_id?: string
+          event_description?: string | null
+          id?: string
+          org_id?: string
+          severity_at_occurrence?: string | null
+          source_data_source_id?: string | null
+          was_predictable_in_hindsight?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "backtest_actual_events_backtest_project_id_fkey"
+            columns: ["backtest_project_id"]
+            isOneToOne: false
+            referencedRelation: "backtest_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "backtest_actual_events_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "backtest_actual_events_source_data_source_id_fkey"
+            columns: ["source_data_source_id"]
+            isOneToOne: false
+            referencedRelation: "backtest_data_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      backtest_data_sources: {
+        Row: {
+          backtest_project_id: string
+          created_at_utc: string
+          id: string
+          ingested_at_utc: string | null
+          ingestion_errors: Json | null
+          org_id: string
+          rows_ingested: number | null
+          source_file_name: string
+          source_file_size_bytes: number | null
+          source_storage_path: string
+          source_type: string
+        }
+        Insert: {
+          backtest_project_id: string
+          created_at_utc?: string
+          id?: string
+          ingested_at_utc?: string | null
+          ingestion_errors?: Json | null
+          org_id: string
+          rows_ingested?: number | null
+          source_file_name: string
+          source_file_size_bytes?: number | null
+          source_storage_path: string
+          source_type: string
+        }
+        Update: {
+          backtest_project_id?: string
+          created_at_utc?: string
+          id?: string
+          ingested_at_utc?: string | null
+          ingestion_errors?: Json | null
+          org_id?: string
+          rows_ingested?: number | null
+          source_file_name?: string
+          source_file_size_bytes?: number | null
+          source_storage_path?: string
+          source_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "backtest_data_sources_backtest_project_id_fkey"
+            columns: ["backtest_project_id"]
+            isOneToOne: false
+            referencedRelation: "backtest_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "backtest_data_sources_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      backtest_projects: {
+        Row: {
+          created_at_utc: string
+          created_by_user_id: string | null
+          customer_organization_name: string | null
+          data_period_end: string | null
+          data_period_start: string | null
+          id: string
+          notes: string | null
+          org_id: string
+          project_name: string
+          purpose: string | null
+          status: string
+          updated_at_utc: string
+        }
+        Insert: {
+          created_at_utc?: string
+          created_by_user_id?: string | null
+          customer_organization_name?: string | null
+          data_period_end?: string | null
+          data_period_start?: string | null
+          id?: string
+          notes?: string | null
+          org_id: string
+          project_name: string
+          purpose?: string | null
+          status?: string
+          updated_at_utc?: string
+        }
+        Update: {
+          created_at_utc?: string
+          created_by_user_id?: string | null
+          customer_organization_name?: string | null
+          data_period_end?: string | null
+          data_period_start?: string | null
+          id?: string
+          notes?: string | null
+          org_id?: string
+          project_name?: string
+          purpose?: string | null
+          status?: string
+          updated_at_utc?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "backtest_projects_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      backtest_reconstructed_states: {
+        Row: {
+          backtest_project_id: string
+          created_at_utc: string
+          entity_external_id: string
+          entity_type: string
+          id: string
+          org_id: string
+          reconstruction_timestamp_utc: string
+          source_data_source_ids: string[] | null
+          state_hash: string
+          state_snapshot: Json
+        }
+        Insert: {
+          backtest_project_id: string
+          created_at_utc?: string
+          entity_external_id: string
+          entity_type: string
+          id?: string
+          org_id: string
+          reconstruction_timestamp_utc: string
+          source_data_source_ids?: string[] | null
+          state_hash: string
+          state_snapshot: Json
+        }
+        Update: {
+          backtest_project_id?: string
+          created_at_utc?: string
+          entity_external_id?: string
+          entity_type?: string
+          id?: string
+          org_id?: string
+          reconstruction_timestamp_utc?: string
+          source_data_source_ids?: string[] | null
+          state_hash?: string
+          state_snapshot?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "backtest_reconstructed_states_backtest_project_id_fkey"
+            columns: ["backtest_project_id"]
+            isOneToOne: false
+            referencedRelation: "backtest_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "backtest_reconstructed_states_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      backtest_reports: {
+        Row: {
+          backtest_project_id: string
+          content_hash: string
+          created_at_utc: string
+          generated_at_utc: string
+          generated_by_user_id: string | null
+          id: string
+          narrative: Json | null
+          org_id: string
+          report_type: string | null
+          shared_with: Json | null
+          storage_path_json: string | null
+          storage_path_pdf: string | null
+          summary_stats: Json | null
+        }
+        Insert: {
+          backtest_project_id: string
+          content_hash: string
+          created_at_utc?: string
+          generated_at_utc?: string
+          generated_by_user_id?: string | null
+          id?: string
+          narrative?: Json | null
+          org_id: string
+          report_type?: string | null
+          shared_with?: Json | null
+          storage_path_json?: string | null
+          storage_path_pdf?: string | null
+          summary_stats?: Json | null
+        }
+        Update: {
+          backtest_project_id?: string
+          content_hash?: string
+          created_at_utc?: string
+          generated_at_utc?: string
+          generated_by_user_id?: string | null
+          id?: string
+          narrative?: Json | null
+          org_id?: string
+          report_type?: string | null
+          shared_with?: Json | null
+          storage_path_json?: string | null
+          storage_path_pdf?: string | null
+          summary_stats?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "backtest_reports_backtest_project_id_fkey"
+            columns: ["backtest_project_id"]
+            isOneToOne: false
+            referencedRelation: "backtest_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "backtest_reports_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      backtest_runs: {
+        Row: {
+          actual_events_matched_count: number | null
+          backtest_project_id: string
+          completed_at_utc: string | null
+          created_at_utc: string
+          error_summary: string | null
+          id: string
+          org_id: string
+          run_type: string | null
+          signals_generated_count: number | null
+          started_at_utc: string
+          status: string | null
+          total_cost_usd: number | null
+          total_input_tokens: number | null
+          total_output_tokens: number | null
+        }
+        Insert: {
+          actual_events_matched_count?: number | null
+          backtest_project_id: string
+          completed_at_utc?: string | null
+          created_at_utc?: string
+          error_summary?: string | null
+          id?: string
+          org_id: string
+          run_type?: string | null
+          signals_generated_count?: number | null
+          started_at_utc?: string
+          status?: string | null
+          total_cost_usd?: number | null
+          total_input_tokens?: number | null
+          total_output_tokens?: number | null
+        }
+        Update: {
+          actual_events_matched_count?: number | null
+          backtest_project_id?: string
+          completed_at_utc?: string | null
+          created_at_utc?: string
+          error_summary?: string | null
+          id?: string
+          org_id?: string
+          run_type?: string | null
+          signals_generated_count?: number | null
+          started_at_utc?: string
+          status?: string | null
+          total_cost_usd?: number | null
+          total_input_tokens?: number | null
+          total_output_tokens?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "backtest_runs_backtest_project_id_fkey"
+            columns: ["backtest_project_id"]
+            isOneToOne: false
+            referencedRelation: "backtest_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "backtest_runs_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      backtest_simulated_signals: {
+        Row: {
+          backtest_project_id: string
+          created_at_utc: string
+          entity_external_id: string | null
+          evidence_refs: Json | null
+          id: string
+          input_context_hash: string
+          match_confidence: string | null
+          match_lead_time_days: number | null
+          matched_actual_event_id: string | null
+          model_identifier: string | null
+          narrative: string | null
+          org_id: string
+          prompt_template_hash: string | null
+          recommendation: string | null
+          simulated_confidence: string | null
+          simulated_severity: string | null
+          simulated_signal_category: string
+          simulated_signal_class: string | null
+          title: string | null
+          would_have_fired_at_utc: string
+        }
+        Insert: {
+          backtest_project_id: string
+          created_at_utc?: string
+          entity_external_id?: string | null
+          evidence_refs?: Json | null
+          id?: string
+          input_context_hash: string
+          match_confidence?: string | null
+          match_lead_time_days?: number | null
+          matched_actual_event_id?: string | null
+          model_identifier?: string | null
+          narrative?: string | null
+          org_id: string
+          prompt_template_hash?: string | null
+          recommendation?: string | null
+          simulated_confidence?: string | null
+          simulated_severity?: string | null
+          simulated_signal_category: string
+          simulated_signal_class?: string | null
+          title?: string | null
+          would_have_fired_at_utc: string
+        }
+        Update: {
+          backtest_project_id?: string
+          created_at_utc?: string
+          entity_external_id?: string | null
+          evidence_refs?: Json | null
+          id?: string
+          input_context_hash?: string
+          match_confidence?: string | null
+          match_lead_time_days?: number | null
+          matched_actual_event_id?: string | null
+          model_identifier?: string | null
+          narrative?: string | null
+          org_id?: string
+          prompt_template_hash?: string | null
+          recommendation?: string | null
+          simulated_confidence?: string | null
+          simulated_severity?: string | null
+          simulated_signal_category?: string
+          simulated_signal_class?: string | null
+          title?: string | null
+          would_have_fired_at_utc?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "backtest_simulated_signals_backtest_project_id_fkey"
+            columns: ["backtest_project_id"]
+            isOneToOne: false
+            referencedRelation: "backtest_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "backtest_simulated_signals_matched_actual_event_id_fkey"
+            columns: ["matched_actual_event_id"]
+            isOneToOne: false
+            referencedRelation: "backtest_actual_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "backtest_simulated_signals_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       calibration_events: {
         Row: {
           accuracy_result: string | null
@@ -4336,6 +4784,7 @@ export type Database = {
         }
         Returns: string
       }
+      create_backtest_project: { Args: { p: Json }; Returns: Json }
       create_component: {
         Args: {
           p_aircraft_id: string
@@ -4406,6 +4855,10 @@ export type Database = {
         }
         Returns: Json
       }
+      execute_backtest: {
+        Args: { p_project: string; p_run_type?: string }
+        Returns: Json
+      }
       export_calibration_report: {
         Args: { p_window_days?: number }
         Returns: Json
@@ -4434,6 +4887,10 @@ export type Database = {
       genealogy_build_record: { Args: { p_event_id: string }; Returns: string }
       genealogy_upsert_serial: {
         Args: { p_component_id: string }
+        Returns: string
+      }
+      generate_backtest_report: {
+        Args: { p_project: string; p_report_type?: string }
         Returns: string
       }
       generate_calibration_scoreboard: {
@@ -4513,6 +4970,26 @@ export type Database = {
       get_aircraft_parts: { Args: { p_aircraft_id: string }; Returns: Json }
       get_asset_detail: { Args: { p_asset_id: string }; Returns: Json }
       get_asset_service_calendar: { Args: { p_days?: number }; Returns: Json }
+      get_backtest_actual_events: { Args: { p_project: string }; Returns: Json }
+      get_backtest_category_detail: {
+        Args: { p_category: string; p_project: string }
+        Returns: Json
+      }
+      get_backtest_project: { Args: { p_project: string }; Returns: Json }
+      get_backtest_projects: { Args: never; Returns: Json }
+      get_backtest_reports: { Args: { p_project: string }; Returns: Json }
+      get_backtest_run_status: { Args: { p_run: string }; Returns: Json }
+      get_backtest_simulated_signals: {
+        Args: {
+          p_category?: string
+          p_class?: string
+          p_limit?: number
+          p_match?: string
+          p_project: string
+        }
+        Returns: Json
+      }
+      get_backtest_summary: { Args: { p_project: string }; Returns: Json }
       get_calibration_badge_map: { Args: never; Returns: Json }
       get_calibration_category_detail: {
         Args: { p_category: string; p_window_days?: number }
@@ -4763,6 +5240,10 @@ export type Database = {
         Returns: string
       }
       seed_avir_demo: { Args: { p_user_id: string }; Returns: string }
+      seed_demo_backtest: {
+        Args: { p_org_id: string; p_user_id: string }
+        Returns: undefined
+      }
       seed_demo_calibration: {
         Args: { p_org_id: string; p_user_id: string }
         Returns: undefined
@@ -4795,7 +5276,15 @@ export type Database = {
         Args: { p_org_id: string; p_user_id: string }
         Returns: number
       }
+      share_backtest_report: {
+        Args: { p_channel?: string; p_recipient: string; p_report: string }
+        Returns: Json
+      }
       signal_context_hash: { Args: { p_aircraft_id: string }; Returns: string }
+      simulate_backtest_run: {
+        Args: { p_project: string; p_run: string; p_run_type?: string }
+        Returns: undefined
+      }
       sync_component_genealogy: {
         Args: { p_component_id: string }
         Returns: number
@@ -4852,6 +5341,10 @@ export type Database = {
         Returns: undefined
       }
       upsert_part: { Args: { p_attrs: Json }; Returns: string }
+      validate_backtest_readiness: {
+        Args: { p_project: string }
+        Returns: Json
+      }
       verify_genealogy_record: {
         Args: { p_genealogy_record_id: string; p_verification_source: string }
         Returns: undefined
