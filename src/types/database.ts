@@ -396,6 +396,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "assignments_flight_schedule_id_fkey"
+            columns: ["flight_schedule_id"]
+            isOneToOne: false
+            referencedRelation: "flights"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "assignments_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
@@ -841,6 +848,159 @@ export type Database = {
           },
         ]
       }
+      delay_attribution: {
+        Row: {
+          created_at_utc: string
+          delay_code: string
+          delay_code_category: string
+          delay_minutes: number
+          delay_reason: string | null
+          flight_id: string
+          id: string
+          org_id: string
+          responsibility_org: string | null
+        }
+        Insert: {
+          created_at_utc?: string
+          delay_code: string
+          delay_code_category: string
+          delay_minutes: number
+          delay_reason?: string | null
+          flight_id: string
+          id?: string
+          org_id: string
+          responsibility_org?: string | null
+        }
+        Update: {
+          created_at_utc?: string
+          delay_code?: string
+          delay_code_category?: string
+          delay_minutes?: number
+          delay_reason?: string | null
+          flight_id?: string
+          id?: string
+          org_id?: string
+          responsibility_org?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delay_attribution_flight_id_fkey"
+            columns: ["flight_id"]
+            isOneToOne: false
+            referencedRelation: "flight_schedules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delay_attribution_flight_id_fkey"
+            columns: ["flight_id"]
+            isOneToOne: false
+            referencedRelation: "flights"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delay_attribution_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dispatch_releases: {
+        Row: {
+          captain_notes: string | null
+          captain_signature_utc: string | null
+          created_at_utc: string
+          dispatcher_user_id: string | null
+          flight_id: string
+          fuel_plan: Json | null
+          id: string
+          mel_items: Json | null
+          notam_summary: Json | null
+          org_id: string
+          performance_data: Json | null
+          planned_route_detail: Json | null
+          release_number: string
+          released_at_utc: string
+          status: string | null
+          superseded_by_release_id: string | null
+          valid_until_utc: string | null
+          weather_summary: Json | null
+          weight_and_balance: Json | null
+        }
+        Insert: {
+          captain_notes?: string | null
+          captain_signature_utc?: string | null
+          created_at_utc?: string
+          dispatcher_user_id?: string | null
+          flight_id: string
+          fuel_plan?: Json | null
+          id?: string
+          mel_items?: Json | null
+          notam_summary?: Json | null
+          org_id: string
+          performance_data?: Json | null
+          planned_route_detail?: Json | null
+          release_number: string
+          released_at_utc?: string
+          status?: string | null
+          superseded_by_release_id?: string | null
+          valid_until_utc?: string | null
+          weather_summary?: Json | null
+          weight_and_balance?: Json | null
+        }
+        Update: {
+          captain_notes?: string | null
+          captain_signature_utc?: string | null
+          created_at_utc?: string
+          dispatcher_user_id?: string | null
+          flight_id?: string
+          fuel_plan?: Json | null
+          id?: string
+          mel_items?: Json | null
+          notam_summary?: Json | null
+          org_id?: string
+          performance_data?: Json | null
+          planned_route_detail?: Json | null
+          release_number?: string
+          released_at_utc?: string
+          status?: string | null
+          superseded_by_release_id?: string | null
+          valid_until_utc?: string | null
+          weather_summary?: Json | null
+          weight_and_balance?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dispatch_releases_flight_id_fkey"
+            columns: ["flight_id"]
+            isOneToOne: false
+            referencedRelation: "flight_schedules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dispatch_releases_flight_id_fkey"
+            columns: ["flight_id"]
+            isOneToOne: false
+            referencedRelation: "flights"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dispatch_releases_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dispatch_releases_superseded_by_release_id_fkey"
+            columns: ["superseded_by_release_id"]
+            isOneToOne: false
+            referencedRelation: "dispatch_releases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       duty_periods: {
         Row: {
           augmented_crew: boolean | null
@@ -984,48 +1144,230 @@ export type Database = {
           },
         ]
       }
-      flight_schedules: {
+      flight_briefings: {
         Row: {
-          aircraft_id: string
+          acknowledged_by_crew_ids: string[] | null
+          briefing_type: string | null
+          content_json: Json | null
+          content_pdf_storage_path: string | null
           created_at_utc: string
+          flight_id: string
+          generated_at_utc: string
+          id: string
+          issued_to_crew_ids: string[] | null
+          org_id: string
+        }
+        Insert: {
+          acknowledged_by_crew_ids?: string[] | null
+          briefing_type?: string | null
+          content_json?: Json | null
+          content_pdf_storage_path?: string | null
+          created_at_utc?: string
+          flight_id: string
+          generated_at_utc?: string
+          id?: string
+          issued_to_crew_ids?: string[] | null
+          org_id: string
+        }
+        Update: {
+          acknowledged_by_crew_ids?: string[] | null
+          briefing_type?: string | null
+          content_json?: Json | null
+          content_pdf_storage_path?: string | null
+          created_at_utc?: string
+          flight_id?: string
+          generated_at_utc?: string
+          id?: string
+          issued_to_crew_ids?: string[] | null
+          org_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flight_briefings_flight_id_fkey"
+            columns: ["flight_id"]
+            isOneToOne: false
+            referencedRelation: "flight_schedules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flight_briefings_flight_id_fkey"
+            columns: ["flight_id"]
+            isOneToOne: false
+            referencedRelation: "flights"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flight_briefings_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flight_events: {
+        Row: {
+          created_at_utc: string
+          event_payload: Json | null
+          event_time_utc: string
+          event_type: string | null
+          flight_id: string
+          id: string
+          org_id: string
+          reported_by_user_id: string | null
+          source_reference_id: string | null
+          source_system: string | null
+        }
+        Insert: {
+          created_at_utc?: string
+          event_payload?: Json | null
+          event_time_utc: string
+          event_type?: string | null
+          flight_id: string
+          id?: string
+          org_id: string
+          reported_by_user_id?: string | null
+          source_reference_id?: string | null
+          source_system?: string | null
+        }
+        Update: {
+          created_at_utc?: string
+          event_payload?: Json | null
+          event_time_utc?: string
+          event_type?: string | null
+          flight_id?: string
+          id?: string
+          org_id?: string
+          reported_by_user_id?: string | null
+          source_reference_id?: string | null
+          source_system?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flight_events_flight_id_fkey"
+            columns: ["flight_id"]
+            isOneToOne: false
+            referencedRelation: "flight_schedules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flight_events_flight_id_fkey"
+            columns: ["flight_id"]
+            isOneToOne: false
+            referencedRelation: "flights"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flight_events_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flights: {
+        Row: {
+          actual_block_time_minutes: number | null
+          actual_fuel_kg: number | null
+          actual_in_utc: string | null
+          actual_off_utc: string | null
+          actual_on_utc: string | null
+          actual_out_utc: string | null
+          aircraft_id: string
+          alternate_stations: string[] | null
+          cancellation_reason: string | null
+          cargo_kg: number | null
+          created_at_utc: string
+          delay_codes: string[] | null
           delay_minutes: number
           destination_station: string
+          diversion_station: string | null
+          estimated_arrival_utc: string | null
+          estimated_departure_utc: string | null
+          flight_date: string
           flight_number: string | null
           id: string
           org_id: string
           origin_station: string
+          passenger_count: number | null
+          planned_block_time_minutes: number | null
+          planned_flight_level: number | null
+          planned_fuel_kg: number | null
+          planned_route: string | null
           scheduled_arrival_utc: string
           scheduled_departure_utc: string
+          source_reference_id: string | null
           source_system: string
           status: string
           updated_at_utc: string
         }
         Insert: {
+          actual_block_time_minutes?: number | null
+          actual_fuel_kg?: number | null
+          actual_in_utc?: string | null
+          actual_off_utc?: string | null
+          actual_on_utc?: string | null
+          actual_out_utc?: string | null
           aircraft_id: string
+          alternate_stations?: string[] | null
+          cancellation_reason?: string | null
+          cargo_kg?: number | null
           created_at_utc?: string
+          delay_codes?: string[] | null
           delay_minutes?: number
           destination_station: string
+          diversion_station?: string | null
+          estimated_arrival_utc?: string | null
+          estimated_departure_utc?: string | null
+          flight_date: string
           flight_number?: string | null
           id?: string
           org_id: string
           origin_station: string
+          passenger_count?: number | null
+          planned_block_time_minutes?: number | null
+          planned_flight_level?: number | null
+          planned_fuel_kg?: number | null
+          planned_route?: string | null
           scheduled_arrival_utc: string
           scheduled_departure_utc: string
+          source_reference_id?: string | null
           source_system?: string
           status?: string
           updated_at_utc?: string
         }
         Update: {
+          actual_block_time_minutes?: number | null
+          actual_fuel_kg?: number | null
+          actual_in_utc?: string | null
+          actual_off_utc?: string | null
+          actual_on_utc?: string | null
+          actual_out_utc?: string | null
           aircraft_id?: string
+          alternate_stations?: string[] | null
+          cancellation_reason?: string | null
+          cargo_kg?: number | null
           created_at_utc?: string
+          delay_codes?: string[] | null
           delay_minutes?: number
           destination_station?: string
+          diversion_station?: string | null
+          estimated_arrival_utc?: string | null
+          estimated_departure_utc?: string | null
+          flight_date?: string
           flight_number?: string | null
           id?: string
           org_id?: string
           origin_station?: string
+          passenger_count?: number | null
+          planned_block_time_minutes?: number | null
+          planned_flight_level?: number | null
+          planned_fuel_kg?: number | null
+          planned_route?: string | null
           scheduled_arrival_utc?: string
           scheduled_departure_utc?: string
+          source_reference_id?: string | null
           source_system?: string
           status?: string
           updated_at_utc?: string
@@ -2650,11 +2992,130 @@ export type Database = {
           },
         ]
       }
+      weather_observations: {
+        Row: {
+          created_at_utc: string
+          flight_category: string | null
+          id: string
+          observation_time_utc: string
+          observation_type: string | null
+          org_id: string | null
+          parsed_data: Json | null
+          raw_text: string | null
+          source: string | null
+          station_code: string
+          valid_from_utc: string | null
+          valid_until_utc: string | null
+        }
+        Insert: {
+          created_at_utc?: string
+          flight_category?: string | null
+          id?: string
+          observation_time_utc: string
+          observation_type?: string | null
+          org_id?: string | null
+          parsed_data?: Json | null
+          raw_text?: string | null
+          source?: string | null
+          station_code: string
+          valid_from_utc?: string | null
+          valid_until_utc?: string | null
+        }
+        Update: {
+          created_at_utc?: string
+          flight_category?: string | null
+          id?: string
+          observation_time_utc?: string
+          observation_type?: string | null
+          org_id?: string | null
+          parsed_data?: Json | null
+          raw_text?: string | null
+          source?: string | null
+          station_code?: string
+          valid_from_utc?: string | null
+          valid_until_utc?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weather_observations_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
-      [_ in never]: never
+      flight_schedules: {
+        Row: {
+          aircraft_id: string | null
+          created_at_utc: string | null
+          delay_minutes: number | null
+          destination_station: string | null
+          flight_number: string | null
+          id: string | null
+          org_id: string | null
+          origin_station: string | null
+          scheduled_arrival_utc: string | null
+          scheduled_departure_utc: string | null
+          source_reference_id: string | null
+          source_system: string | null
+          status: string | null
+          updated_at_utc: string | null
+        }
+        Insert: {
+          aircraft_id?: string | null
+          created_at_utc?: string | null
+          delay_minutes?: number | null
+          destination_station?: string | null
+          flight_number?: string | null
+          id?: string | null
+          org_id?: string | null
+          origin_station?: string | null
+          scheduled_arrival_utc?: string | null
+          scheduled_departure_utc?: string | null
+          source_reference_id?: string | null
+          source_system?: string | null
+          status?: string | null
+          updated_at_utc?: string | null
+        }
+        Update: {
+          aircraft_id?: string | null
+          created_at_utc?: string | null
+          delay_minutes?: number | null
+          destination_station?: string | null
+          flight_number?: string | null
+          id?: string | null
+          org_id?: string | null
+          origin_station?: string | null
+          scheduled_arrival_utc?: string | null
+          scheduled_departure_utc?: string | null
+          source_reference_id?: string | null
+          source_system?: string | null
+          status?: string | null
+          updated_at_utc?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flight_schedules_aircraft_id_fkey"
+            columns: ["aircraft_id"]
+            isOneToOne: false
+            referencedRelation: "aircraft"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "flight_schedules_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      _station_wx: { Args: { p_station: string }; Returns: Json }
       acknowledge_task: { Args: { p_task_id: string }; Returns: undefined }
       act_on_signal: {
         Args: {
@@ -2681,6 +3142,17 @@ export type Database = {
         Args: { p_assignee_user_id: string; p_task_id: string }
         Returns: undefined
       }
+      attribute_delay: {
+        Args: {
+          p_category: string
+          p_delay_code: string
+          p_flight_id: string
+          p_minutes: number
+          p_reason?: string
+          p_responsibility?: string
+        }
+        Returns: string
+      }
       check_crew_currency: {
         Args: { p_crew_member_id: string; p_flight_schedule_id: string }
         Returns: Json
@@ -2697,6 +3169,10 @@ export type Database = {
       compute_component_health: {
         Args: { p_component_id: string }
         Returns: number
+      }
+      compute_flight_performance: {
+        Args: { p_flight_id: string }
+        Returns: Json
       }
       consume_stock: {
         Args: {
@@ -2719,6 +3195,10 @@ export type Database = {
           p_serial_number: string
           p_status?: string
         }
+        Returns: string
+      }
+      create_dispatch_release: {
+        Args: { p_attrs?: Json; p_flight_id: string }
         Returns: string
       }
       create_task: {
@@ -2782,6 +3262,11 @@ export type Database = {
       }
       generate_inventory_signals: { Args: never; Returns: number }
       generate_inventory_signals_for_org: {
+        Args: { p_org: string }
+        Returns: number
+      }
+      generate_operational_signals: { Args: never; Returns: number }
+      generate_operational_signals_for_org: {
         Args: { p_org: string }
         Returns: number
       }
@@ -2857,6 +3342,8 @@ export type Database = {
         Returns: Json
       }
       get_crew_stats: { Args: never; Returns: Json }
+      get_daily_ops_summary: { Args: never; Returns: Json }
+      get_dispatch_queue: { Args: never; Returns: Json }
       get_expiring_qualifications: { Args: { p_days?: number }; Returns: Json }
       get_fatigue_forecast: {
         Args: { p_crew_member_id: string; p_forecast_days?: number }
@@ -2871,6 +3358,11 @@ export type Database = {
           p_search?: string
           p_station_codes?: string[]
         }
+        Returns: Json
+      }
+      get_flight_detail: { Args: { p_flight_id: string }; Returns: Json }
+      get_flights_list: {
+        Args: { p_from?: string; p_to?: string }
         Returns: Json
       }
       get_genealogy_directory: { Args: never; Returns: Json }
@@ -2889,6 +3381,7 @@ export type Database = {
         Args: { p_fleet_id?: string }
         Returns: Json
       }
+      get_recent_flight_events: { Args: { p_limit?: number }; Returns: Json }
       get_recent_movements: { Args: { p_limit?: number }; Returns: Json }
       get_rule_configurations: { Args: never; Returns: Json }
       get_serial_genealogy: {
@@ -2912,6 +3405,9 @@ export type Database = {
       get_supplier_detail: { Args: { p_supplier_id: string }; Returns: Json }
       get_supplier_performance: { Args: never; Returns: Json }
       get_task_detail: { Args: { p_task_id: string }; Returns: Json }
+      get_weather_board: { Args: never; Returns: Json }
+      get_weather_briefing: { Args: { p_flight_id: string }; Returns: Json }
+      get_weather_overlay: { Args: never; Returns: Json }
       is_org_admin: { Args: { p_org: string }; Returns: boolean }
       is_org_member: { Args: { p_org: string }; Returns: boolean }
       log_work: {
@@ -2958,6 +3454,15 @@ export type Database = {
         }
         Returns: string
       }
+      record_flight_event: {
+        Args: {
+          p_attrs?: Json
+          p_event_time: string
+          p_event_type: string
+          p_flight_id: string
+        }
+        Returns: string
+      }
       record_stock_movement: {
         Args: {
           p_attrs?: Json
@@ -2984,6 +3489,10 @@ export type Database = {
         Returns: number
       }
       seed_demo_crew: {
+        Args: { p_org_id: string; p_user_id: string }
+        Returns: number
+      }
+      seed_demo_flight_ops: {
         Args: { p_org_id: string; p_user_id: string }
         Returns: number
       }
@@ -3037,6 +3546,10 @@ export type Database = {
           p_task_id?: string
         }
         Returns: string
+      }
+      update_dispatch_release_status: {
+        Args: { p_notes?: string; p_release_id: string; p_status: string }
+        Returns: undefined
       }
       update_rule_configuration: {
         Args: { p_id: string; p_rule_stack: Json }
