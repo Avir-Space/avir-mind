@@ -415,6 +415,101 @@ export type Database = {
           },
         ]
       }
+      aircraft_service_assignments: {
+        Row: {
+          actual_labor_hours: number | null
+          actual_release_utc: string | null
+          aircraft_id: string
+          arrival_actual_utc: string | null
+          arrival_expected_utc: string | null
+          assigned_bay: string | null
+          assigned_hangar: string | null
+          assignment_status: string
+          created_at_utc: string
+          customer_account_id: string
+          customer_reference: string | null
+          estimated_labor_hours: number | null
+          id: string
+          notes: string | null
+          org_id: string
+          planned_release_utc: string | null
+          primary_service_purpose: string | null
+          service_contract_id: string | null
+          updated_at_utc: string
+        }
+        Insert: {
+          actual_labor_hours?: number | null
+          actual_release_utc?: string | null
+          aircraft_id: string
+          arrival_actual_utc?: string | null
+          arrival_expected_utc?: string | null
+          assigned_bay?: string | null
+          assigned_hangar?: string | null
+          assignment_status?: string
+          created_at_utc?: string
+          customer_account_id: string
+          customer_reference?: string | null
+          estimated_labor_hours?: number | null
+          id?: string
+          notes?: string | null
+          org_id: string
+          planned_release_utc?: string | null
+          primary_service_purpose?: string | null
+          service_contract_id?: string | null
+          updated_at_utc?: string
+        }
+        Update: {
+          actual_labor_hours?: number | null
+          actual_release_utc?: string | null
+          aircraft_id?: string
+          arrival_actual_utc?: string | null
+          arrival_expected_utc?: string | null
+          assigned_bay?: string | null
+          assigned_hangar?: string | null
+          assignment_status?: string
+          created_at_utc?: string
+          customer_account_id?: string
+          customer_reference?: string | null
+          estimated_labor_hours?: number | null
+          id?: string
+          notes?: string | null
+          org_id?: string
+          planned_release_utc?: string | null
+          primary_service_purpose?: string | null
+          service_contract_id?: string | null
+          updated_at_utc?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aircraft_service_assignments_aircraft_id_fkey"
+            columns: ["aircraft_id"]
+            isOneToOne: false
+            referencedRelation: "aircraft"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aircraft_service_assignments_customer_account_id_fkey"
+            columns: ["customer_account_id"]
+            isOneToOne: false
+            referencedRelation: "customer_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aircraft_service_assignments_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aircraft_service_assignments_service_contract_id_fkey"
+            columns: ["service_contract_id"]
+            isOneToOne: false
+            referencedRelation: "service_contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       aircraft_state: {
         Row: {
           aircraft_id: string
@@ -2010,6 +2105,150 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_accounts: {
+        Row: {
+          billing_address: Json | null
+          created_at_utc: string
+          credit_limit_usd: number | null
+          customer_code: string
+          customer_name: string
+          customer_status: string
+          customer_type: string | null
+          default_currency: string | null
+          id: string
+          notes: string | null
+          org_id: string
+          payment_terms: string | null
+          primary_contact_email: string | null
+          primary_contact_name: string | null
+          primary_contact_phone: string | null
+          shipping_address: Json | null
+          updated_at_utc: string
+        }
+        Insert: {
+          billing_address?: Json | null
+          created_at_utc?: string
+          credit_limit_usd?: number | null
+          customer_code: string
+          customer_name: string
+          customer_status?: string
+          customer_type?: string | null
+          default_currency?: string | null
+          id?: string
+          notes?: string | null
+          org_id: string
+          payment_terms?: string | null
+          primary_contact_email?: string | null
+          primary_contact_name?: string | null
+          primary_contact_phone?: string | null
+          shipping_address?: Json | null
+          updated_at_utc?: string
+        }
+        Update: {
+          billing_address?: Json | null
+          created_at_utc?: string
+          credit_limit_usd?: number | null
+          customer_code?: string
+          customer_name?: string
+          customer_status?: string
+          customer_type?: string | null
+          default_currency?: string | null
+          id?: string
+          notes?: string | null
+          org_id?: string
+          payment_terms?: string | null
+          primary_contact_email?: string | null
+          primary_contact_name?: string | null
+          primary_contact_phone?: string | null
+          shipping_address?: Json | null
+          updated_at_utc?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_accounts_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_reports: {
+        Row: {
+          content: Json | null
+          created_at_utc: string
+          customer_account_id: string
+          customer_acknowledged_at_utc: string | null
+          generated_at_utc: string | null
+          generated_by_user_id: string | null
+          id: string
+          org_id: string
+          report_status: string
+          report_type: string | null
+          reporting_period_end: string
+          reporting_period_start: string
+          sent_at_utc: string | null
+          service_contract_id: string | null
+          storage_path_pdf: string | null
+        }
+        Insert: {
+          content?: Json | null
+          created_at_utc?: string
+          customer_account_id: string
+          customer_acknowledged_at_utc?: string | null
+          generated_at_utc?: string | null
+          generated_by_user_id?: string | null
+          id?: string
+          org_id: string
+          report_status?: string
+          report_type?: string | null
+          reporting_period_end: string
+          reporting_period_start: string
+          sent_at_utc?: string | null
+          service_contract_id?: string | null
+          storage_path_pdf?: string | null
+        }
+        Update: {
+          content?: Json | null
+          created_at_utc?: string
+          customer_account_id?: string
+          customer_acknowledged_at_utc?: string | null
+          generated_at_utc?: string | null
+          generated_by_user_id?: string | null
+          id?: string
+          org_id?: string
+          report_status?: string
+          report_type?: string | null
+          reporting_period_end?: string
+          reporting_period_start?: string
+          sent_at_utc?: string | null
+          service_contract_id?: string | null
+          storage_path_pdf?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_reports_customer_account_id_fkey"
+            columns: ["customer_account_id"]
+            isOneToOne: false
+            referencedRelation: "customer_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_reports_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_reports_service_contract_id_fkey"
+            columns: ["service_contract_id"]
+            isOneToOne: false
+            referencedRelation: "service_contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       data_lineage_records: {
         Row: {
           ai_decision_record_id: string
@@ -3443,22 +3682,37 @@ export type Database = {
       }
       orgs: {
         Row: {
+          brand_logo_url: string | null
+          brand_name: string | null
           created_at: string
+          default_view_lens: string
+          enabled_modules: string[] | null
           id: string
           name: string
           plan: string
+          primary_business_model: string
         }
         Insert: {
+          brand_logo_url?: string | null
+          brand_name?: string | null
           created_at?: string
+          default_view_lens?: string
+          enabled_modules?: string[] | null
           id?: string
           name: string
           plan?: string
+          primary_business_model?: string
         }
         Update: {
+          brand_logo_url?: string | null
+          brand_name?: string | null
           created_at?: string
+          default_view_lens?: string
+          enabled_modules?: string[] | null
           id?: string
           name?: string
           plan?: string
+          primary_business_model?: string
         }
         Relationships: []
       }
@@ -3955,6 +4209,99 @@ export type Database = {
           },
         ]
       }
+      service_contracts: {
+        Row: {
+          annual_value_usd: number | null
+          auto_renew: boolean | null
+          contract_document_url: string | null
+          contract_name: string
+          contract_number: string
+          contract_status: string
+          contract_type: string | null
+          covered_aircraft_registrations: string[] | null
+          covered_aircraft_types: string[] | null
+          covered_scope: Json | null
+          created_at_utc: string
+          customer_account_id: string
+          effective_from: string
+          effective_to: string | null
+          excluded_scope: Json | null
+          id: string
+          org_id: string
+          pricing_structure: Json | null
+          reporting_obligations: Json | null
+          sla_definitions: Json | null
+          termination_clauses: Json | null
+          updated_at_utc: string
+          warranty_terms: Json | null
+        }
+        Insert: {
+          annual_value_usd?: number | null
+          auto_renew?: boolean | null
+          contract_document_url?: string | null
+          contract_name: string
+          contract_number: string
+          contract_status?: string
+          contract_type?: string | null
+          covered_aircraft_registrations?: string[] | null
+          covered_aircraft_types?: string[] | null
+          covered_scope?: Json | null
+          created_at_utc?: string
+          customer_account_id: string
+          effective_from: string
+          effective_to?: string | null
+          excluded_scope?: Json | null
+          id?: string
+          org_id: string
+          pricing_structure?: Json | null
+          reporting_obligations?: Json | null
+          sla_definitions?: Json | null
+          termination_clauses?: Json | null
+          updated_at_utc?: string
+          warranty_terms?: Json | null
+        }
+        Update: {
+          annual_value_usd?: number | null
+          auto_renew?: boolean | null
+          contract_document_url?: string | null
+          contract_name?: string
+          contract_number?: string
+          contract_status?: string
+          contract_type?: string | null
+          covered_aircraft_registrations?: string[] | null
+          covered_aircraft_types?: string[] | null
+          covered_scope?: Json | null
+          created_at_utc?: string
+          customer_account_id?: string
+          effective_from?: string
+          effective_to?: string | null
+          excluded_scope?: Json | null
+          id?: string
+          org_id?: string
+          pricing_structure?: Json | null
+          reporting_obligations?: Json | null
+          sla_definitions?: Json | null
+          termination_clauses?: Json | null
+          updated_at_utc?: string
+          warranty_terms?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_contracts_customer_account_id_fkey"
+            columns: ["customer_account_id"]
+            isOneToOne: false
+            referencedRelation: "customer_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_contracts_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       signal_actions: {
         Row: {
           action_payload: Json | null
@@ -4231,6 +4578,82 @@ export type Database = {
             columns: ["superseded_by_signal_id"]
             isOneToOne: false
             referencedRelation: "signals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sla_measurements: {
+        Row: {
+          actual_value: number | null
+          created_at_utc: string
+          credits_owed_usd: number | null
+          customer_account_id: string
+          id: string
+          measurement_details: Json | null
+          measurement_period_end: string
+          measurement_period_start: string
+          org_id: string
+          penalty_reason: string | null
+          performance_pct: number | null
+          service_contract_id: string
+          sla_type: string
+          target_value: number | null
+          unit: string | null
+        }
+        Insert: {
+          actual_value?: number | null
+          created_at_utc?: string
+          credits_owed_usd?: number | null
+          customer_account_id: string
+          id?: string
+          measurement_details?: Json | null
+          measurement_period_end: string
+          measurement_period_start: string
+          org_id: string
+          penalty_reason?: string | null
+          performance_pct?: number | null
+          service_contract_id: string
+          sla_type: string
+          target_value?: number | null
+          unit?: string | null
+        }
+        Update: {
+          actual_value?: number | null
+          created_at_utc?: string
+          credits_owed_usd?: number | null
+          customer_account_id?: string
+          id?: string
+          measurement_details?: Json | null
+          measurement_period_end?: string
+          measurement_period_start?: string
+          org_id?: string
+          penalty_reason?: string | null
+          performance_pct?: number | null
+          service_contract_id?: string
+          sla_type?: string
+          target_value?: number | null
+          unit?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sla_measurements_customer_account_id_fkey"
+            columns: ["customer_account_id"]
+            isOneToOne: false
+            referencedRelation: "customer_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sla_measurements_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sla_measurements_service_contract_id_fkey"
+            columns: ["service_contract_id"]
+            isOneToOne: false
+            referencedRelation: "service_contracts"
             referencedColumns: ["id"]
           },
         ]
@@ -5021,6 +5444,32 @@ export type Database = {
           },
         ]
       }
+      user_org_preferences: {
+        Row: {
+          active_org_id: string | null
+          updated_at_utc: string
+          user_id: string
+        }
+        Insert: {
+          active_org_id?: string | null
+          updated_at_utc?: string
+          user_id: string
+        }
+        Update: {
+          active_org_id?: string | null
+          updated_at_utc?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_org_preferences_active_org_id_fkey"
+            columns: ["active_org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_role_assignments: {
         Row: {
           created_at_utc: string
@@ -5121,6 +5570,202 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      work_package_findings: {
+        Row: {
+          component_reference: string | null
+          created_at_utc: string
+          customer_notified: boolean | null
+          customer_notified_at_utc: string | null
+          customer_response: string | null
+          description: string
+          discovered_at_utc: string
+          discovered_by_user_id: string | null
+          estimated_additional_cost_usd: number | null
+          estimated_additional_labor_hours: number | null
+          finding_type: string | null
+          id: string
+          linked_task_id: string | null
+          location_reference: string | null
+          org_id: string
+          recommended_action: string | null
+          resolution_status: string | null
+          severity: string | null
+          work_package_id: string
+        }
+        Insert: {
+          component_reference?: string | null
+          created_at_utc?: string
+          customer_notified?: boolean | null
+          customer_notified_at_utc?: string | null
+          customer_response?: string | null
+          description: string
+          discovered_at_utc?: string
+          discovered_by_user_id?: string | null
+          estimated_additional_cost_usd?: number | null
+          estimated_additional_labor_hours?: number | null
+          finding_type?: string | null
+          id?: string
+          linked_task_id?: string | null
+          location_reference?: string | null
+          org_id: string
+          recommended_action?: string | null
+          resolution_status?: string | null
+          severity?: string | null
+          work_package_id: string
+        }
+        Update: {
+          component_reference?: string | null
+          created_at_utc?: string
+          customer_notified?: boolean | null
+          customer_notified_at_utc?: string | null
+          customer_response?: string | null
+          description?: string
+          discovered_at_utc?: string
+          discovered_by_user_id?: string | null
+          estimated_additional_cost_usd?: number | null
+          estimated_additional_labor_hours?: number | null
+          finding_type?: string | null
+          id?: string
+          linked_task_id?: string | null
+          location_reference?: string | null
+          org_id?: string
+          recommended_action?: string | null
+          resolution_status?: string | null
+          severity?: string | null
+          work_package_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_package_findings_linked_task_id_fkey"
+            columns: ["linked_task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_package_findings_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_package_findings_work_package_id_fkey"
+            columns: ["work_package_id"]
+            isOneToOne: false
+            referencedRelation: "work_packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      work_packages: {
+        Row: {
+          actual_completion_utc: string | null
+          actual_start_utc: string | null
+          billable: boolean | null
+          created_at_utc: string
+          customer_approval_required: boolean | null
+          customer_approved_at_utc: string | null
+          customer_approved_by: string | null
+          description: string | null
+          id: string
+          labor_cost_actual_usd: number | null
+          labor_hours_actual: number | null
+          labor_hours_planned: number | null
+          linked_component_event_ids: string[] | null
+          linked_task_ids: string[] | null
+          org_id: string
+          other_costs_usd: number | null
+          package_type: string | null
+          parts_cost_actual_usd: number | null
+          parts_cost_planned_usd: number | null
+          planned_completion_utc: string | null
+          planned_start_utc: string | null
+          quality_inspector_user_id: string | null
+          responsible_technician_user_id: string | null
+          service_assignment_id: string
+          status: string
+          title: string
+          updated_at_utc: string
+          work_package_number: string
+        }
+        Insert: {
+          actual_completion_utc?: string | null
+          actual_start_utc?: string | null
+          billable?: boolean | null
+          created_at_utc?: string
+          customer_approval_required?: boolean | null
+          customer_approved_at_utc?: string | null
+          customer_approved_by?: string | null
+          description?: string | null
+          id?: string
+          labor_cost_actual_usd?: number | null
+          labor_hours_actual?: number | null
+          labor_hours_planned?: number | null
+          linked_component_event_ids?: string[] | null
+          linked_task_ids?: string[] | null
+          org_id: string
+          other_costs_usd?: number | null
+          package_type?: string | null
+          parts_cost_actual_usd?: number | null
+          parts_cost_planned_usd?: number | null
+          planned_completion_utc?: string | null
+          planned_start_utc?: string | null
+          quality_inspector_user_id?: string | null
+          responsible_technician_user_id?: string | null
+          service_assignment_id: string
+          status?: string
+          title: string
+          updated_at_utc?: string
+          work_package_number: string
+        }
+        Update: {
+          actual_completion_utc?: string | null
+          actual_start_utc?: string | null
+          billable?: boolean | null
+          created_at_utc?: string
+          customer_approval_required?: boolean | null
+          customer_approved_at_utc?: string | null
+          customer_approved_by?: string | null
+          description?: string | null
+          id?: string
+          labor_cost_actual_usd?: number | null
+          labor_hours_actual?: number | null
+          labor_hours_planned?: number | null
+          linked_component_event_ids?: string[] | null
+          linked_task_ids?: string[] | null
+          org_id?: string
+          other_costs_usd?: number | null
+          package_type?: string | null
+          parts_cost_actual_usd?: number | null
+          parts_cost_planned_usd?: number | null
+          planned_completion_utc?: string | null
+          planned_start_utc?: string | null
+          quality_inspector_user_id?: string | null
+          responsible_technician_user_id?: string | null
+          service_assignment_id?: string
+          status?: string
+          title?: string
+          updated_at_utc?: string
+          work_package_number?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_packages_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "work_packages_service_assignment_id_fkey"
+            columns: ["service_assignment_id"]
+            isOneToOne: false
+            referencedRelation: "aircraft_service_assignments"
             referencedColumns: ["id"]
           },
         ]
@@ -5246,6 +5891,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      assign_aircraft_to_service: { Args: { p: Json }; Returns: string }
       assign_task: {
         Args: { p_assignee_user_id: string; p_task_id: string }
         Returns: undefined
@@ -5291,6 +5937,10 @@ export type Database = {
         Returns: Json
       }
       compute_llp_status: { Args: never; Returns: number }
+      compute_sla_performance: {
+        Args: { p_contract_id: string; p_end?: string; p_start?: string }
+        Returns: Json
+      }
       consume_stock: {
         Args: {
           p_component_event_id?: string
@@ -5315,6 +5965,7 @@ export type Database = {
         }
         Returns: string
       }
+      create_customer_account: { Args: { p: Json }; Returns: string }
       create_dispatch_release: {
         Args: { p_attrs?: Json; p_flight_id: string }
         Returns: string
@@ -5324,6 +5975,7 @@ export type Database = {
         Args: { p_attrs?: Json; p_type: string }
         Returns: string
       }
+      create_service_contract: { Args: { p: Json }; Returns: string }
       create_task: {
         Args: {
           p_aircraft_id: string
@@ -5352,6 +6004,7 @@ export type Database = {
         }
         Returns: string
       }
+      create_work_package: { Args: { p: Json }; Returns: string }
       current_user_org_ids: { Args: never; Returns: string[] }
       defer_mel_item: {
         Args: {
@@ -5442,11 +6095,21 @@ export type Database = {
         Args: { p_org: string }
         Returns: number
       }
+      generate_customer_report: {
+        Args: {
+          p_customer_id: string
+          p_end?: string
+          p_report_type?: string
+          p_start?: string
+        }
+        Returns: string
+      }
       generate_inventory_signals: { Args: never; Returns: number }
       generate_inventory_signals_for_org: {
         Args: { p_org: string }
         Returns: number
       }
+      generate_mro_signals_for_org: { Args: { p_org: string }; Returns: number }
       generate_operational_signals: { Args: never; Returns: number }
       generate_operational_signals_for_org: {
         Args: { p_org: string }
@@ -5476,6 +6139,7 @@ export type Database = {
         }
         Returns: Json
       }
+      get_active_contracts: { Args: never; Returns: Json }
       get_active_mel_items_for_aircraft: {
         Args: { p_aircraft_id: string }
         Returns: Json
@@ -5498,6 +6162,10 @@ export type Database = {
         Returns: Json
       }
       get_aircraft_parts: { Args: { p_aircraft_id: string }; Returns: Json }
+      get_aircraft_service_context: {
+        Args: { p_aircraft_id: string }
+        Returns: Json
+      }
       get_asset_detail: { Args: { p_asset_id: string }; Returns: Json }
       get_asset_service_calendar: { Args: { p_days?: number }; Returns: Json }
       get_backtest_actual_events: { Args: { p_project: string }; Returns: Json }
@@ -5556,6 +6224,7 @@ export type Database = {
         Args: { p_aircraft_id: string }
         Returns: Json
       }
+      get_contract_detail: { Args: { p_id: string }; Returns: Json }
       get_crew_detail: { Args: { p_crew_member_id: string }; Returns: Json }
       get_crew_directory: { Args: never; Returns: Json }
       get_crew_overlay: { Args: { p_fleet_id?: string }; Returns: Json }
@@ -5569,6 +6238,9 @@ export type Database = {
         Returns: Json
       }
       get_crew_stats: { Args: never; Returns: Json }
+      get_customer_accounts: { Args: never; Returns: Json }
+      get_customer_dashboard: { Args: { p_customer_id: string }; Returns: Json }
+      get_customer_reports: { Args: { p_customer_id: string }; Returns: Json }
       get_daily_ops_summary: { Args: never; Returns: Json }
       get_data_lineage_report: {
         Args: { p_decision_id: string }
@@ -5586,6 +6258,7 @@ export type Database = {
         Returns: Json
       }
       get_dsai_oversight: { Args: { p_limit?: number }; Returns: Json }
+      get_expiring_contracts: { Args: { p_days?: number }; Returns: Json }
       get_expiring_qualifications: { Args: { p_days?: number }; Returns: Json }
       get_fatigue_forecast: {
         Args: { p_crew_member_id: string; p_forecast_days?: number }
@@ -5617,6 +6290,7 @@ export type Database = {
       get_locations_overview: { Args: never; Returns: Json }
       get_low_stock_alerts: { Args: never; Returns: Json }
       get_model_version_report: { Args: never; Returns: Json }
+      get_my_orgs: { Args: never; Returns: Json }
       get_notification_badge: { Args: never; Returns: Json }
       get_notification_history: {
         Args: {
@@ -5634,6 +6308,7 @@ export type Database = {
       }
       get_on_call_schedules: { Args: never; Returns: Json }
       get_or_create_demo_counterparty: { Args: never; Returns: string }
+      get_org_config: { Args: never; Returns: Json }
       get_org_roles: { Args: never; Returns: Json }
       get_part_detail: { Args: { p_part_id: string }; Returns: Json }
       get_parts_by_component_compatibility: {
@@ -5663,6 +6338,8 @@ export type Database = {
         Returns: Json
       }
       get_serial_genealogy_by_id: { Args: { p_sid: string }; Returns: Json }
+      get_service_contracts: { Args: never; Returns: Json }
+      get_shop_floor_view: { Args: never; Returns: Json }
       get_signal_notifications: { Args: { p_source_id: string }; Returns: Json }
       get_signals_for_aircraft: {
         Args: { p_aircraft_id: string; p_include_resolved?: boolean }
@@ -5684,6 +6361,9 @@ export type Database = {
       get_weather_board: { Args: never; Returns: Json }
       get_weather_briefing: { Args: { p_flight_id: string }; Returns: Json }
       get_weather_overlay: { Args: never; Returns: Json }
+      get_wip_summary: { Args: never; Returns: Json }
+      get_work_package_detail: { Args: { p_id: string }; Returns: Json }
+      get_work_packages: { Args: never; Returns: Json }
       import_ad_from_authority: { Args: { p_ad: Json }; Returns: string }
       is_org_admin: { Args: { p_org: string }; Returns: boolean }
       is_org_member: { Args: { p_org: string }; Returns: boolean }
@@ -5711,6 +6391,10 @@ export type Database = {
       }
       mute_notifications_temporarily: {
         Args: { p_minutes?: number }
+        Returns: Json
+      }
+      notify_customer_of_finding: {
+        Args: { p_finding_id: string }
         Returns: Json
       }
       org_display_name: { Args: { p_org: string }; Returns: string }
@@ -5756,6 +6440,7 @@ export type Database = {
         }
         Returns: string
       }
+      record_finding: { Args: { p: Json }; Returns: string }
       record_flight_event: {
         Args: {
           p_attrs?: Json
@@ -5831,9 +6516,15 @@ export type Database = {
         Args: { p_org_id: string; p_user_id: string }
         Returns: number
       }
+      seed_demo_mro: { Args: { p_user_id: string }; Returns: string }
       seed_demo_tasks: {
         Args: { p_org_id: string; p_user_id: string }
         Returns: number
+      }
+      set_active_org: { Args: { p_org_id: string }; Returns: Json }
+      set_business_model: {
+        Args: { p_model: string; p_view_lens?: string }
+        Returns: Json
       }
       share_backtest_report: {
         Args: { p_channel?: string; p_recipient: string; p_report: string }
@@ -5877,6 +6568,14 @@ export type Database = {
         }
         Returns: string
       }
+      transition_service_assignment_status: {
+        Args: { p_id: string; p_status: string }
+        Returns: Json
+      }
+      transition_work_package_status: {
+        Args: { p_id: string; p_status: string }
+        Returns: Json
+      }
       unreserve_stock: {
         Args: {
           p_location: string
@@ -5895,6 +6594,10 @@ export type Database = {
         }
         Returns: string
       }
+      update_customer_account: {
+        Args: { p: Json; p_id: string }
+        Returns: string
+      }
       update_dispatch_release_status: {
         Args: { p_notes?: string; p_release_id: string; p_status: string }
         Returns: undefined
@@ -5906,6 +6609,10 @@ export type Database = {
       update_rule_configuration: {
         Args: { p_id: string; p_rule_stack: Json }
         Returns: undefined
+      }
+      update_service_contract: {
+        Args: { p: Json; p_id: string }
+        Returns: string
       }
       update_user_notification_channels: {
         Args: { p_address: string; p_attrs?: Json; p_channel_type: string }
