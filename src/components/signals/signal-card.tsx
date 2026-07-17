@@ -1,9 +1,10 @@
 "use client";
 
-import { ChevronDown, Sparkles, TriangleAlert } from "lucide-react";
+import { ChevronDown, ShieldCheck, Sparkles, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
+import { DecisionAuditDrawer } from "@/components/compliance/decision-audit-drawer";
 import { CategoryTag } from "@/components/tasks/category-tag";
 import { InventorySignalExtra } from "@/components/inventory/inventory-signal-extra";
 import { INVENTORY_SIGNAL_CATEGORIES } from "@/lib/design/inventory";
@@ -24,6 +25,7 @@ import type { Signal } from "@/types/signals";
 export function SignalCard({ signal }: { signal: Signal }) {
   const { act } = useSignalActions();
   const [showWhy, setShowWhy] = useState(false);
+  const [auditOpen, setAuditOpen] = useState(false);
   const sev = SIGNAL_SEVERITY[signal.severity] ?? SIGNAL_SEVERITY.info;
   const insufficient = signal.severity === "insufficient_data";
 
@@ -109,7 +111,20 @@ export function SignalCard({ signal }: { signal: Signal }) {
           <SignalActionBar signal={signal} />
           <LastUpdated at={signal.generated_at_utc} label="Generated" className="shrink-0" />
         </div>
+
+        {/* DS.AI provenance */}
+        <div className="mt-3 border-t border-border pt-2">
+          <button
+            type="button"
+            onClick={() => setAuditOpen(true)}
+            className="inline-flex items-center gap-1.5 font-mono text-eyebrow uppercase text-label transition-colors hover:text-primary"
+          >
+            <ShieldCheck className="h-3 w-3" /> View decision audit
+          </button>
+        </div>
       </div>
+
+      <DecisionAuditDrawer signalId={signal.id} open={auditOpen} onOpenChange={setAuditOpen} />
     </div>
   );
 }

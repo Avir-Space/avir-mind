@@ -19,6 +19,7 @@ import {
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
+import { AircraftComplianceTab } from "@/components/compliance/aircraft-compliance-tab";
 import { AircraftComponentsTab } from "@/components/components/aircraft-components-tab";
 import { AircraftPartsTab } from "@/components/inventory/aircraft-parts-tab";
 import { AircraftSignalsTab } from "@/components/signals/aircraft-signals-tab";
@@ -68,10 +69,10 @@ const TABS: TabDef[] = [
   },
   {
     value: "airworthiness",
-    label: "Airworthiness",
+    label: "Compliance",
     icon: ShieldCheck,
-    headline: "Airworthiness",
-    text: "AD/SB applicability, recurring requirements, and compliance status for this tail — with the evidence trail behind every sign-off. Arrives in Phase 8.",
+    headline: "Compliance",
+    text: "AD/SB applicability, recurring requirements, and compliance status for this tail — with the evidence trail behind every sign-off.",
   },
   {
     value: "inventory",
@@ -238,6 +239,8 @@ export default function AircraftProfilePage() {
                     <AircraftComponentsTab aircraftId={data.id} />
                   ) : t.value === "inventory" ? (
                     <AircraftPartsTab aircraftId={data.id} />
+                  ) : t.value === "airworthiness" ? (
+                    <AircraftComplianceTab aircraftId={data.id} />
                   ) : (
                     <div className="flex min-h-[40vh] flex-col items-center justify-center px-6 py-16 text-center">
                       <div className="mb-5 flex h-14 w-14 items-center justify-center border border-border bg-surface/40">
