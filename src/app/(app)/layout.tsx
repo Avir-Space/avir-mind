@@ -4,6 +4,10 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { createClient } from "@/lib/supabase/server";
 
+// Authed pages read the session cookie and hit Supabase at request time — never
+// statically prerender them (prerender has no env/session and would fail).
+export const dynamic = "force-dynamic";
+
 /**
  * Authenticated application shell. Middleware already gates access; this server
  * check is defense-in-depth and gives us the user for the initial render.
