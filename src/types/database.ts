@@ -39,6 +39,85 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_decision_records: {
+        Row: {
+          created_at_utc: string
+          decision_at_utc: string
+          decision_context: string | null
+          decision_type: string
+          explainability_data: Json | null
+          id: string
+          input_context_hash: string
+          input_context_summary: Json | null
+          linked_signal_id: string | null
+          linked_task_id: string | null
+          model_identifier: string
+          model_version_metadata: Json | null
+          org_id: string
+          output_confidence: string | null
+          output_content: Json | null
+          prompt_template_hash: string | null
+        }
+        Insert: {
+          created_at_utc?: string
+          decision_at_utc?: string
+          decision_context?: string | null
+          decision_type: string
+          explainability_data?: Json | null
+          id?: string
+          input_context_hash: string
+          input_context_summary?: Json | null
+          linked_signal_id?: string | null
+          linked_task_id?: string | null
+          model_identifier: string
+          model_version_metadata?: Json | null
+          org_id: string
+          output_confidence?: string | null
+          output_content?: Json | null
+          prompt_template_hash?: string | null
+        }
+        Update: {
+          created_at_utc?: string
+          decision_at_utc?: string
+          decision_context?: string | null
+          decision_type?: string
+          explainability_data?: Json | null
+          id?: string
+          input_context_hash?: string
+          input_context_summary?: Json | null
+          linked_signal_id?: string | null
+          linked_task_id?: string | null
+          model_identifier?: string
+          model_version_metadata?: Json | null
+          org_id?: string
+          output_confidence?: string | null
+          output_content?: Json | null
+          prompt_template_hash?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_decision_records_linked_signal_id_fkey"
+            columns: ["linked_signal_id"]
+            isOneToOne: false
+            referencedRelation: "signals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_decision_records_linked_task_id_fkey"
+            columns: ["linked_task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_decision_records_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       aircraft: {
         Row: {
           aircraft_type: string
@@ -82,6 +161,256 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aircraft_ad_status: {
+        Row: {
+          ad_id: string
+          aircraft_id: string
+          compliance_method: string | null
+          complied_at_cycles: number | null
+          complied_at_date: string | null
+          complied_at_flight_hours: number | null
+          created_at_utc: string
+          deferral_authority: string | null
+          deferral_expiry_date: string | null
+          documentation_reference: string | null
+          evidence_attachment_paths: string[] | null
+          id: string
+          notes: string | null
+          org_id: string
+          performed_by: string | null
+          status: string
+          updated_at_utc: string
+        }
+        Insert: {
+          ad_id: string
+          aircraft_id: string
+          compliance_method?: string | null
+          complied_at_cycles?: number | null
+          complied_at_date?: string | null
+          complied_at_flight_hours?: number | null
+          created_at_utc?: string
+          deferral_authority?: string | null
+          deferral_expiry_date?: string | null
+          documentation_reference?: string | null
+          evidence_attachment_paths?: string[] | null
+          id?: string
+          notes?: string | null
+          org_id: string
+          performed_by?: string | null
+          status?: string
+          updated_at_utc?: string
+        }
+        Update: {
+          ad_id?: string
+          aircraft_id?: string
+          compliance_method?: string | null
+          complied_at_cycles?: number | null
+          complied_at_date?: string | null
+          complied_at_flight_hours?: number | null
+          created_at_utc?: string
+          deferral_authority?: string | null
+          deferral_expiry_date?: string | null
+          documentation_reference?: string | null
+          evidence_attachment_paths?: string[] | null
+          id?: string
+          notes?: string | null
+          org_id?: string
+          performed_by?: string | null
+          status?: string
+          updated_at_utc?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aircraft_ad_status_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: false
+            referencedRelation: "airworthiness_directives"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aircraft_ad_status_aircraft_id_fkey"
+            columns: ["aircraft_id"]
+            isOneToOne: false
+            referencedRelation: "aircraft"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aircraft_ad_status_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aircraft_mel_items: {
+        Row: {
+          aircraft_id: string
+          created_at_utc: string
+          deferred_at_utc: string
+          deferred_by_user_id: string | null
+          extension_authority: string | null
+          extension_new_due_date: string | null
+          id: string
+          linked_task_id: string | null
+          mel_catalog_id: string
+          org_id: string
+          placard_installed: boolean
+          reason: string | null
+          rectified_at_utc: string | null
+          repair_by_date: string
+          status: string
+          updated_at_utc: string
+        }
+        Insert: {
+          aircraft_id: string
+          created_at_utc?: string
+          deferred_at_utc?: string
+          deferred_by_user_id?: string | null
+          extension_authority?: string | null
+          extension_new_due_date?: string | null
+          id?: string
+          linked_task_id?: string | null
+          mel_catalog_id: string
+          org_id: string
+          placard_installed?: boolean
+          reason?: string | null
+          rectified_at_utc?: string | null
+          repair_by_date: string
+          status?: string
+          updated_at_utc?: string
+        }
+        Update: {
+          aircraft_id?: string
+          created_at_utc?: string
+          deferred_at_utc?: string
+          deferred_by_user_id?: string | null
+          extension_authority?: string | null
+          extension_new_due_date?: string | null
+          id?: string
+          linked_task_id?: string | null
+          mel_catalog_id?: string
+          org_id?: string
+          placard_installed?: boolean
+          reason?: string | null
+          rectified_at_utc?: string | null
+          repair_by_date?: string
+          status?: string
+          updated_at_utc?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aircraft_mel_items_aircraft_id_fkey"
+            columns: ["aircraft_id"]
+            isOneToOne: false
+            referencedRelation: "aircraft"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aircraft_mel_items_linked_task_id_fkey"
+            columns: ["linked_task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aircraft_mel_items_mel_catalog_id_fkey"
+            columns: ["mel_catalog_id"]
+            isOneToOne: false
+            referencedRelation: "mel_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aircraft_mel_items_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aircraft_sb_status: {
+        Row: {
+          aircraft_id: string
+          compliance_method: string | null
+          complied_at_cycles: number | null
+          complied_at_date: string | null
+          complied_at_flight_hours: number | null
+          created_at_utc: string
+          deferral_authority: string | null
+          deferral_expiry_date: string | null
+          documentation_reference: string | null
+          evidence_attachment_paths: string[] | null
+          id: string
+          notes: string | null
+          org_id: string
+          performed_by: string | null
+          sb_id: string
+          status: string
+          updated_at_utc: string
+        }
+        Insert: {
+          aircraft_id: string
+          compliance_method?: string | null
+          complied_at_cycles?: number | null
+          complied_at_date?: string | null
+          complied_at_flight_hours?: number | null
+          created_at_utc?: string
+          deferral_authority?: string | null
+          deferral_expiry_date?: string | null
+          documentation_reference?: string | null
+          evidence_attachment_paths?: string[] | null
+          id?: string
+          notes?: string | null
+          org_id: string
+          performed_by?: string | null
+          sb_id: string
+          status?: string
+          updated_at_utc?: string
+        }
+        Update: {
+          aircraft_id?: string
+          compliance_method?: string | null
+          complied_at_cycles?: number | null
+          complied_at_date?: string | null
+          complied_at_flight_hours?: number | null
+          created_at_utc?: string
+          deferral_authority?: string | null
+          deferral_expiry_date?: string | null
+          documentation_reference?: string | null
+          evidence_attachment_paths?: string[] | null
+          id?: string
+          notes?: string | null
+          org_id?: string
+          performed_by?: string | null
+          sb_id?: string
+          status?: string
+          updated_at_utc?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aircraft_sb_status_aircraft_id_fkey"
+            columns: ["aircraft_id"]
+            isOneToOne: false
+            referencedRelation: "aircraft"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aircraft_sb_status_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aircraft_sb_status_sb_id_fkey"
+            columns: ["sb_id"]
+            isOneToOne: false
+            referencedRelation: "service_bulletins"
             referencedColumns: ["id"]
           },
         ]
@@ -174,6 +503,71 @@ export type Database = {
           },
           {
             foreignKeyName: "aircraft_state_history_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      airworthiness_directives: {
+        Row: {
+          ad_document_url: string | null
+          ad_number: string
+          ad_summary: string | null
+          ad_title: string
+          applicable_aircraft_types: string[] | null
+          applicable_engines: string[] | null
+          applicable_parts: string[] | null
+          compliance_deadline_cycles: number | null
+          compliance_deadline_date: string | null
+          compliance_deadline_flight_hours: number | null
+          created_at_utc: string
+          criticality: string
+          effective_date: string
+          id: string
+          issuing_authority: string
+          org_id: string
+        }
+        Insert: {
+          ad_document_url?: string | null
+          ad_number: string
+          ad_summary?: string | null
+          ad_title: string
+          applicable_aircraft_types?: string[] | null
+          applicable_engines?: string[] | null
+          applicable_parts?: string[] | null
+          compliance_deadline_cycles?: number | null
+          compliance_deadline_date?: string | null
+          compliance_deadline_flight_hours?: number | null
+          created_at_utc?: string
+          criticality?: string
+          effective_date: string
+          id?: string
+          issuing_authority?: string
+          org_id: string
+        }
+        Update: {
+          ad_document_url?: string | null
+          ad_number?: string
+          ad_summary?: string | null
+          ad_title?: string
+          applicable_aircraft_types?: string[] | null
+          applicable_engines?: string[] | null
+          applicable_parts?: string[] | null
+          compliance_deadline_cycles?: number | null
+          compliance_deadline_date?: string | null
+          compliance_deadline_flight_hours?: number | null
+          created_at_utc?: string
+          criticality?: string
+          effective_date?: string
+          id?: string
+          issuing_authority?: string
+          org_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "airworthiness_directives_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
@@ -844,6 +1238,44 @@ export type Database = {
             columns: ["qualification_id"]
             isOneToOne: false
             referencedRelation: "qualifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      data_lineage_records: {
+        Row: {
+          ai_decision_record_id: string
+          created_at_utc: string
+          id: string
+          source_data_generated_by: string | null
+          source_data_snapshot: Json | null
+          source_row_id: string
+          source_table: string
+        }
+        Insert: {
+          ai_decision_record_id: string
+          created_at_utc?: string
+          id?: string
+          source_data_generated_by?: string | null
+          source_data_snapshot?: Json | null
+          source_row_id: string
+          source_table: string
+        }
+        Update: {
+          ai_decision_record_id?: string
+          created_at_utc?: string
+          id?: string
+          source_data_generated_by?: string | null
+          source_data_snapshot?: Json | null
+          source_row_id?: string
+          source_table?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "data_lineage_records_ai_decision_record_id_fkey"
+            columns: ["ai_decision_record_id"]
+            isOneToOne: false
+            referencedRelation: "ai_decision_records"
             referencedColumns: ["id"]
           },
         ]
@@ -1594,6 +2026,227 @@ export type Database = {
           },
         ]
       }
+      human_oversight_events: {
+        Row: {
+          ai_decision_record_id: string
+          created_at_utc: string
+          id: string
+          org_id: string
+          outcome_matched_ai: boolean | null
+          outcome_recorded_at_utc: string | null
+          oversight_action_detail: Json | null
+          oversight_type: string
+          reviewer_role: string | null
+          reviewing_notes: string | null
+          reviewing_user_id: string
+        }
+        Insert: {
+          ai_decision_record_id: string
+          created_at_utc?: string
+          id?: string
+          org_id: string
+          outcome_matched_ai?: boolean | null
+          outcome_recorded_at_utc?: string | null
+          oversight_action_detail?: Json | null
+          oversight_type: string
+          reviewer_role?: string | null
+          reviewing_notes?: string | null
+          reviewing_user_id: string
+        }
+        Update: {
+          ai_decision_record_id?: string
+          created_at_utc?: string
+          id?: string
+          org_id?: string
+          outcome_matched_ai?: boolean | null
+          outcome_recorded_at_utc?: string | null
+          oversight_action_detail?: Json | null
+          oversight_type?: string
+          reviewer_role?: string | null
+          reviewing_notes?: string | null
+          reviewing_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "human_oversight_events_ai_decision_record_id_fkey"
+            columns: ["ai_decision_record_id"]
+            isOneToOne: false
+            referencedRelation: "ai_decision_records"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "human_oversight_events_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      life_limited_parts: {
+        Row: {
+          component_id: string
+          created_at_utc: string
+          criticality: string
+          current_value: number
+          id: string
+          life_limit_type: string
+          life_limit_value: number
+          org_id: string
+          percentage_used: number | null
+          remaining: number | null
+          source_document: string | null
+          updated_at_utc: string
+        }
+        Insert: {
+          component_id: string
+          created_at_utc?: string
+          criticality: string
+          current_value?: number
+          id?: string
+          life_limit_type: string
+          life_limit_value: number
+          org_id: string
+          percentage_used?: number | null
+          remaining?: number | null
+          source_document?: string | null
+          updated_at_utc?: string
+        }
+        Update: {
+          component_id?: string
+          created_at_utc?: string
+          criticality?: string
+          current_value?: number
+          id?: string
+          life_limit_type?: string
+          life_limit_value?: number
+          org_id?: string
+          percentage_used?: number | null
+          remaining?: number | null
+          source_document?: string | null
+          updated_at_utc?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "life_limited_parts_component_id_fkey"
+            columns: ["component_id"]
+            isOneToOne: false
+            referencedRelation: "components"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "life_limited_parts_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mel_catalog: {
+        Row: {
+          aircraft_type: string
+          ata_chapter: string | null
+          category: string
+          created_at_utc: string
+          id: string
+          item_description: string
+          maintenance_procedure: string | null
+          mel_item_number: string
+          number_installed: number | null
+          number_required: number | null
+          operational_procedure: string | null
+          org_id: string
+          placard_required: boolean
+          repair_interval_days: number | null
+          system_name: string
+        }
+        Insert: {
+          aircraft_type: string
+          ata_chapter?: string | null
+          category: string
+          created_at_utc?: string
+          id?: string
+          item_description: string
+          maintenance_procedure?: string | null
+          mel_item_number: string
+          number_installed?: number | null
+          number_required?: number | null
+          operational_procedure?: string | null
+          org_id: string
+          placard_required?: boolean
+          repair_interval_days?: number | null
+          system_name: string
+        }
+        Update: {
+          aircraft_type?: string
+          ata_chapter?: string | null
+          category?: string
+          created_at_utc?: string
+          id?: string
+          item_description?: string
+          maintenance_procedure?: string | null
+          mel_item_number?: string
+          number_installed?: number | null
+          number_required?: number | null
+          operational_procedure?: string | null
+          org_id?: string
+          placard_required?: boolean
+          repair_interval_days?: number | null
+          system_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mel_catalog_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      model_versions: {
+        Row: {
+          created_at_utc: string
+          deployed_from_utc: string
+          deployed_to_utc: string | null
+          deployment_notes: string | null
+          id: string
+          known_limitations: string[] | null
+          model_identifier: string
+          performance_baseline: Json | null
+          provider: string
+          released_at_utc: string | null
+          version_number: string | null
+        }
+        Insert: {
+          created_at_utc?: string
+          deployed_from_utc?: string
+          deployed_to_utc?: string | null
+          deployment_notes?: string | null
+          id?: string
+          known_limitations?: string[] | null
+          model_identifier: string
+          performance_baseline?: Json | null
+          provider: string
+          released_at_utc?: string | null
+          version_number?: string | null
+        }
+        Update: {
+          created_at_utc?: string
+          deployed_from_utc?: string
+          deployed_to_utc?: string | null
+          deployment_notes?: string | null
+          id?: string
+          known_limitations?: string[] | null
+          model_identifier?: string
+          performance_baseline?: Json | null
+          provider?: string
+          released_at_utc?: string | null
+          version_number?: string | null
+        }
+        Relationships: []
+      }
       org_members: {
         Row: {
           created_at: string
@@ -1718,6 +2371,42 @@ export type Database = {
           },
         ]
       }
+      prompt_versions: {
+        Row: {
+          change_summary: string | null
+          created_at_utc: string
+          deployed_from_utc: string
+          deployed_to_utc: string | null
+          id: string
+          prompt_content_full: string
+          prompt_template_hash: string
+          prompt_template_identifier: string
+          version_number: number
+        }
+        Insert: {
+          change_summary?: string | null
+          created_at_utc?: string
+          deployed_from_utc?: string
+          deployed_to_utc?: string | null
+          id?: string
+          prompt_content_full: string
+          prompt_template_hash: string
+          prompt_template_identifier: string
+          version_number: number
+        }
+        Update: {
+          change_summary?: string | null
+          created_at_utc?: string
+          deployed_from_utc?: string
+          deployed_to_utc?: string | null
+          id?: string
+          prompt_content_full?: string
+          prompt_template_hash?: string
+          prompt_template_identifier?: string
+          version_number?: number
+        }
+        Relationships: []
+      }
       qualifications: {
         Row: {
           applicable_aircraft_types: string[] | null
@@ -1758,6 +2447,65 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "qualifications_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      regulatory_reports: {
+        Row: {
+          created_at_utc: string
+          documentation_paths: string[] | null
+          filed_at_date: string | null
+          filed_by_user_id: string | null
+          follow_up_actions: Json | null
+          id: string
+          issuing_regulator: string | null
+          linked_event_id: string | null
+          org_id: string
+          report_reference: string | null
+          report_summary: string | null
+          report_type: string
+          status: string
+          updated_at_utc: string
+        }
+        Insert: {
+          created_at_utc?: string
+          documentation_paths?: string[] | null
+          filed_at_date?: string | null
+          filed_by_user_id?: string | null
+          follow_up_actions?: Json | null
+          id?: string
+          issuing_regulator?: string | null
+          linked_event_id?: string | null
+          org_id: string
+          report_reference?: string | null
+          report_summary?: string | null
+          report_type: string
+          status?: string
+          updated_at_utc?: string
+        }
+        Update: {
+          created_at_utc?: string
+          documentation_paths?: string[] | null
+          filed_at_date?: string | null
+          filed_by_user_id?: string | null
+          follow_up_actions?: Json | null
+          id?: string
+          issuing_regulator?: string | null
+          linked_event_id?: string | null
+          org_id?: string
+          report_reference?: string | null
+          report_summary?: string | null
+          report_type?: string
+          status?: string
+          updated_at_utc?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "regulatory_reports_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
@@ -1972,6 +2720,72 @@ export type Database = {
             columns: ["current_owner_org_id"]
             isOneToOne: false
             referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_bulletins: {
+        Row: {
+          applicable_aircraft_types: string[] | null
+          applicable_parts: string[] | null
+          classification: string
+          created_at_utc: string
+          id: string
+          issued_date: string
+          manufacturer: string
+          org_id: string
+          recommended_by_date: string | null
+          related_ad_id: string | null
+          sb_document_url: string | null
+          sb_number: string
+          sb_summary: string | null
+          sb_title: string
+        }
+        Insert: {
+          applicable_aircraft_types?: string[] | null
+          applicable_parts?: string[] | null
+          classification?: string
+          created_at_utc?: string
+          id?: string
+          issued_date: string
+          manufacturer: string
+          org_id: string
+          recommended_by_date?: string | null
+          related_ad_id?: string | null
+          sb_document_url?: string | null
+          sb_number: string
+          sb_summary?: string | null
+          sb_title: string
+        }
+        Update: {
+          applicable_aircraft_types?: string[] | null
+          applicable_parts?: string[] | null
+          classification?: string
+          created_at_utc?: string
+          id?: string
+          issued_date?: string
+          manufacturer?: string
+          org_id?: string
+          recommended_by_date?: string | null
+          related_ad_id?: string | null
+          sb_document_url?: string | null
+          sb_number?: string
+          sb_summary?: string | null
+          sb_title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_bulletins_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_bulletins_related_ad_id_fkey"
+            columns: ["related_ad_id"]
+            isOneToOne: false
+            referencedRelation: "airworthiness_directives"
             referencedColumns: ["id"]
           },
         ]
@@ -3115,6 +3929,11 @@ export type Database = {
       }
     }
     Functions: {
+      _caller_org: { Args: never; Returns: string }
+      _capture_ai_decision_for_signal: {
+        Args: { p_signal_id: string }
+        Returns: string
+      }
       _station_wx: { Args: { p_station: string }; Returns: Json }
       acknowledge_task: { Args: { p_task_id: string }; Returns: undefined }
       act_on_signal: {
@@ -3174,6 +3993,7 @@ export type Database = {
         Args: { p_flight_id: string }
         Returns: Json
       }
+      compute_llp_status: { Args: never; Returns: number }
       consume_stock: {
         Args: {
           p_component_event_id?: string
@@ -3199,6 +4019,10 @@ export type Database = {
       }
       create_dispatch_release: {
         Args: { p_attrs?: Json; p_flight_id: string }
+        Returns: string
+      }
+      create_regulatory_report_draft: {
+        Args: { p_attrs?: Json; p_type: string }
         Returns: string
       }
       create_task: {
@@ -3230,6 +4054,15 @@ export type Database = {
         Returns: string
       }
       current_user_org_ids: { Args: never; Returns: string[] }
+      defer_mel_item: {
+        Args: {
+          p_aircraft_id: string
+          p_create_task?: boolean
+          p_mel_catalog_id: string
+          p_reason?: string
+        }
+        Returns: Json
+      }
       evaluate_duty_period: {
         Args: {
           p_augmented?: boolean
@@ -3241,6 +4074,10 @@ export type Database = {
         }
         Returns: Json
       }
+      export_dsai_conformance_bundle: {
+        Args: { p_from: string; p_to: string }
+        Returns: Json
+      }
       export_genealogy_bundle: {
         Args: {
           p_format: string
@@ -3250,10 +4087,23 @@ export type Database = {
         }
         Returns: Json
       }
+      extend_mel_deferral: {
+        Args: { p_authority: string; p_item_id: string; p_new_due_date: string }
+        Returns: Json
+      }
+      file_regulatory_report: {
+        Args: { p_id: string; p_reference?: string }
+        Returns: string
+      }
       genealogy_build_record: { Args: { p_event_id: string }; Returns: string }
       genealogy_upsert_serial: {
         Args: { p_component_id: string }
         Returns: string
+      }
+      generate_compliance_signals: { Args: never; Returns: number }
+      generate_compliance_signals_for_org: {
+        Args: { p_org: string }
+        Returns: number
       }
       generate_crew_signals: { Args: never; Returns: number }
       generate_crew_signals_for_org: {
@@ -3292,6 +4142,23 @@ export type Database = {
           p_force_regenerate?: boolean
           p_run_type?: string
         }
+        Returns: Json
+      }
+      get_active_mel_items_for_aircraft: {
+        Args: { p_aircraft_id: string }
+        Returns: Json
+      }
+      get_ad_detail: { Args: { p_ad_id: string }; Returns: Json }
+      get_ai_decision_audit_trail: {
+        Args: {
+          p_decision_id?: string
+          p_signal_id?: string
+          p_task_id?: string
+        }
+        Returns: Json
+      }
+      get_aircraft_compliance_summary: {
+        Args: { p_aircraft_id: string }
         Returns: Json
       }
       get_aircraft_drawer_summary: {
@@ -3343,7 +4210,22 @@ export type Database = {
       }
       get_crew_stats: { Args: never; Returns: Json }
       get_daily_ops_summary: { Args: never; Returns: Json }
+      get_data_lineage_report: {
+        Args: { p_decision_id: string }
+        Returns: Json
+      }
       get_dispatch_queue: { Args: never; Returns: Json }
+      get_dsai_dashboard: { Args: never; Returns: Json }
+      get_dsai_decisions: {
+        Args: {
+          p_confidence?: string
+          p_limit?: number
+          p_model?: string
+          p_type?: string
+        }
+        Returns: Json
+      }
+      get_dsai_oversight: { Args: { p_limit?: number }; Returns: Json }
       get_expiring_qualifications: { Args: { p_days?: number }; Returns: Json }
       get_fatigue_forecast: {
         Args: { p_crew_member_id: string; p_forecast_days?: number }
@@ -3360,6 +4242,9 @@ export type Database = {
         }
         Returns: Json
       }
+      get_fleet_compliance_dashboard: { Args: never; Returns: Json }
+      get_fleet_llps: { Args: never; Returns: Json }
+      get_fleet_mel_items: { Args: never; Returns: Json }
       get_flight_detail: { Args: { p_flight_id: string }; Returns: Json }
       get_flights_list: {
         Args: { p_from?: string; p_to?: string }
@@ -3367,9 +4252,11 @@ export type Database = {
       }
       get_genealogy_directory: { Args: never; Returns: Json }
       get_inventory_dashboard: { Args: never; Returns: Json }
+      get_llp_alerts: { Args: { p_threshold_pct?: number }; Returns: Json }
       get_location_detail: { Args: { p_location_id: string }; Returns: Json }
       get_locations_overview: { Args: never; Returns: Json }
       get_low_stock_alerts: { Args: never; Returns: Json }
+      get_model_version_report: { Args: never; Returns: Json }
       get_or_create_demo_counterparty: { Args: never; Returns: string }
       get_part_detail: { Args: { p_part_id: string }; Returns: Json }
       get_parts_by_component_compatibility: {
@@ -3383,6 +4270,7 @@ export type Database = {
       }
       get_recent_flight_events: { Args: { p_limit?: number }; Returns: Json }
       get_recent_movements: { Args: { p_limit?: number }; Returns: Json }
+      get_reporting_calendar: { Args: never; Returns: Json }
       get_rule_configurations: { Args: never; Returns: Json }
       get_serial_genealogy: {
         Args: {
@@ -3408,6 +4296,7 @@ export type Database = {
       get_weather_board: { Args: never; Returns: Json }
       get_weather_briefing: { Args: { p_flight_id: string }; Returns: Json }
       get_weather_overlay: { Args: never; Returns: Json }
+      import_ad_from_authority: { Args: { p_ad: Json }; Returns: string }
       is_org_admin: { Args: { p_org: string }; Returns: boolean }
       is_org_member: { Args: { p_org: string }; Returns: boolean }
       log_work: {
@@ -3474,6 +4363,10 @@ export type Database = {
         }
         Returns: string
       }
+      rectify_mel_item: {
+        Args: { p_item_id: string; p_notes?: string }
+        Returns: Json
+      }
       reserve_stock: {
         Args: {
           p_location: string
@@ -3484,6 +4377,10 @@ export type Database = {
         Returns: string
       }
       seed_avir_demo: { Args: { p_user_id: string }; Returns: string }
+      seed_demo_compliance: {
+        Args: { p_org_id: string; p_user_id: string }
+        Returns: undefined
+      }
       seed_demo_components: {
         Args: { p_org_id: string; p_user_id: string }
         Returns: number
@@ -3544,6 +4441,15 @@ export type Database = {
           p_part_id: string
           p_quantity: number
           p_task_id?: string
+        }
+        Returns: string
+      }
+      update_aircraft_ad_status: {
+        Args: {
+          p_ad_id: string
+          p_aircraft_id: string
+          p_attrs?: Json
+          p_status: string
         }
         Returns: string
       }
