@@ -71,7 +71,7 @@ export function useCrewOverlay(fleetId: string | null, enabled: boolean) {
 export function useUpcomingFlights() {
   const supabase = useMemo(() => createClient(), []);
   return useQuery({ queryKey: ["upcoming-flights"], queryFn: async () => {
-    const { data, error } = await supabase.from("flight_schedules")
+    const { data, error } = await supabase.from("flights")
       .select("id, flight_number, origin_station, destination_station, scheduled_departure_utc, scheduled_arrival_utc, aircraft_id, aircraft(tail_number, aircraft_type)")
       .gte("scheduled_departure_utc", new Date().toISOString()).order("scheduled_departure_utc").limit(40);
     if (error) throw error; return data ?? [];
@@ -83,7 +83,7 @@ export function useAssignments() {
   const supabase = useMemo(() => createClient(), []);
   return useQuery({ queryKey: ["crew-assignments"], queryFn: async () => {
     const { data, error } = await supabase.from("assignments")
-      .select("id, role_on_flight, assignment_status, assigned_at_utc, crew_members(first_name, last_name, role), flight_schedules(flight_number, origin_station, destination_station, scheduled_departure_utc)")
+      .select("id, role_on_flight, assignment_status, assigned_at_utc, crew_members(first_name, last_name, role), flights(flight_number, origin_station, destination_station, scheduled_departure_utc)")
       .order("assigned_at_utc", { ascending: false }).limit(50);
     if (error) throw error; return data ?? [];
   } });

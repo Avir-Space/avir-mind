@@ -6,15 +6,19 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import type { StationRollup } from "@/types/command-center";
 
+const WX_HEX: Record<string, string> = { vfr: "#16A34A", mvfr: "#2563EB", ifr: "#CA8A04", lifr: "#DC2626" };
+
 export function StationStrip({
   rollups,
   selected,
   crewByStation,
+  wxByStation,
   onSelect,
 }: {
   rollups: StationRollup[];
   selected: string | null;
   crewByStation?: Map<string, number>;
+  wxByStation?: Map<string, string>;
   onSelect: (station: string | null) => void;
 }) {
   const scroller = useRef<HTMLDivElement>(null);
@@ -105,6 +109,7 @@ export function StationStrip({
                 "flex w-[180px] shrink-0 snap-start flex-col border bg-card px-3 py-2 text-left transition-colors",
                 active ? "border-primary" : "border-border hover:border-border-strong",
               )}
+              style={wxByStation?.get(r.station_code) ? { borderTop: `3px solid ${WX_HEX[wxByStation.get(r.station_code)!] ?? "#6B7280"}` } : undefined}
             >
               <div className="flex items-baseline justify-between">
                 <span className="font-mono text-lg leading-none text-foreground">{r.station_code}</span>
@@ -113,7 +118,11 @@ export function StationStrip({
                 </span>
               </div>
               <div className="mt-1.5 flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-hint">
-                <span>Weather: —</span>
+                {wxByStation?.get(r.station_code) ? (
+                  <span style={{ color: WX_HEX[wxByStation.get(r.station_code)!] ?? "#6B7280" }}>{wxByStation.get(r.station_code)!.toUpperCase()}</span>
+                ) : (
+                  <span>Weather: —</span>
+                )}
                 {crewByStation && <span className="text-primary">· {crewByStation.get(r.station_code) ?? 0} crew</span>}
               </div>
               <div className="mt-2 flex items-center gap-2">

@@ -1,5 +1,7 @@
 "use client";
 
+import { Radio, X } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 import { CanvasDrawer } from "@/components/command-center/canvas-drawer";
@@ -15,8 +17,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { TIME_WINDOWS, type TimeWindowValue } from "@/lib/design/command-center";
+import { flightCategory, flightEventLabel } from "@/lib/design/flightops";
 import { useCommandCenterSnapshot } from "@/lib/queries/use-command-center-snapshot";
 import { useCrewOverlay } from "@/lib/queries/use-crew";
+import { useWeatherOverlay, useRecentFlightEvents } from "@/lib/queries/use-flightops";
 import { useFleets } from "@/lib/queries/use-fleets";
 import { useTaskRealtime } from "@/lib/realtime/use-task-realtime";
 import { useSignalRealtime } from "@/lib/realtime/use-signal-realtime";
@@ -36,6 +40,8 @@ export function CommandCenterCanvas() {
   const [drawer, setDrawer] = useState<DrawerTarget>(null);
   const [pinned, setPinned] = useState(false);
   const [crewOn, setCrewOn] = useState(false);
+  const [wxOn, setWxOn] = useState(false);
+  const [eventsOn, setEventsOn] = useState(false);
 
   const hours = TIME_WINDOWS.find((w) => w.value === win)?.hours ?? 12;
   const { data: snapshot, isLoading } = useCommandCenterSnapshot(
@@ -45,6 +51,9 @@ export function CommandCenterCanvas() {
   const { data: crewOverlay } = useCrewOverlay(fleetId === "all" ? null : fleetId, crewOn);
   const crewStatus = new Map((crewOverlay?.aircraft ?? []).map((a) => [a.aircraft_id, a.crew_status]));
   const crewByStation = new Map((crewOverlay?.stations ?? []).map((s) => [s.station_code, s.crew_available]));
+  const { data: wxOverlay } = useWeatherOverlay(wxOn);
+  const wxByStation = new Map((wxOverlay?.stations ?? []).map((s) => [s.station_code, s.flight_category ?? ""]));
+  const { data: flightEvents } = useRecentFlightEvents(20);
 
   const allPositions = snapshot?.aircraft_positions ?? [];
   const positions = station ? allPositions.filter((p) => p.station === station) : allPositions;
@@ -108,20 +117,44 @@ export function CommandCenterCanvas() {
                 </button>
               ))}
             </div>
-            <button
-              type="button"
-              onClick={() => setCrewOn((v) => !v)}
-              className={cn("border px-2.5 py-1 text-xs transition-colors", crewOn ? "border-primary bg-primary text-primary-foreground" : "border-border text-subtext hover:text-foreground")}
-              title="Overlay crew compliance"
-            >
-              Crew
-            </button>
+            <button type="button" onClick={() => setCrewOn((v) => !v)} className={cn("border px-2.5 py-1 text-xs transition-colors", crewOn ? "border-primary bg-primary text-primary-foreground" : "border-border text-subtext hover:text-foreground")} title="Overlay crew compliance">Crew</button>
+            <button type="button" onClick={() => setWxOn((v) => !v)} className={cn("border px-2.5 py-1 text-xs transition-colors", wxOn ? "border-primary bg-primary text-primary-foreground" : "border-border text-subtext hover:text-foreground")} title="Overlay weather">Wx</button>
+            <button type="button" onClick={() => setEventsOn((v) => !v)} className={cn("inline-flex items-center gap-1 border px-2.5 py-1 text-xs transition-colors", eventsOn ? "border-primary bg-primary text-primary-foreground" : "border-border text-subtext hover:text-foreground")} title="Flight event stream"><Radio className="h-3 w-3" /> Events</button>
           </div>
         </div>
       </div>
 
-      {/* Body: canvas column + (optional) drawer column */}
+      {/* Weather SIGMET banner */}
+      {wxOn && (wxOverlay?.sigmets.length ?? 0) > 0 && (
+        <div className="flex items-center gap-2 border-b border-severity-high/40 bg-severity-high/5 px-6 py-1.5">
+          <span className="font-mono text-eyebrow uppercase tracking-wider text-severity-high">SIGMET</span>
+          <span className="truncate font-mono text-[11px] text-body">{wxOverlay?.sigmets[0]?.raw_text}</span>
+          {(wxOverlay?.sigmets.length ?? 0) > 1 && <span className="font-mono text-[10px] text-hint">+{(wxOverlay?.sigmets.length ?? 1) - 1} more</span>}
+        </div>
+      )}
+
+      {/* Body: (optional) event stream + canvas column + (optional) drawer column */}
       <div className="flex min-h-0 flex-1">
+        {eventsOn && (
+          <aside className="flex w-64 shrink-0 flex-col border-r border-border bg-surface/30">
+            <div className="flex items-center justify-between border-b border-border px-3 py-2">
+              <span className="font-mono text-eyebrow uppercase tracking-wider text-label">Flight events</span>
+              <button type="button" onClick={() => setEventsOn(false)} aria-label="Close"><X className="h-3.5 w-3.5 text-label hover:text-foreground" /></button>
+            </div>
+            <div className="flex-1 overflow-y-auto avir-scroll">
+              {(flightEvents ?? []).map((e) => (
+                <Link key={e.id} href={`/flight-ops/flights/${e.flight_id}`} className="block border-b border-border/50 px-3 py-1.5 hover:bg-surface/60">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono text-[11px] font-medium text-foreground">{flightEventLabel(e.event_type)}</span>
+                    <span className="font-mono text-[9px] text-hint">{new Date(e.event_time_utc).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                  </div>
+                  <div className="font-mono text-[10px] text-hint">{e.flight_number} · {e.origin_station}→{e.destination_station}</div>
+                </Link>
+              ))}
+              {(!flightEvents || flightEvents.length === 0) && <p className="px-3 py-3 text-xs text-hint">No recent events.</p>}
+            </div>
+          </aside>
+        )}
         <div className="flex min-w-0 flex-1 flex-col">
           {/* Band 1 — live fleet map */}
           <div className="relative min-h-[240px] border-b border-border" style={{ flex: "4 1 0%" }}>
@@ -143,6 +176,7 @@ export function CommandCenterCanvas() {
               rollups={snapshot?.station_rollups ?? []}
               selected={station}
               crewByStation={crewOn ? crewByStation : undefined}
+              wxByStation={wxOn ? wxByStation : undefined}
               onSelect={(s) => {
                 setStation(s);
                 if (s) open({ kind: "station", stationCode: s });

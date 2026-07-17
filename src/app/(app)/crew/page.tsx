@@ -161,7 +161,7 @@ export default function CrewPage() {
               <div className="border border-border">
                 {(assignments ?? []).map((a) => {
                   const cm = a.crew_members as unknown as { first_name: string; last_name: string; role: string } | null;
-                  const fs = a.flight_schedules as unknown as { flight_number: string; origin_station: string; destination_station: string; scheduled_departure_utc: string } | null;
+                  const fs = a.flights as unknown as { flight_number: string; origin_station: string; destination_station: string; scheduled_departure_utc: string } | null;
                   return (
                     <div key={a.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-border/60 px-3 py-2 last:border-b-0">
                       <ChevronRight className="h-3.5 w-3.5 text-hint" />
