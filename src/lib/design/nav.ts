@@ -40,7 +40,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Crew", href: "/crew", icon: Users, phase: 6 },
   { label: "Flight Ops", href: "/flight-ops", icon: PlaneTakeoff, phase: 7 },
   { label: "Compliance", href: "/compliance", icon: ClipboardCheck, phase: 8 },
-  { label: "Impact", href: "/impact", icon: TrendingUp, phase: 9 },
+  { label: "Calibration", href: "/calibration", icon: TrendingUp, phase: 9 },
   { label: "Dashboards", href: "/dashboards", icon: LayoutDashboard },
   { label: "Settings", href: "/settings", icon: Settings },
 ];

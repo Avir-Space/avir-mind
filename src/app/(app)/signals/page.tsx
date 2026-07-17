@@ -10,6 +10,7 @@ import { LastUpdated } from "@/components/avir/last-updated";
 import { PageHeader } from "@/components/avir/page-header";
 import { FleetSignalRefresh } from "@/components/signals/fleet-signal-refresh";
 import { FilterDropdown } from "@/components/signals/filter-dropdown";
+import { InsightsCalibrationNote } from "@/components/calibration/insights-calibration-note";
 import { InsightTile } from "@/components/signals/insight-tile";
 import { PredictionCard } from "@/components/components/prediction-card";
 import { TaskCard } from "@/components/tasks/task-card";
@@ -199,9 +200,12 @@ function SignalsInbox() {
 
         {/* AI Insights strip */}
         <div className="px-6 py-5">
-          <p className="eyebrow mb-2 inline-flex items-center gap-1.5">
-            <Sparkles className="h-3 w-3 text-primary" /> AI Insights
-          </p>
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <p className="eyebrow inline-flex items-center gap-1.5">
+              <Sparkles className="h-3 w-3 text-primary" /> AI Insights
+            </p>
+            <InsightsCalibrationNote />
+          </div>
           {insights && insights.length > 0 ? (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {insights.map((ins, i) => (

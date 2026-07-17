@@ -4,6 +4,7 @@ import { ChevronDown, ShieldCheck, Sparkles, TriangleAlert } from "lucide-react"
 import Link from "next/link";
 import { useState } from "react";
 
+import { CalibrationFooter } from "@/components/calibration/calibration-footer";
 import { DecisionAuditDrawer } from "@/components/compliance/decision-audit-drawer";
 import { CategoryTag } from "@/components/tasks/category-tag";
 import { InventorySignalExtra } from "@/components/inventory/inventory-signal-extra";
@@ -112,8 +113,8 @@ export function SignalCard({ signal }: { signal: Signal }) {
           <LastUpdated at={signal.generated_at_utc} label="Generated" className="shrink-0" />
         </div>
 
-        {/* DS.AI provenance */}
-        <div className="mt-3 border-t border-border pt-2">
+        {/* DS.AI provenance + calibration */}
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-border pt-2">
           <button
             type="button"
             onClick={() => setAuditOpen(true)}
@@ -121,6 +122,7 @@ export function SignalCard({ signal }: { signal: Signal }) {
           >
             <ShieldCheck className="h-3 w-3" /> View decision audit
           </button>
+          <CalibrationFooter category={signal.category} confidence={signal.confidence} />
         </div>
       </div>
 
