@@ -3,6 +3,7 @@ import {
   Boxes,
   ClipboardCheck,
   Cpu,
+  FlaskConical,
   Forklift,
   LayoutDashboard,
   LayoutGrid,
@@ -41,6 +42,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Flight Ops", href: "/flight-ops", icon: PlaneTakeoff, phase: 7 },
   { label: "Compliance", href: "/compliance", icon: ClipboardCheck, phase: 8 },
   { label: "Calibration", href: "/calibration", icon: TrendingUp, phase: 9 },
+  { label: "Backtest", href: "/backtest", icon: FlaskConical, phase: 10 },
   { label: "Dashboards", href: "/dashboards", icon: LayoutDashboard },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
