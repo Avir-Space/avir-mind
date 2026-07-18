@@ -24,7 +24,9 @@ export async function createTaskFromSignal(
   page: Page,
   overrides: { title?: string } = {},
 ): Promise<string> {
-  await page.getByRole("button", { name: "Create Task" }).first().click();
+  const openBtn = page.getByRole("button", { name: "Create Task" }).first();
+  await expect(openBtn).toBeVisible({ timeout: 30_000 }); // signal detail can render cold
+  await openBtn.click();
   const dialog = page.getByRole("dialog");
   await expect(dialog).toBeVisible();
   const titleInput = dialog.locator("#t-title");

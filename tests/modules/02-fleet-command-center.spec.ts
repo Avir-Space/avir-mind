@@ -65,6 +65,9 @@ test.describe("2.1 Fleet page", () => {
     await page.goto("/fleet");
     // Station filter applies in both views. Pick a station present in the seed.
     const station = "FRA";
+    // Wait for the board to render before baselining the count (else `all` is 0
+    // and the post-filter poll can never be satisfied).
+    await expect(page.locator(CARD).first()).toBeVisible({ timeout: 30_000 });
     const all = await page.locator(CARD).count();
     const stationChip = page.getByTestId("filter-station").getByRole("button", { name: station, exact: true });
     await stationChip.click();

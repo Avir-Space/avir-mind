@@ -77,6 +77,9 @@ test.describe("3.1 Signals inbox", () => {
   test("3.1.2 severity filter narrows the queue", async ({ page }) => {
     await signInAs(page, "owner");
     await page.goto("/signals");
+    // Wait for the queue to render before baselining (else `before` is 0 and the
+    // post-filter poll can never be satisfied → 15s timeout).
+    await expect(page.getByRole("button", { name: "Details" }).first()).toBeVisible({ timeout: 30_000 });
     const before = await page.getByRole("button", { name: "Details" }).count();
     await filterBySeverity(page, ["Critical"]);
     await expect.poll(async () => page.getByRole("button", { name: "Details" }).count()).toBeLessThanOrEqual(before);
