@@ -151,6 +151,7 @@ function Fleet() {
     setActiveCard(null);
     const from = e.active.data.current?.from as string | undefined;
     const to = e.over?.id as string | undefined;
+    console.log("[DRAG-DIAG] from:", from, "over:", to); // DIAG
     const card = e.active.data.current?.card as BoardCard | undefined;
     if (!card || !from || !to || from === to) return;
     setDestination("");
