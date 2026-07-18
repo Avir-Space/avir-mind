@@ -98,3 +98,19 @@ rejection, sign-out, owner/MRO nav, SSO save, TOTP enrollment + its audit event,
 cross-tenant RLS, API-key scope 403, zero-radius + Instrument Serif, the
 three-band canvas, station drawer, time-window selector) is implemented against
 real app behavior.
+
+### Modules 4 & 5 deviations (implemented against real app behavior)
+
+| Spec assumption | Reality in the app | Handling |
+|---|---|---|
+| Health bands 80/60 | Bands are 75/50/25 → Healthy/Watch/Degraded/Critical | assert against real bands |
+| Component detail incl. "Related Signals" tab | Tabs are Overview/Events/Predictions/Health Trend/Genealogy | assert Predictions tab |
+| Event types cycle_snapshot/installation/finding | cycle_recorded/installed/finding_recorded; no cycles/hours inputs (auto-filled) | 4.2.2 asserts the event row; counter/LLP-advance via UI not possible |
+| LLP is_llp/life_used columns + 100% install lock | Separate `life_limited_parts` (percentage_used generated); **no install guard** | 4.5.1 SQL; 4.5.3 fixme (product gap) |
+| Genealogy export PDF download | PDF is browser print-to-PDF (no download event) | 4.4.1 fixme; JSON/zip verified (4.4.2/4.4.3) |
+| Genealogy content_hash recompute in JS | SHA-256 over Postgres jsonb::text (not JS-reproducible) | verify chain linkage instead |
+| `supply_chain` signal category | It's `stock_transfer_opportunity` (evidence type `part`) | assert the real category |
+| Crew roster list w/ available/on_duty/resting | Roster is a duty GRID; Directory is the table; no such status field | 5.3.1 uses Directory |
+| Dispatch releases seeded | 0 seeded | 5.4.2 creates one test-scoped via `create_dispatch_release` |
+| `/weather` route with TAF | It's `/flight-ops/weather`; board shows METAR (TAF on flight detail) | assert board + METAR |
+| delay_pattern references route | Keys on delay_code (recurring cause), not origin/destination | assert real evidence + note |
