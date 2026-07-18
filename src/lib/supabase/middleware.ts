@@ -30,6 +30,37 @@ function safeDecode(v: string): string {
   }
 }
 
+/**
+ * Read the Supabase access token straight from the auth cookies. Fallback for
+ * environments where the SSR client's getSession() returns empty (belt-and-
+ * suspenders against edge-runtime quirks). Handles the chunked `.0/.1` form and
+ * the `base64-` value prefix that @supabase/ssr uses.
+ */
+function tokenFromCookies(request: NextRequest): string | null {
+  const chunks = request.cookies
+    .getAll()
+    .filter((c) => /sb-.*-auth-token(\.\d+)?$/.test(c.name))
+    .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+  if (chunks.length === 0) return null;
+  let raw = chunks.map((c) => c.value).join("");
+  if (raw.startsWith("base64-")) {
+    try {
+      raw = atob(raw.slice(7));
+    } catch {
+      return null;
+    }
+  }
+  try {
+    const parsed = JSON.parse(raw) as
+      | { access_token?: string }
+      | Array<{ access_token?: string }>;
+    const token = Array.isArray(parsed) ? parsed[0]?.access_token : parsed.access_token;
+    return typeof token === "string" ? token : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Decode a JWT payload (edge-safe, no verification — we only read claims). */
 function decodeJwtClaims(token: string): Record<string, unknown> | null {
   try {
@@ -104,7 +135,7 @@ export async function updateSession(request: NextRequest) {
   if (user && !isPublic(pathname)) {
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const token = session?.access_token ?? tokenFromCookies(request);
       const claims = token ? decodeJwtClaims(token) : null;
       const sessionKey = typeof claims?.session_id === "string" ? claims.session_id : null;
       if (token && sessionKey) {
