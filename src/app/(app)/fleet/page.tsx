@@ -324,9 +324,10 @@ function Fleet() {
               {pending &&
                 (isMaintComplete ? (
                   <>
-                    Confirm maintenance complete for aircraft{" "}
-                    <span className="text-foreground">{pending.card.tail_number}</span>. This moves it to{" "}
-                    <b>On Ground</b> and marks the primary task as done.
+                    This will mark{" "}
+                    <span className="text-foreground">{pending.card.primary_task?.title ?? "the primary task"}</span>{" "}
+                    as done and move <span className="text-foreground">{pending.card.tail_number}</span> to{" "}
+                    <b>On Ground</b>.
                   </>
                 ) : isTakeoff ? (
                   <>

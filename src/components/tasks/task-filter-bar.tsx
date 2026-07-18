@@ -35,7 +35,7 @@ export function FilterChipGroup({
     onChange(selected.includes(v) ? selected.filter((x) => x !== v) : [...selected, v]);
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2" data-testid={`filter-${label.toLowerCase().replace(/\s+/g, "-")}`}>
       <FilterLabel>{label}</FilterLabel>
       <div className="flex flex-wrap gap-1">
         {options.map((o) => {
@@ -74,7 +74,7 @@ export function FilterSegmented({
   onChange: (v: string) => void;
 }) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2" data-testid={label ? `filter-${label.toLowerCase().replace(/\s+/g, "-")}` : undefined}>
       {label && <FilterLabel>{label}</FilterLabel>}
       <div className="inline-flex border border-border">
         {options.map((o) => (

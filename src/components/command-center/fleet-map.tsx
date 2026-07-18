@@ -61,7 +61,38 @@ export default function FleetMap({ positions, onSelect }: Props) {
   const plotted = positions.filter(
     (p) => typeof p.lat === "number" && typeof p.lng === "number",
   );
-  const points = plotted.map((p) => [p.lat as number, p.lng as number] as [number, number]);
+
+  // Aircraft parked at the same station share identical coordinates, so their
+  // CircleMarkers overlap exactly and only the topmost is clickable. Fan any
+  // co-located group out into a small ring ("spiderfy") so every marker can be
+  // clicked/hovered independently. ~0.55° ≈ visibly separated at the fleet's
+  // fit zoom while staying near the true location.
+  const groups = new Map<string, AircraftPosition[]>();
+  for (const p of plotted) {
+    const key = `${(p.lat as number).toFixed(2)},${(p.lng as number).toFixed(2)}`;
+    const g = groups.get(key);
+    if (g) g.push(p);
+    else groups.set(key, [p]);
+  }
+  const displayLatLng = new Map<string, [number, number]>();
+  for (const group of groups.values()) {
+    if (group.length === 1) {
+      const p = group[0]!;
+      displayLatLng.set(p.aircraft_id, [p.lat as number, p.lng as number]);
+      continue;
+    }
+    const ring = 0.55 + group.length * 0.05;
+    group.forEach((p, i) => {
+      const angle = (2 * Math.PI * i) / group.length;
+      displayLatLng.set(p.aircraft_id, [
+        (p.lat as number) + ring * Math.sin(angle),
+        (p.lng as number) + ring * Math.cos(angle),
+      ]);
+    });
+  }
+  const coord = (p: AircraftPosition): [number, number] =>
+    displayLatLng.get(p.aircraft_id) ?? [p.lat as number, p.lng as number];
+  const points = plotted.map((p) => coord(p));
 
   const tileUrl = dark
     ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
@@ -88,7 +119,7 @@ export default function FleetMap({ positions, onSelect }: Props) {
         return (
           <CircleMarker
             key={p.aircraft_id}
-            center={[p.lat as number, p.lng as number]}
+            center={coord(p)}
             radius={meta.radius}
             pathOptions={{
               color: meta.hex,
@@ -96,6 +127,7 @@ export default function FleetMap({ positions, onSelect }: Props) {
               fillColor: meta.hex,
               fillOpacity: 0.85,
             }}
+            bubblingMouseEvents={false}
             eventHandlers={{ click: () => onSelect(p) }}
           >
             <Tooltip direction="top" offset={[0, -4]} opacity={1} className="avir-map-tooltip">
