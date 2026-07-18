@@ -24,19 +24,22 @@ export async function dragKanbanCard(page: Page, cardTail: string, toColumnLabel
   const handle = fleetCard(page, cardTail).getByRole("button", { name: "Drag aircraft" });
   const hb = await handle.boundingBox();
   if (!hb) throw new Error(`drag handle not found for card ${cardTail}`);
-  const columnLabel = page.getByText(toColumnLabel, { exact: true }).first();
-  const lb = await columnLabel.boundingBox();
-  if (!lb) throw new Error(`fleet column not found: ${toColumnLabel}`);
+  // Aim at the destination column's droppable body (its whole container), not a
+  // guessed offset below the header — more reliable for dnd-kit collision.
+  const col = fleetColumn(page, toColumnLabel);
+  const cb = (await col.boundingBox()) ?? (await page.getByText(toColumnLabel, { exact: true }).first().boundingBox());
+  if (!cb) throw new Error(`fleet column not found: ${toColumnLabel}`);
   const cx = hb.x + hb.width / 2;
   const cy = hb.y + hb.height / 2;
-  const tx = lb.x + lb.width / 2;
-  const ty = lb.y + 170; // drop into the column body, below its header
+  const tx = cb.x + cb.width / 2;
+  const ty = cb.y + Math.min(cb.height * 0.4, 200); // inside the column body
 
   await page.mouse.move(cx, cy);
   await page.mouse.down();
   await page.mouse.move(cx + 14, cy + 14, { steps: 6 }); // exceed 8px → arm the drag
-  await page.mouse.move(tx, ty, { steps: 14 });
-  await page.mouse.move(tx, ty + 6, { steps: 4 }); // settle over the droppable
+  await page.mouse.move(tx, ty, { steps: 16 });
+  await page.mouse.move(tx + 3, ty + 3, { steps: 4 }); // wiggle so dnd-kit computes `over`
+  await page.waitForTimeout(200); // let collision detection settle
   await page.mouse.up();
 }
 

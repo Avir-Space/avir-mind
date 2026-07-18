@@ -65,7 +65,8 @@ test.describe("2.1 Fleet page", () => {
     await page.goto("/fleet");
     // Station filter applies in both views. Pick a station present in the seed.
     const station = "JFK";
-    await page.getByRole("button", { name: station, exact: true }).first().click();
+    const stationChip = page.getByTestId("filter-station").getByRole("button", { name: station, exact: true });
+    await stationChip.click();
     const boardTail = await page.locator(CARD).first().locator("a").first().textContent();
 
     await page.getByRole("button", { name: "List" }).click();
@@ -75,7 +76,7 @@ test.describe("2.1 Fleet page", () => {
 
     // Toggle back — station chip still active.
     await page.getByRole("button", { name: "Board" }).click();
-    await expect(page.getByRole("button", { name: station, exact: true }).first()).toHaveClass(/bg-primary/);
+    await expect(page.getByTestId("filter-station").getByRole("button", { name: station, exact: true })).toHaveClass(/border-primary/);
   });
 
   test("2.1.3 /aircraft permanently redirects to /fleet?view=list", async ({ page, request }) => {
@@ -93,18 +94,24 @@ test.describe("2.1 Fleet page", () => {
     await signInAs(page, "owner");
     await page.goto("/fleet");
     const all = await page.locator(CARD).count();
+    const stationFilter = page.getByTestId("filter-station");
+    const riskFilter = page.getByTestId("filter-risk");
 
-    await page.getByRole("button", { name: "High", exact: true }).click(); // Risk = high
-    const highOnly = await page.locator(CARD).count();
-    expect(highOnly).toBeLessThan(all);
+    // Station filters the AIRCRAFT set (base_station), so the card count drops.
+    await stationFilter.getByRole("button", { name: "JFK", exact: true }).click();
+    const byStation = await page.locator(CARD).count();
+    expect(byStation).toBeGreaterThan(0);
+    expect(byStation).toBeLessThan(all);
 
-    await page.getByRole("button", { name: "FRA", exact: true }).click(); // + Station = FRA
-    const intersection = await page.locator(CARD).count();
-    expect(intersection).toBeLessThanOrEqual(highOnly);
+    // Risk is aircraft-centric: it narrows the task badges shown on cards, not
+    // the card set (every aircraft still renders). Assert the chip activates.
+    const highChip = riskFilter.getByRole("button", { name: "High", exact: true });
+    await highChip.click();
+    await expect(highChip).toHaveClass(/border-primary/);
 
-    // No "Clear filters" control exists — toggle the chips off again.
-    await page.getByRole("button", { name: "High", exact: true }).click();
-    await page.getByRole("button", { name: "FRA", exact: true }).click();
+    // No "Clear filters" control — toggle the chips off again → full board returns.
+    await highChip.click();
+    await stationFilter.getByRole("button", { name: "JFK", exact: true }).click();
     expect(await page.locator(CARD).count()).toBe(all);
   });
 });

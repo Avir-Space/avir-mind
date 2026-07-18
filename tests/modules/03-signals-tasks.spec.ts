@@ -103,7 +103,9 @@ test.describe("3.1 Signals inbox", () => {
   test("3.1.5 time-window segment switches", async ({ page }) => {
     await signInAs(page, "owner");
     await page.goto("/signals");
-    const w = page.getByRole("button", { name: "24h", exact: true });
+    // Scope to the Window segment — "24h" also appears as an applied-filter chip
+    // once selected, which otherwise makes the bare lookup ambiguous.
+    const w = page.getByTestId("filter-window").getByRole("button", { name: "24h", exact: true });
     await w.click();
     await expect(w).toHaveClass(/bg-primary/);
   });

@@ -153,8 +153,10 @@ test.describe("1.4 2FA", () => {
     }
 
     await page.getByRole("button", { name: "Enable" }).click();
-    const qr = page.getByAltText(/TOTP QR/i);
-    await expect(qr).toBeVisible({ timeout: 15_000 });
+    // Wait for the enroll card ("Scan with your authenticator"), then its QR
+    // image (robust to the exact alt text).
+    await expect(page.getByText(/Scan with your authenticator/i)).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('img[alt*="QR" i]').first()).toBeVisible({ timeout: 15_000 });
 
     // Extract the base32 secret shown next to the QR.
     const secretText = await page.getByText(/enter this secret/i).textContent();
