@@ -100,13 +100,26 @@ function Fleet() {
     if (typeof window !== "undefined") localStorage.setItem("avir_fleet_view", view);
   }, [view]);
 
-  // Shared filters (persist across the toggle — same component state).
+  // Shared filters (persist across the toggle) — initialised from the URL so a
+  // filtered board is shareable, and synced back to the URL on change.
   const [fleetId, setFleetId] = useState<string>("all");
-  const [stations, setStations] = useState<string[]>([]);
-  const [types, setTypes] = useState<string[]>([]);
-  const [risks, setRisks] = useState<string[]>([]);
-  const [parents, setParents] = useState<string[]>([]);
-  const [search, setSearch] = useState("");
+  const [stations, setStations] = useState<string[]>(() => params.getAll("station"));
+  const [types, setTypes] = useState<string[]>(() => params.getAll("type"));
+  const [risks, setRisks] = useState<string[]>(() => params.getAll("risk"));
+  const [parents, setParents] = useState<string[]>(() => params.getAll("category"));
+  const [search, setSearch] = useState(() => params.get("q") ?? "");
+
+  useEffect(() => {
+    const qs = new URLSearchParams();
+    if (view === "list") qs.set("view", "list");
+    stations.forEach((s) => qs.append("station", s));
+    types.forEach((s) => qs.append("type", s));
+    risks.forEach((s) => qs.append("risk", s));
+    parents.forEach((s) => qs.append("category", s));
+    if (search) qs.set("q", search);
+    const str = qs.toString();
+    if (typeof window !== "undefined") window.history.replaceState(null, "", str ? `/fleet?${str}` : "/fleet");
+  }, [stations, types, risks, parents, search, view]);
 
   const filters: FleetBoardFilters = {
     fleetId: fleetId === "all" ? null : fleetId,

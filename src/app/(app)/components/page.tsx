@@ -117,7 +117,11 @@ export default function ComponentsPage() {
         eyebrow="Assets"
         title="Components"
         subtitle="Every serialized component across your operation."
-        meta={components ? <span className="font-mono text-eyebrow uppercase text-label">{components.length} components</span> : null}
+        meta={components ? (
+          <span className="font-mono text-eyebrow uppercase text-label">
+            {rows.length === components.length ? `${components.length} components` : `${rows.length} of ${components.length} components`}
+          </span>
+        ) : null}
       />
 
       <div className="flex h-12 items-center gap-3 border-b border-border px-6">
