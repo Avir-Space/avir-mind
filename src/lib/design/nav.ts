@@ -11,6 +11,7 @@ import {
   Forklift,
   LayoutDashboard,
   LayoutGrid,
+  ListChecks,
   Package,
   PlaneTakeoff,
   Radio,
@@ -44,6 +45,7 @@ export type NavItem = {
 export const NAV_ITEMS: NavItem[] = [
   { label: "Command Center", href: "/command-center", icon: LayoutGrid },
   { label: "Signals", href: "/signals", icon: Radio },
+  { label: "Tasks", href: "/tasks", icon: ListChecks },
   // MRO lens (Phase 12)
   { label: "Shop Floor", href: "/shop-floor", icon: Wrench, phase: 12, models: ["mro", "hybrid"] },
   { label: "Customers", href: "/customers", icon: Building2, phase: 12, models: ["mro", "hybrid"] },

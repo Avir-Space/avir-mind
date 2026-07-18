@@ -88,6 +88,7 @@ export function useTaskActions() {
       riskBand?: string;
       dispatchBlocking?: boolean;
       stationCode?: string | null;
+      sourceSignalId?: string | null;
     }) =>
       call("create_task", {
         p_aircraft_id: v.aircraftId,
@@ -99,6 +100,9 @@ export function useTaskActions() {
         p_station_code: v.stationCode ?? null,
         p_dispatch_blocking: v.dispatchBlocking ?? false,
         p_source_system: "avir",
+        // A prediction is a signal (signal_class='prediction'); the RPC routes
+        // this to source_signal_id vs source_prediction_id and de-duplicates.
+        p_source_signal_id: v.sourceSignalId ?? null,
       }),
     onSuccess: invalidateAll,
     // Errors surfaced by CreateTaskDialog's own catch (toastMutationError).

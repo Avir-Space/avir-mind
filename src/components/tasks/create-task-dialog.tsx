@@ -1,6 +1,7 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import {
@@ -39,6 +40,7 @@ export function CreateTaskDialog({
   aircraftId,
   stationCode,
   linkedTaskId,
+  sourceSignalId,
   defaultParentType,
   defaultTitle,
   defaultWhy,
@@ -50,6 +52,8 @@ export function CreateTaskDialog({
   aircraftId: string;
   stationCode?: string | null;
   linkedTaskId?: string;
+  /** Signal/prediction this task is created from — enables de-duplication. */
+  sourceSignalId?: string | null;
   defaultParentType?: string;
   defaultTitle?: string;
   defaultWhy?: string;
@@ -57,6 +61,7 @@ export function CreateTaskDialog({
   onCreated?: (taskId: string) => void;
 }) {
   const { orgId } = useAuth();
+  const router = useRouter();
   const { createTask } = useTaskActions();
   const { data: catalog } = useTaskCatalog();
   const { toast } = useToast();
@@ -95,6 +100,7 @@ export function CreateTaskDialog({
         subType: chosenSub,
         riskBand: risk,
         stationCode: stationCode ?? null,
+        sourceSignalId: sourceSignalId ?? null,
       })) as unknown as string;
 
       if (linkedTaskId && orgId && newId) {
@@ -106,8 +112,17 @@ export function CreateTaskDialog({
           dependency_type: "blocks",
         });
       }
+      const createdTitle = title.trim();
       if (onCreated && newId) onCreated(newId);
-      toast({ title: "Task created", description: title.trim() });
+      toast({
+        title: "Task created",
+        description: createdTitle,
+        action: newId ? (
+          <Button size="sm" variant="outline" onClick={() => router.push(`/tasks/${newId}`)}>
+            View task
+          </Button>
+        ) : undefined,
+      });
       onOpenChange(false);
       setTitle("");
       setWhy("");

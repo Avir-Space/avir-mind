@@ -1,6 +1,8 @@
 "use client";
 
-import { Check, Link2, Plus, Sparkles, ThumbsDown, X } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { ArrowUpRight, Check, Link2, Plus, Sparkles, ThumbsDown, X } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 import { CreateTaskDialog } from "@/components/tasks/create-task-dialog";
@@ -10,12 +12,15 @@ import { useToast } from "@/components/ui/use-toast";
 import { CATEGORY_KEYS } from "@/lib/design/tasks";
 import { severityToRiskBand } from "@/lib/design/signals";
 import { useSignalActions } from "@/lib/mutations/use-signal-actions";
+import { useTaskForSignal } from "@/lib/queries/use-task-for-signal";
 import type { Signal } from "@/types/signals";
 
 /** Actions row: Create Task, Dismiss, Mark Correct/Incorrect, Explore, Copy Link. */
 export function SignalActionBar({ signal }: { signal: Signal }) {
   const { act } = useSignalActions();
   const { toast } = useToast();
+  const qc = useQueryClient();
+  const { data: existingTaskId } = useTaskForSignal(signal.id);
   const [createOpen, setCreateOpen] = useState(false);
   const [dismissOpen, setDismissOpen] = useState(false);
 
@@ -31,11 +36,20 @@ export function SignalActionBar({ signal }: { signal: Signal }) {
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {signal.severity !== "insufficient_data" && (
-        <Button size="sm" onClick={() => setCreateOpen(true)} disabled={resolved}>
-          <Plus className="h-3.5 w-3.5" /> Create Task
-        </Button>
-      )}
+      {signal.severity !== "insufficient_data" &&
+        (existingTaskId ? (
+          // A task already exists for this signal/prediction — link to it
+          // instead of creating a duplicate.
+          <Button asChild size="sm" variant="outline">
+            <Link href={`/tasks/${existingTaskId}`}>
+              <ArrowUpRight className="h-3.5 w-3.5" /> View task
+            </Link>
+          </Button>
+        ) : (
+          <Button size="sm" onClick={() => setCreateOpen(true)} disabled={resolved}>
+            <Plus className="h-3.5 w-3.5" /> Create Task
+          </Button>
+        ))}
 
       <Button size="sm" variant="outline" onClick={() => setDismissOpen(true)} disabled={resolved}>
         <X className="h-3.5 w-3.5" /> Dismiss
@@ -74,13 +88,15 @@ export function SignalActionBar({ signal }: { signal: Signal }) {
         open={createOpen}
         onOpenChange={setCreateOpen}
         aircraftId={signal.aircraft_id ?? ""}
+        sourceSignalId={signal.id}
         defaultParentType={parentType}
         defaultTitle={signal.recommendation ?? signal.title}
         defaultWhy={signal.narrative}
         defaultRisk={severityToRiskBand(signal.severity)}
-        onCreated={(taskId) =>
-          act.mutate({ signalId: signal.id, actionType: "create_task", outcomeTaskId: taskId })
-        }
+        onCreated={(taskId) => {
+          act.mutate({ signalId: signal.id, actionType: "create_task", outcomeTaskId: taskId });
+          qc.invalidateQueries({ queryKey: ["task-for-signal", signal.id] }); // flip to "View task"
+        }}
       />
 
       <DismissSignalDialog
