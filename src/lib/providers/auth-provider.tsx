@@ -7,6 +7,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -58,6 +59,9 @@ export function AuthProvider({
   const [viewLens, setViewLens] = useState<string>("fleet_operational");
   const [orgs, setOrgs] = useState<OrgSummary[]>([]);
   const [loading, setLoading] = useState(!initialUser);
+  // Tracks the currently-authenticated user so cross-tab auth events can tell a
+  // sign-out / account-switch apart from a routine token refresh.
+  const userIdRef = useRef<string | null>(initialUser?.id ?? null);
 
   useEffect(() => {
     let active = true;
@@ -89,17 +93,32 @@ export function AuthProvider({
 
     supabase.auth.getSession().then(({ data }) => {
       if (!active) return;
+      userIdRef.current = data.session?.user?.id ?? null;
       setSession(data.session);
       setUser(data.session?.user ?? null);
       loadOrg(data.session?.user ?? null).finally(() => active && setLoading(false));
     });
 
+    // supabase-js broadcasts auth changes across tabs, so this fires in EVERY tab.
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      const nextUser = nextSession?.user ?? null;
+      // Signed out in any tab → this tab must not stay authenticated.
+      if (event === "SIGNED_OUT") {
+        window.location.assign("/login");
+        return;
+      }
+      // Signed in as a DIFFERENT account in another tab → hard reload so all
+      // queries/org context refetch under the new identity (not a token refresh).
+      if (event === "SIGNED_IN" && userIdRef.current && nextUser && userIdRef.current !== nextUser.id) {
+        window.location.reload();
+        return;
+      }
+      userIdRef.current = nextUser?.id ?? null;
       setSession(nextSession);
-      setUser(nextSession?.user ?? null);
-      loadOrg(nextSession?.user ?? null);
+      setUser(nextUser);
+      loadOrg(nextUser);
     });
 
     return () => {
@@ -107,6 +126,19 @@ export function AuthProvider({
       subscription.unsubscribe();
     };
   }, [supabase]);
+
+  // Belt-and-suspenders for cross-tab sign-out: if the Supabase auth token is
+  // cleared in another tab, the storage event fires here → bounce to /login.
+  // (Covers environments where the BroadcastChannel sync above is unavailable.)
+  useEffect(() => {
+    function onStorage(e: StorageEvent) {
+      if (e.key && e.key.includes("-auth-token") && e.newValue === null) {
+        window.location.assign("/login");
+      }
+    }
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
 
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();

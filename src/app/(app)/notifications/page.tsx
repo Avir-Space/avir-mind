@@ -92,23 +92,47 @@ export default function NotificationsPage() {
       <Sheet open={Boolean(open)} onOpenChange={(o) => !o && setOpen(null)}>
         <SheetContent className="w-full overflow-y-auto avir-scroll sm:max-w-md">
           <SheetHeader><SheetTitle className="pr-6">{asText(open?.notification_content?.subject) || "Notification"}</SheetTitle></SheetHeader>
-          {open && (
-            <div className="mt-4 space-y-3">
-              <p className="text-sm text-subtext">{asText(open.notification_content?.body)}</p>
-              <div className="grid grid-cols-2 gap-2 border-y border-border py-3 font-mono text-[12px]">
+          {open && (() => {
+            // Related notifications from the same source (signal/task) — a lightweight
+            // digest so the panel groups everything that reached out about one thing.
+            const related = (recent ?? []).filter((n) => n.id !== open.id && n.trigger_source_id && n.trigger_source_id === open.trigger_source_id);
+            return (
+            <div className="mt-4 space-y-4 px-6 pb-8">
+              <p className="text-sm leading-relaxed text-subtext">{asText(open.notification_content?.body) || "No additional detail."}</p>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-3 border-y border-border py-3 font-mono text-[12px]">
                 <div><span className="text-hint">Channel</span><p className="text-foreground">{channel(open.channel_type).label}</p></div>
                 <div><span className="text-hint">Severity</span><p style={{ color: severityHex(open.severity) }}>{open.severity ?? "—"}</p></div>
                 <div><span className="text-hint">Status</span><p style={{ color: deliveryStatus(open.delivery_status).hex }}>{deliveryStatus(open.delivery_status).label}</p></div>
-                <div><span className="text-hint">Role</span><p className="text-foreground">{open.role_name ?? "—"}</p></div>
-                <div><span className="text-hint">Sent</span><p className="text-foreground">{dt(open.sent_at_utc)}</p></div>
-                <div><span className="text-hint">Acknowledged</span><p className="text-foreground">{dt(open.acknowledged_at_utc)}</p></div>
+                <div><span className="text-hint">Role</span><p className="text-foreground">{open.role_name ?? "Direct"}</p></div>
+                <div><span className="text-hint">Sent</span><p className="text-foreground">{open.sent_at_utc ? dt(open.sent_at_utc) : "Not sent yet"}</p></div>
+                <div><span className="text-hint">Acknowledged</span><p className="text-foreground">{open.acknowledged_at_utc ? dt(open.acknowledged_at_utc) : "Not acknowledged"}</p></div>
               </div>
-              <div className="flex gap-2">
-                {!open.acknowledged_at_utc && <Button size="sm" onClick={() => acknowledge.mutate(open.id, { onSuccess: () => { toast({ title: "Acknowledged" }); setOpen(null); } })}><Check className="h-3.5 w-3.5" /> Acknowledge</Button>}
-                {!open.acknowledged_at_utc && <Button size="sm" variant="outline" onClick={() => escalate.mutate(open.id, { onSuccess: (_d) => toast({ title: "Escalation check run" }) })}><ChevronUp className="h-3.5 w-3.5" /> Escalate</Button>}
-              </div>
+
+              {related.length > 0 && (
+                <div>
+                  <p className="eyebrow mb-1.5">Related ({related.length})</p>
+                  <div className="border border-border">
+                    {related.map((r) => (
+                      <button key={r.id} type="button" onClick={() => setOpen(r)}
+                        className="flex w-full items-center gap-3 border-b border-border/60 px-3 py-2 text-left last:border-b-0 hover:bg-surface/40">
+                        <span className="flex-1 truncate text-[12px] text-foreground">{asText(r.notification_content?.subject) || eventTypeLabel(asText(r.notification_content?.event_type))}</span>
+                        <span className="font-mono text-[10px] uppercase" style={{ color: deliveryStatus(r.delivery_status).hex }}>{deliveryStatus(r.delivery_status).label}</span>
+                        <span className="font-mono text-[10px] text-hint">{dt(r.created_at_utc)}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {!open.acknowledged_at_utc && (
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={() => acknowledge.mutate(open.id, { onSuccess: () => { toast({ title: "Acknowledged" }); setOpen(null); } })}><Check className="h-3.5 w-3.5" /> Acknowledge</Button>
+                  <Button size="sm" variant="outline" onClick={() => escalate.mutate(open.id, { onSuccess: (_d) => toast({ title: "Escalation check run" }) })}><ChevronUp className="h-3.5 w-3.5" /> Escalate</Button>
+                </div>
+              )}
             </div>
-          )}
+            );
+          })()}
         </SheetContent>
       </Sheet>
     </div>

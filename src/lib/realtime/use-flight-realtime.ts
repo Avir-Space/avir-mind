@@ -9,6 +9,9 @@ import { createClient } from "@/lib/supabase/client";
 export function useFlightRealtime(orgId: string | null | undefined) {
   const supabase = useMemo(() => createClient(), []);
   const qc = useQueryClient();
+  // Unique per instance so co-mounted subscribers don't collide on the channel
+  // name (calling .on() on an already-subscribed shared channel throws).
+  const instanceId = useMemo(() => Math.random().toString(36).slice(2), []);
 
   useEffect(() => {
     if (!orgId) return;
@@ -18,10 +21,10 @@ export function useFlightRealtime(orgId: string | null | undefined) {
       }
     };
     const channel = supabase
-      .channel(`flights-rt-${orgId}`)
+      .channel(`flights-rt-${orgId}-${instanceId}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "flights", filter: `org_id=eq.${orgId}` }, invalidate)
       .on("postgres_changes", { event: "*", schema: "public", table: "flight_events", filter: `org_id=eq.${orgId}` }, invalidate)
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [orgId, supabase, qc]);
+  }, [orgId, supabase, qc, instanceId]);
 }

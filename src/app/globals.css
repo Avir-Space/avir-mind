@@ -151,6 +151,20 @@
   body * { visibility: hidden !important; }
   #backtest-report, #backtest-report *,
   #customer-report, #customer-report * { visibility: visible !important; }
+  /* The reports render inside a Radix dialog whose content is fixed + translated
+     (-translate-x/y-1/2) and clipped (max-h + overflow). A CSS transform makes
+     that element the containing block for position:absolute, so the report was
+     positioned against the off-screen dialog box → blank PDF. Neutralize the
+     dialog's positioning/clipping during print so the report prints full-page. */
+  [role="dialog"] {
+    position: static !important;
+    transform: none !important;
+    max-width: none !important;
+    max-height: none !important;
+    overflow: visible !important;
+    inset: auto !important;
+    padding: 0 !important;
+  }
   #backtest-report, #customer-report {
     position: absolute !important;
     left: 0; top: 0; width: 100%;

@@ -4,12 +4,15 @@ import {
   ClipboardCheck,
   CircleDot,
   Flame,
+  ListChecks,
   type LucideIcon,
   Package,
   PlaneTakeoff,
   Layers3,
+  Send,
   Truck,
   Users,
+  Wrench,
 } from "lucide-react";
 
 import type { RiskBand, Severity, SourceSystem, TaskStatus } from "@/types/tasks";
@@ -26,6 +29,10 @@ export const CATEGORY_CONFIG: Record<string, { label: string; icon: LucideIcon }
   compliance: { label: "Compliance", icon: ClipboardCheck },
   inventory: { label: "Inventory", icon: Package },
   ground_ops: { label: "Ground Ops", icon: Truck },
+  // Operational insight categories — tasks promoted from AI observation signals.
+  dispatch: { label: "Dispatch", icon: Send },
+  maintenance: { label: "Maintenance", icon: Wrench },
+  task_management: { label: "Task Management", icon: ListChecks },
 };
 
 export const CATEGORY_KEYS = Object.keys(CATEGORY_CONFIG);

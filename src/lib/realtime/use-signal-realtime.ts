@@ -12,12 +12,15 @@ import { createClient } from "@/lib/supabase/client";
 export function useSignalRealtime(orgId: string | null | undefined) {
   const supabase = useMemo(() => createClient(), []);
   const qc = useQueryClient();
+  // Unique per instance so co-mounted subscribers don't collide on the channel
+  // name (calling .on() on an already-subscribed shared channel throws).
+  const instanceId = useMemo(() => Math.random().toString(36).slice(2), []);
 
   useEffect(() => {
     if (!orgId) return;
 
     const channel = supabase
-      .channel(`signals-rt-${orgId}`)
+      .channel(`signals-rt-${orgId}-${instanceId}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "signals", filter: `org_id=eq.${orgId}` },
@@ -40,5 +43,5 @@ export function useSignalRealtime(orgId: string | null | undefined) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [orgId, supabase, qc]);
+  }, [orgId, supabase, qc, instanceId]);
 }

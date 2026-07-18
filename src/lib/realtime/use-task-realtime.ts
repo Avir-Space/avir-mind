@@ -12,12 +12,15 @@ import { createClient } from "@/lib/supabase/client";
 export function useTaskRealtime(orgId: string | null | undefined) {
   const supabase = useMemo(() => createClient(), []);
   const qc = useQueryClient();
+  // Unique per instance so co-mounted subscribers don't collide on the channel
+  // name (calling .on() on an already-subscribed shared channel throws).
+  const instanceId = useMemo(() => Math.random().toString(36).slice(2), []);
 
   useEffect(() => {
     if (!orgId) return;
 
     const channel = supabase
-      .channel(`tasks-rt-${orgId}`)
+      .channel(`tasks-rt-${orgId}-${instanceId}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "tasks", filter: `org_id=eq.${orgId}` },
@@ -50,5 +53,5 @@ export function useTaskRealtime(orgId: string | null | undefined) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [orgId, supabase, qc]);
+  }, [orgId, supabase, qc, instanceId]);
 }
