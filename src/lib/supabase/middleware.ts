@@ -132,12 +132,16 @@ export async function updateSession(request: NextRequest) {
   // not reliably attach the user's JWT to PostgREST calls, so auth.uid() came
   // back null and the upsert silently no-op'd. An explicit Authorization header
   // is deterministic.
+  let _mw = `v4 pub${isPublic(pathname) ? 1 : 0} usr${user ? 1 : 0}`; // DIAG (temporary)
   if (user && !isPublic(pathname)) {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token ?? tokenFromCookies(request);
+      const gs = session?.access_token ? 1 : 0;
+      const ck = tokenFromCookies(request) ? 1 : 0;
       const claims = token ? decodeJwtClaims(token) : null;
       const sessionKey = typeof claims?.session_id === "string" ? claims.session_id : null;
+      _mw += ` gs${gs} ck${ck} tok${token ? 1 : 0} key${sessionKey ? 1 : 0}`; // DIAG
       if (token && sessionKey) {
         const aal = claims?.aal;
         const factors = aal === "aal2" ? ["password", "2fa_totp"] : ["password"];
@@ -162,6 +166,7 @@ export async function updateSession(request: NextRequest) {
           },
         );
         const data = (await result.json().catch(() => null)) as { terminated?: boolean } | null;
+        _mw += ` rpc${result.status}`; // DIAG
         if (data?.terminated) {
           await supabase.auth.signOut(); // writes cleared auth cookies onto `response`
           const url = request.nextUrl.clone();
@@ -173,10 +178,11 @@ export async function updateSession(request: NextRequest) {
           return redirect;
         }
       }
-    } catch {
-      // Session tracking is best-effort — never block navigation on it.
+    } catch (e) {
+      _mw += ` err:${String((e as { message?: string })?.message ?? e).slice(0, 30)}`; // DIAG
     }
   }
+  response.headers.set("x-avir-mw", _mw); // DIAG (temporary — remove after diagnosis)
 
   return response;
 }
