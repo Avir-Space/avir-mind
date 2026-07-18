@@ -76,7 +76,7 @@ export function CommandCenterCanvas() {
   }
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col" data-testid="command-center-canvas">
       {/* Header */}
       <div className="flex flex-col gap-3 border-b border-border px-6 py-3 md:flex-row md:items-start md:justify-between">
         <div>
@@ -107,6 +107,7 @@ export function CommandCenterCanvas() {
                 <button
                   key={w.value}
                   type="button"
+                  aria-pressed={win === w.value}
                   onClick={() => setWin(w.value)}
                   className={cn(
                     "border-r border-border px-2.5 py-1 text-xs transition-colors last:border-r-0",

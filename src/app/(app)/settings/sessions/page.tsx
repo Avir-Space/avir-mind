@@ -34,7 +34,7 @@ export default function SessionsPage() {
               const Icon = ICON[String(s.session_type) as keyof typeof ICON] ?? Monitor;
               const ended = Boolean(s.ended_at_utc); const isCurrent = i === 0 && !ended;
               return (
-                <div key={String(s.id)} className="flex items-start gap-3 border border-border bg-card p-4" style={{ opacity: ended ? 0.5 : 1 }}>
+                <div key={String(s.id)} data-testid="session-row" data-ended={ended} data-current={isCurrent} className="flex items-start gap-3 border border-border bg-card p-4" style={{ opacity: ended ? 0.5 : 1 }}>
                   <Icon className="mt-0.5 h-5 w-5 shrink-0 text-label" strokeWidth={1.75} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">

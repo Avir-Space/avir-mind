@@ -1,13 +1,9 @@
-import * as otplibNs from "otplib";
 import { expect, test } from "@playwright/test";
-
-// otplib ships CJS; under Playwright's transform the named export may land on .default.
-const authenticator = (otplibNs as { authenticator?: { generate(s: string): string } }).authenticator
-  ?? (otplibNs as { default?: { authenticator: { generate(s: string): string } } }).default?.authenticator;
 
 import { loginError, signIn, signInAs, signOut } from "../helpers/auth";
 import { _env, expectRLSBlocks, getAnonClientAs, getServiceRoleClient, hasServiceRole } from "../helpers/supabase";
-import { ALL_PERSONA_KEYS, getPersona, PERSONAS } from "../fixtures/personas";
+import { totp } from "../helpers/totp";
+import { ALL_PERSONA_KEYS } from "../fixtures/personas";
 
 /**
  * Module 1 — Foundation & Auth (reference implementation).
@@ -35,12 +31,11 @@ test.describe("1.1 Auth surface", () => {
   });
 
   test("1.1.3 every persona signs in cleanly and signs out", async ({ page }, testInfo) => {
-    test.setTimeout(180_000);
+    test.setTimeout(240_000);
     for (const key of ALL_PERSONA_KEYS) {
-      const p = getPersona(key);
-      await signIn(page, p.email, p.password);
-      await page.waitForURL("**/command-center", { timeout: 30_000 });
-      await expect(page.getByRole("heading", { name: "Command Center" })).toBeVisible({ timeout: 20_000 });
+      // signInAs waits for BOTH the URL and a visible canvas element (30s) — the
+      // fix for the earlier flakey 15s URL-only wait that timed out mid-loop.
+      await signInAs(page, key);
       await testInfo.attach(`persona-${key}`, { body: await page.screenshot(), contentType: "image/png" });
       await signOut(page);
     }
@@ -149,46 +144,49 @@ test.describe("1.4 2FA", () => {
     await signInAs(page, "owner");
     await page.goto("/settings/2fa");
     await page.getByText("Authenticator app (TOTP)").waitFor({ timeout: 15_000 });
-    const enable = page.getByRole("button", { name: "Enable" });
-    if (await enable.count()) {
-      await enable.click();
-      const qr = page.getByAltText(/TOTP QR/i);
-      await qr.waitFor({ state: "visible", timeout: 15_000 }).catch(() => {});
-      test.skip(await qr.count() === 0, "TOTP enroll did not yield a QR (MFA may be disabled on the Supabase project)");
-      const secretText = await page.getByText(/enter this secret/i).textContent();
-      const secret = (secretText ?? "").match(/[A-Z2-7]{16,}/)?.[0] ?? "";
-      expect(secret.length).toBeGreaterThanOrEqual(16); // enrollment surface (QR + secret) verified
-      // Best-effort verify. TOTP is wall-clock based; this sandbox runs on a
-      // simulated future date, so Supabase (real UTC) rejects the code and backup
-      // codes never render. We annotate rather than fail — the deterministic
-      // enrollment surface (QR + secret ≥16 chars) is asserted above.
-      if (authenticator) {
-        await page.getByPlaceholder("123456").fill(authenticator.generate(secret));
-        await page.getByRole("button", { name: /Verify/i }).click();
-        const backup = page.getByText(/backup codes/i);
-        const verified = await backup.isVisible({ timeout: 8_000 }).catch(() => false);
-        if (verified) {
-          await backup.scrollIntoViewIfNeeded();
-        } else {
-          test.info().annotations.push({ type: "env-limited", description: "TOTP verify unavailable under the sandbox's offset clock" });
-        }
-      }
-      const disable = page.getByRole("button", { name: "Disable" });
-      if (await disable.count()) await disable.click();
-    } else {
-      // Already enrolled from a previous run — treat as pass (idempotent).
-      expect(await page.getByText(/Enabled/i).count()).toBeGreaterThan(0);
+
+    // Start from a clean "Not enabled" state (disable if a prior run left it on).
+    const disableFirst = page.getByRole("button", { name: "Disable" });
+    if (await disableFirst.count()) {
+      await disableFirst.click();
+      await expect(page.getByText("Not enabled")).toBeVisible({ timeout: 10_000 });
     }
+
+    await page.getByRole("button", { name: "Enable" }).click();
+    const qr = page.getByAltText(/TOTP QR/i);
+    await expect(qr).toBeVisible({ timeout: 15_000 });
+
+    // Extract the base32 secret shown next to the QR.
+    const secretText = await page.getByText(/enter this secret/i).textContent();
+    const secret = (secretText ?? "").match(/[A-Z2-7]{16,}/)?.[0] ?? "";
+    expect(secret.length).toBeGreaterThanOrEqual(16);
+
+    // Compute a valid TOTP and complete Supabase's native challenge+verify.
+    await page.getByPlaceholder("123456").fill(totp(secret));
+    await page.getByRole("button", { name: /Verify/i }).click();
+
+    // Success → status flips to "Enabled" and backup codes render.
+    await expect(page.getByText("Enabled", { exact: true })).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText(/Backup codes/i)).toBeVisible();
+
+    // Cleanup: return the persona to the known "Not enabled" state.
+    await page.getByRole("button", { name: "Disable" }).click();
+    await expect(page.getByText("Not enabled")).toBeVisible({ timeout: 10_000 });
   });
 
   test.fixme("1.4.2 TOTP required at login after enrollment", async () => {
-    // The web app does not challenge for MFA at sign-in (the auth provider does
-    // not gate on AAL). Enrollment exists; login-time enforcement does not.
+    // TOTP enrollment + verification now works end-to-end (see 1.4.1, aal2), but
+    // the app does not CHALLENGE for MFA at sign-in — the login flow and
+    // middleware never gate on assurance level, so no TOTP prompt appears after
+    // a password login. Enabling this test requires a product change (login-time
+    // AAL enforcement + a challenge page), which is outside the two product gaps
+    // scoped for this pass. Kept fixme until that gate is built.
   });
 
   test.fixme("1.4.3 backup codes accepted at login", async () => {
-    // Backup codes are generated + displayed at enrollment, but backup-code
-    // login is not wired (no login-time MFA challenge — see 1.4.2).
+    // Backup codes are generated + displayed at enrollment (1.4.1), but there is
+    // no login-time MFA challenge to consume them (same missing AAL gate as
+    // 1.4.2). Kept fixme until login-time enforcement is built.
   });
 
   test.fixme("1.4.4 2FA required at high-risk action (API key creation)", async () => {
@@ -199,15 +197,51 @@ test.describe("1.4 2FA", () => {
 
 // ── 1.5 Session management ───────────────────────────────────────────────────
 test.describe("1.5 Sessions", () => {
-  test("1.5.1 /settings/sessions renders", async ({ page }) => {
+  test("1.5.1 /settings/sessions renders the live session", async ({ page }) => {
     await signInAs(page, "owner");
-    await page.goto("/settings/sessions");
+    await page.goto("/settings/sessions"); // middleware records this web session
     await expect(page.getByRole("heading", { name: /Active Sessions/i })).toBeVisible();
+    // Gap-2 fix: a real login now produces a tracked session (not "No sessions").
+    await expect.poll(async () => page.getByTestId("session-row").count(), { timeout: 20_000 }).toBeGreaterThanOrEqual(1);
+    await expect(page.getByText("this device").first()).toBeVisible();
   });
 
-  test.fixme("1.5.2 terminate another session logs it out", async () => {
-    // Real sign-ins do not create user_sessions rows (no auth hook), so there is
-    // no live session to terminate. Session capture is seeded, not live-tracked.
+  test("1.5.2 terminate another session logs it out", async ({ browser }) => {
+    test.setTimeout(120_000);
+    // Deterministic start: clear the persona's prior session history.
+    const admin = await getAnonClientAs("owner");
+    await admin.rpc("reset_my_web_sessions");
+
+    // Two independent browser contexts = two distinct auth sessions for one user.
+    const ctxA = await browser.newContext();
+    const pageA = await ctxA.newPage();
+    await signInAs(pageA, "owner");
+    await pageA.goto("/command-center"); // hard nav → middleware records session A
+
+    const ctxB = await browser.newContext();
+    const pageB = await ctxB.newPage();
+    await signInAs(pageB, "owner");
+    await pageB.goto("/command-center"); // hard nav → middleware records session B
+
+    // In A, the sessions page shows both — A is "this device" (no Terminate),
+    // B is the older session with a Terminate control.
+    await pageA.goto("/settings/sessions");
+    await expect(pageA.getByRole("heading", { name: /Active Sessions/i })).toBeVisible();
+    await expect
+      .poll(async () => pageA.getByTestId("session-row").filter({ has: pageA.locator('[data-ended="false"]') }).count(),
+        { timeout: 20_000 })
+      .toBeGreaterThanOrEqual(2);
+    const terminate = pageA.getByRole("button", { name: "Terminate" });
+    await expect(terminate.first()).toBeVisible({ timeout: 10_000 });
+    await terminate.first().click();
+
+    // B's next authenticated navigation is bounced to /login by the middleware.
+    await pageB.goto("/signals");
+    await pageB.waitForURL(/\/login/, { timeout: 25_000 });
+    await expect(pageB).toHaveURL(/\/login/);
+
+    await ctxA.close();
+    await ctxB.close();
   });
 });
 
@@ -313,13 +347,25 @@ test.describe("1.9 Command Center canvas", () => {
     await expect(page.locator(".leaflet-container")).toBeVisible();
   });
 
-  test("1.9.3 time-window selector switches windows", async ({ page }) => {
+  test("1.9.3 time-window selector switches windows and the timeline follows", async ({ page }) => {
     await signInAs(page, "owner");
-    const w6 = page.getByRole("button", { name: "Next 6h", exact: true });
-    await w6.click();
-    await expect(w6).toHaveClass(/bg-primary/);
-    const now = page.getByRole("button", { name: "Now", exact: true });
-    await now.click();
-    await expect(now).toHaveClass(/bg-primary/);
+    const timeline = page.getByTestId("ops-timeline");
+    await expect(timeline).toBeVisible({ timeout: 20_000 });
+
+    // Each window button drives both its own pressed state and the timeline's
+    // rendered window (data-window-hours + "next Nh" header).
+    const cases: Array<[string, string]> = [
+      ["Next 6h", "6"],
+      ["Now", "2"],
+      ["Today", "24"],
+    ];
+    for (const [label, hours] of cases) {
+      const btn = page.getByRole("button", { name: label, exact: true });
+      await btn.click();
+      await expect(btn).toHaveAttribute("aria-pressed", "true");
+      await expect(btn).toHaveClass(/bg-primary/);
+      await expect(timeline).toHaveAttribute("data-window-hours", hours);
+      await expect(page.getByText(new RegExp(`next ${hours}h`, "i")).first()).toBeVisible();
+    }
   });
 });

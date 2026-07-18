@@ -225,7 +225,7 @@ export function OpsTimeline({
   }
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col" data-testid="ops-timeline" data-window-hours={windowHours}>
       {/* header */}
       <div className="flex shrink-0 items-center justify-between border-b border-border px-6 py-1.5">
         <span className="font-mono text-eyebrow uppercase tracking-wider text-label">

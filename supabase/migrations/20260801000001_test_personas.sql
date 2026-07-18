@@ -58,6 +58,15 @@ begin
     where u.email = 'laman@avir.space' and o.primary_business_model = 'mro' limit 1;
   if v_op is null then raise notice 'operator tenant not found — no-op'; return 0; end if;
 
+  -- Ensure the MRO demo tenant advertises its enabled modules (Shop Floor,
+  -- Customers, Contracts, Work Packages) and the customer-service lens.
+  if v_mro is not null then
+    update public.orgs
+      set enabled_modules  = array['customers','contracts','shop_floor','work_packages'],
+          default_view_lens = 'customer_service'
+      where id = v_mro;
+  end if;
+
   -- clean any prior personas (cascades identities + memberships + channels + crew)
   delete from auth.users where email like '%@avir-test.dev';
 
