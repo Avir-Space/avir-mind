@@ -4,7 +4,8 @@ import { defineConfig, devices } from "@playwright/test";
  * AVIR Mind E2E config.
  * - baseURL defaults to http://localhost:3000; set AVIR_TEST_TARGET to override
  *   (e.g. https://mind.avirspace.com for smoke tests).
- * - Max 2 workers so two-browser realtime tests don't overload.
+ * - Serialized (workers: 1, fullyParallel: false) to eliminate session-tracking
+ *   flakes in parallel mode; manual verification is the authoritative quality gate.
  * - 60s test / 10s expect. Traces + screenshots on failure, no video.
  */
 const TARGET = process.env.AVIR_TEST_TARGET || "http://localhost:3000";
@@ -15,7 +16,7 @@ export default defineConfig({
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
-  workers: 2,
+  workers: 1,
   timeout: 60_000,
   expect: { timeout: 10_000 },
   reporter: process.env.CI
