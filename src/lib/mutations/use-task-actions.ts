@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 import { createClient } from "@/lib/supabase/client";
+import { toastMutationError } from "@/lib/mutations/mutation-error";
 import type { TaskStatus } from "@/types/tasks";
 
 /**
@@ -20,6 +21,7 @@ export function useTaskActions() {
     qc.invalidateQueries({ queryKey: ["aircraft-tasks"] });
     qc.invalidateQueries({ queryKey: ["task-detail"] });
   };
+  const onError = toastMutationError;
 
   const call = async (fn: string, args: Record<string, unknown>) => {
     const { data, error } = await supabase.rpc(fn as never, args as never);
@@ -30,24 +32,28 @@ export function useTaskActions() {
   const acknowledge = useMutation({
     mutationFn: (taskId: string) => call("acknowledge_task", { p_task_id: taskId }),
     onSuccess: invalidateAll,
+    onError,
   });
 
   const moveStatus = useMutation({
     mutationFn: (v: { taskId: string; status: TaskStatus; rank?: number }) =>
       call("move_task_status", { p_task_id: v.taskId, p_new_status: v.status, p_new_rank: v.rank ?? null }),
     onSuccess: invalidateAll,
+    onError,
   });
 
   const assign = useMutation({
     mutationFn: (v: { taskId: string; assigneeUserId: string | null }) =>
       call("assign_task", { p_task_id: v.taskId, p_assignee_user_id: v.assigneeUserId }),
     onSuccess: invalidateAll,
+    onError,
   });
 
   const addComment = useMutation({
     mutationFn: (v: { taskId: string; body: string }) =>
       call("create_task_event", { p_task_id: v.taskId, p_event_type: "comment", p_body: v.body }),
     onSuccess: invalidateAll,
+    onError,
   });
 
   const logWork = useMutation({
@@ -59,6 +65,7 @@ export function useTaskActions() {
         p_work_date: v.workDate ?? undefined,
       }),
     onSuccess: invalidateAll,
+    onError,
   });
 
   const setPinned = useMutation({
@@ -68,6 +75,7 @@ export function useTaskActions() {
       await call("create_task_event", { p_task_id: v.taskId, p_event_type: v.pinned ? "pinned" : "unpinned" });
     },
     onSuccess: invalidateAll,
+    onError,
   });
 
   const createTask = useMutation({
@@ -93,6 +101,7 @@ export function useTaskActions() {
         p_source_system: "avir",
       }),
     onSuccess: invalidateAll,
+    // Errors surfaced by CreateTaskDialog's own catch (toastMutationError).
   });
 
   return { acknowledge, moveStatus, assign, addComment, logWork, createTask, setPinned };

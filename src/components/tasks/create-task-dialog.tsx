@@ -25,6 +25,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { CATEGORY_CONFIG, categoryMeta } from "@/lib/design/tasks";
 import { useTaskCatalog } from "@/lib/queries/use-task-catalog";
 import { useTaskActions } from "@/lib/mutations/use-task-actions";
+import { toastMutationError } from "@/lib/mutations/mutation-error";
 import { useAuth } from "@/lib/providers/auth-provider";
 import { createClient } from "@/lib/supabase/client";
 
@@ -111,7 +112,7 @@ export function CreateTaskDialog({
       setTitle("");
       setWhy("");
     } catch (e) {
-      toast({ title: "Couldn't create task", description: String((e as Error).message), variant: "destructive" });
+      toastMutationError(e);
     } finally {
       setSubmitting(false);
     }

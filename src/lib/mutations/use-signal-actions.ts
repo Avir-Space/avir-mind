@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 
 import { createClient } from "@/lib/supabase/client";
+import { toastMutationError } from "@/lib/mutations/mutation-error";
 
 export type GenerateResult = {
   run_id: string;
@@ -47,6 +48,7 @@ export function useSignalActions() {
       if (error) throw error;
     },
     onSuccess: invalidate,
+    onError: toastMutationError,
   });
 
   /** Prepare a run and, if not cached, invoke the Edge Function. */

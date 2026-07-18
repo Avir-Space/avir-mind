@@ -4,8 +4,11 @@ import {
   DndContext,
   DragOverlay,
   PointerSensor,
+  pointerWithin,
+  rectIntersection,
   useSensor,
   useSensors,
+  type CollisionDetection,
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
@@ -129,7 +132,17 @@ function Fleet() {
   const [pending, setPending] = useState<PendingMove | null>(null);
   const [destination, setDestination] = useState("");
   const [arrival, setArrival] = useState("");
+  const [origin, setOrigin] = useState("");
+  const [actualArrival, setActualArrival] = useState("");
   const [busy, setBusy] = useState(false);
+
+  // Pointer-based collision so a short drag into an ADJACENT column resolves to
+  // the column under the pointer (not the source column the dragged card still
+  // overlaps). Falls back to rect intersection when the pointer is over a gap.
+  const collisionDetection: CollisionDetection = (args) => {
+    const hits = pointerWithin(args);
+    return hits.length ? hits : rectIntersection(args);
+  };
 
   function onDragStart(e: DragStartEvent) {
     setActiveCard((e.active.data.current?.card as BoardCard) ?? null);
@@ -142,6 +155,8 @@ function Fleet() {
     if (!card || !from || !to || from === to) return;
     setDestination("");
     setArrival("");
+    setOrigin("");
+    setActualArrival("");
     setPending({ card, from, to });
   }
 
@@ -157,6 +172,10 @@ function Fleet() {
         patch.current_station = null;
         patch.next_event_type = "Arrival";
         if (arrival) patch.next_event_at = new Date(arrival).toISOString();
+      } else if (from === "in_air" && to === "on_ground") {
+        // Arrival — clear the in-air next-event marker.
+        patch.next_event_type = null;
+        patch.next_event_at = null;
       }
       const { error } = await supabase
         .from("aircraft_state")
@@ -175,7 +194,7 @@ function Fleet() {
         entity_type: "aircraft",
         entity_id: card.aircraft_id,
         event_type: "aircraft.state_change",
-        event_payload: { from, to, tail_number: card.tail_number, destination: destination || null },
+        event_payload: { from, to, tail_number: card.tail_number, destination: destination || null, origin: origin || null, actual_arrival: actualArrival || null },
       });
 
       toast({ title: `${card.tail_number} → ${STATE_LABEL[to]}`, description: "State updated and audited." });
@@ -190,6 +209,8 @@ function Fleet() {
 
   const isMaintComplete = pending?.from === "under_maintenance" && pending?.to === "on_ground";
   const isTakeoff = pending?.to === "in_air";
+  const isArrival = pending?.from === "in_air" && pending?.to === "on_ground";
+  const isToLine = pending?.from === "stationed" && pending?.to === "on_ground";
 
   return (
     <div className="flex h-full flex-col">
@@ -296,7 +317,7 @@ function Fleet() {
               ))}
             </div>
           ) : (
-            <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
+            <DndContext sensors={sensors} collisionDetection={collisionDetection} onDragStart={onDragStart} onDragEnd={onDragEnd}>
               <div className="flex gap-4">
                 {BOARD_COLUMNS.map((col) => (
                   <KanbanColumn
@@ -318,7 +339,15 @@ function Fleet() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {isMaintComplete ? "Confirm maintenance complete" : isTakeoff ? "Confirm departure" : "Confirm state change"}
+              {isMaintComplete
+                ? "Confirm maintenance complete"
+                : isTakeoff
+                  ? "Confirm departure"
+                  : isArrival
+                    ? "Confirm arrival"
+                    : isToLine
+                      ? "Confirm move to line"
+                      : "Confirm state change"}
             </DialogTitle>
             <DialogDescription>
               {pending &&
@@ -332,6 +361,15 @@ function Fleet() {
                 ) : isTakeoff ? (
                   <>
                     Move <span className="text-foreground">{pending.card.tail_number}</span> to <b>In Air</b>.
+                  </>
+                ) : isArrival ? (
+                  <>
+                    Record <span className="text-foreground">{pending.card.tail_number}</span>&apos;s arrival and move it to{" "}
+                    <b>On Ground</b>.
+                  </>
+                ) : isToLine ? (
+                  <>
+                    Move <span className="text-foreground">{pending.card.tail_number}</span> onto the line (<b>On Ground</b>).
                   </>
                 ) : (
                   <>
@@ -351,6 +389,19 @@ function Fleet() {
               <div className="space-y-1.5">
                 <Label htmlFor="arr">Expected arrival</Label>
                 <Input id="arr" type="datetime-local" value={arrival} onChange={(e) => setArrival(e.target.value)} />
+              </div>
+            </div>
+          )}
+
+          {isArrival && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="origin">Origin</Label>
+                <Input id="origin" value={origin} onChange={(e) => setOrigin(e.target.value)} placeholder="e.g. JFK" />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="actual_arrival">Actual arrival</Label>
+                <Input id="actual_arrival" type="datetime-local" value={actualArrival} onChange={(e) => setActualArrival(e.target.value)} />
               </div>
             </div>
           )}
