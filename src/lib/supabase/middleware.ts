@@ -11,6 +11,25 @@ function isPublic(pathname: string) {
   return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 
+/** Real client IP, preferring the proxy chain headers Vercel/Cloudflare set. */
+function clientIp(request: NextRequest): string | null {
+  const xff = request.headers.get("x-forwarded-for");
+  if (xff) return xff.split(",")[0]?.trim() || null;
+  return (
+    request.headers.get("x-real-ip") ??
+    request.headers.get("cf-connecting-ip") ??
+    null
+  );
+}
+
+function safeDecode(v: string): string {
+  try {
+    return decodeURIComponent(v);
+  } catch {
+    return v;
+  }
+}
+
 /** Decode a JWT payload (edge-safe, no verification — we only read claims). */
 function decodeJwtClaims(token: string): Record<string, unknown> | null {
   try {
@@ -76,34 +95,43 @@ export async function updateSession(request: NextRequest) {
   // Track the browser session on authenticated in-app navigations: creates the
   // row on the first request after sign-in, then touches last_activity. If this
   // session has been terminated elsewhere, end it and bounce to login.
-  let _sessDbg = "skip";
+  //
+  // NOTE: we call the RPC via a direct fetch with an explicit bearer token
+  // rather than supabase.rpc(). On the Vercel edge runtime the SSR client does
+  // not reliably attach the user's JWT to PostgREST calls, so auth.uid() came
+  // back null and the upsert silently no-op'd. An explicit Authorization header
+  // is deterministic.
   if (user && !isPublic(pathname)) {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
       const claims = token ? decodeJwtClaims(token) : null;
       const sessionKey = typeof claims?.session_id === "string" ? claims.session_id : null;
-      _sessDbg = `u1 t${token ? 1 : 0} k${sessionKey ? 1 : 0}`;
-      if (sessionKey) {
+      if (token && sessionKey) {
         const aal = claims?.aal;
         const factors = aal === "aal2" ? ["password", "2fa_totp"] : ["password"];
-        const ip = (request.headers.get("x-forwarded-for") ?? "").split(",")[0]?.trim() || null;
         const rawCity = request.headers.get("x-vercel-ip-city");
-        // Supabase types don't include this new RPC yet — call via a loose cast.
-        const rpc = supabase.rpc.bind(supabase) as unknown as (
-          name: string,
-          args: Record<string, unknown>,
-        ) => Promise<{ data: unknown; error: unknown }>;
-        const { data, error } = await rpc("sync_web_session", {
-          p_session_key: sessionKey,
-          p_user_agent: request.headers.get("user-agent"),
-          p_ip: ip,
-          p_factors: factors,
-          p_country: request.headers.get("x-vercel-ip-country"),
-          p_city: rawCity ? decodeURIComponent(rawCity) : null,
-        });
-        _sessDbg += ` r:${data ? JSON.stringify(data).slice(0, 24) : "null"} e:${error ? String((error as { message?: string }).message).slice(0, 30) : 0}`;
-        if (data && (data as { terminated?: boolean }).terminated) {
+        const result = await fetch(
+          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/rpc/sync_web_session`,
+          {
+            method: "POST",
+            headers: {
+              apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              p_session_key: sessionKey,
+              p_user_agent: request.headers.get("user-agent"),
+              p_ip: clientIp(request),
+              p_factors: factors,
+              p_country: request.headers.get("x-vercel-ip-country"),
+              p_city: rawCity ? safeDecode(rawCity) : null,
+            }),
+          },
+        );
+        const data = (await result.json().catch(() => null)) as { terminated?: boolean } | null;
+        if (data?.terminated) {
           await supabase.auth.signOut(); // writes cleared auth cookies onto `response`
           const url = request.nextUrl.clone();
           url.pathname = "/login";
@@ -114,12 +142,10 @@ export async function updateSession(request: NextRequest) {
           return redirect;
         }
       }
-    } catch (e) {
+    } catch {
       // Session tracking is best-effort — never block navigation on it.
-      _sessDbg = `err:${String((e as { message?: string })?.message ?? e).slice(0, 40)}`;
     }
   }
-  response.headers.set("x-avir-sess", _sessDbg);
 
   return response;
 }

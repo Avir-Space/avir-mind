@@ -2,11 +2,13 @@
 
 import { ChevronLeft, Monitor, Smartphone, Terminal } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 
 import { PageHeader } from "@/components/avir/page-header";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
+import { createClient } from "@/lib/supabase/client";
 import { useEnterpriseActions } from "@/lib/mutations/use-enterprise-actions";
 import { useSessions } from "@/lib/queries/use-enterprise";
 
@@ -14,12 +16,34 @@ type J = Record<string, unknown>;
 const dt = (x: unknown) => (x ? new Date(String(x)).toLocaleString() : "—");
 const ICON = { web: Monitor, mobile: Smartphone, api: Terminal } as const;
 
+/** session_id claim from the current access token — identifies "this device". */
+function useCurrentSessionKey(): string | null {
+  const supabase = useMemo(() => createClient(), []);
+  const [key, setKey] = useState<string | null>(null);
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      const token = data.session?.access_token;
+      if (!token) return;
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1] ?? ""));
+        if (typeof payload.session_id === "string") setKey(payload.session_id);
+      } catch {
+        /* ignore */
+      }
+    });
+  }, [supabase]);
+  return key;
+}
+
 export default function SessionsPage() {
   const { data: sessions, isLoading } = useSessions();
   const { terminateSession } = useEnterpriseActions();
   const { toast } = useToast();
+  const currentKey = useCurrentSessionKey();
   const active = (sessions ?? []).filter((s: J) => !s.ended_at_utc);
-  const current = active[0]; // most recent activity
+  // "This device" = the row whose session_key matches the live token (fallback:
+  // most recently active), so "Sign out others" spares exactly this session.
+  const current = active.find((s: J) => currentKey && s.session_key === currentKey) ?? active[0];
 
   return (
     <div className="flex h-full flex-col">
@@ -32,7 +56,8 @@ export default function SessionsPage() {
           <div className="space-y-2">
             {(sessions ?? []).map((s: J, i: number) => {
               const Icon = ICON[String(s.session_type) as keyof typeof ICON] ?? Monitor;
-              const ended = Boolean(s.ended_at_utc); const isCurrent = i === 0 && !ended;
+              const ended = Boolean(s.ended_at_utc);
+              const isCurrent = !ended && (currentKey ? s.session_key === currentKey : i === 0);
               return (
                 <div key={String(s.id)} data-testid="session-row" data-ended={ended} data-current={isCurrent} className="flex items-start gap-3 border border-border bg-card p-4" style={{ opacity: ended ? 0.5 : 1 }}>
                   <Icon className="mt-0.5 h-5 w-5 shrink-0 text-label" strokeWidth={1.75} />
