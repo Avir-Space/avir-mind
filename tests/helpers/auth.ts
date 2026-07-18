@@ -25,7 +25,9 @@ export async function signInAs(page: Page, key: PersonaKey) {
   const canvas = page
     .getByTestId("command-center-canvas")
     .or(page.getByRole("heading", { name: "Command Center" }));
-  await expect(canvas.first()).toBeVisible({ timeout: 30_000 });
+  // Command Center is a heavy first paint (map tiles, weather, station data) and
+  // can be slow on a cold serverless render — allow generous headroom.
+  await expect(canvas.first()).toBeVisible({ timeout: 45_000 });
 }
 
 /** Sign out via the sidebar and return to /login. */

@@ -64,9 +64,11 @@ test.describe("2.1 Fleet page", () => {
     await signInAs(page, "owner");
     await page.goto("/fleet");
     // Station filter applies in both views. Pick a station present in the seed.
-    const station = "JFK";
+    const station = "FRA";
+    const all = await page.locator(CARD).count();
     const stationChip = page.getByTestId("filter-station").getByRole("button", { name: station, exact: true });
     await stationChip.click();
+    await expect.poll(async () => page.locator(CARD).count(), { timeout: 15_000 }).toBeLessThan(all); // board settled
     const boardTail = await page.locator(CARD).first().locator("a").first().textContent();
 
     await page.getByRole("button", { name: "List" }).click();
@@ -96,12 +98,13 @@ test.describe("2.1 Fleet page", () => {
     const all = await page.locator(CARD).count();
     const stationFilter = page.getByTestId("filter-station");
     const riskFilter = page.getByTestId("filter-risk");
+    // FRA has 3 seeded aircraft. The board refetches (skeleton) on filter change,
+    // so poll until it settles rather than reading a transient count.
+    const stationChip = stationFilter.getByRole("button", { name: "FRA", exact: true });
 
-    // Station filters the AIRCRAFT set (base_station), so the card count drops.
-    await stationFilter.getByRole("button", { name: "JFK", exact: true }).click();
-    const byStation = await page.locator(CARD).count();
-    expect(byStation).toBeGreaterThan(0);
-    expect(byStation).toBeLessThan(all);
+    await stationChip.click();
+    await expect.poll(async () => page.locator(CARD).count(), { timeout: 15_000 }).toBeLessThan(all);
+    expect(await page.locator(CARD).count()).toBeGreaterThan(0);
 
     // Risk is aircraft-centric: it narrows the task badges shown on cards, not
     // the card set (every aircraft still renders). Assert the chip activates.
@@ -111,8 +114,8 @@ test.describe("2.1 Fleet page", () => {
 
     // No "Clear filters" control — toggle the chips off again → full board returns.
     await highChip.click();
-    await stationFilter.getByRole("button", { name: "JFK", exact: true }).click();
-    expect(await page.locator(CARD).count()).toBe(all);
+    await stationChip.click();
+    await expect.poll(async () => page.locator(CARD).count(), { timeout: 15_000 }).toBe(all);
   });
 });
 
@@ -163,9 +166,11 @@ test.describe("2.2 Aircraft Profile", () => {
 // ── 2.3 Command Center canvas ────────────────────────────────────────────────
 test.describe("2.3 Command Center canvas", () => {
   test("2.3.1 canvas renders map, station strip, timeline", async ({ page }) => {
+    test.setTimeout(90_000);
     await signInAs(page, "owner");
-    await expect(page.getByTestId("command-center-canvas")).toBeVisible();
-    await expect(page.locator(".leaflet-container")).toBeVisible({ timeout: 20_000 });
+    await page.waitForLoadState("networkidle").catch(() => {}); // best-effort settle
+    await expect(page.getByTestId("command-center-canvas")).toBeVisible({ timeout: 45_000 });
+    await expect(page.locator(".leaflet-container")).toBeVisible({ timeout: 30_000 });
     // Markers are leaflet CircleMarker paths; only aircraft with lat/lng plot
     // (so NOT necessarily all 24). Assert at least a handful.
     await expect(page.locator(".leaflet-overlay-pane path.leaflet-interactive").first()).toBeVisible({ timeout: 20_000 });

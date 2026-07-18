@@ -140,6 +140,9 @@ async function clearMfaFactors() {
 // ── 1.4 2FA flows ────────────────────────────────────────────────────────────
 test.describe("1.4 2FA", () => {
   test("1.4.1 TOTP enrollment produces a QR + secret and verifies", async ({ page }) => {
+    // Clear any leftover (possibly verified) factor so enrollment starts clean —
+    // a verified factor can't be self-removed at AAL1, so use the definer RPC.
+    await (await getAnonClientAs("owner")).rpc("reset_my_mfa");
     await clearMfaFactors();
     await signInAs(page, "owner");
     await page.goto("/settings/2fa");
@@ -213,6 +216,8 @@ test.describe("1.5 Sessions", () => {
     // Two independent contexts = two auth sessions for one user. Tag each with a
     // distinct user-agent so A can target B's exact session row for termination —
     // robust against any other owner sessions present (2 workers run in parallel).
+    // Clear prior (incl. already-ended) sessions so only the fresh rows remain.
+    await (await getAnonClientAs("owner")).rpc("reset_my_web_sessions");
     const uaA = "AVIR-E2E-CtxA/1.0";
     const uaB = "AVIR-E2E-CtxB/1.0";
     const ctxA = await browser.newContext({ userAgent: uaA });
@@ -228,7 +233,9 @@ test.describe("1.5 Sessions", () => {
     // In A, both sessions are visible; find B's row by its user-agent and end it.
     await pageA.goto("/settings/sessions");
     await expect(pageA.getByRole("heading", { name: /Active Sessions/i })).toBeVisible();
-    const rowB = pageA.locator('[data-testid="session-row"]').filter({ hasText: "CtxB" });
+    const rowB = pageA
+      .locator('[data-testid="session-row"][data-ended="false"]')
+      .filter({ hasText: "CtxB" });
     await expect(rowB).toBeVisible({ timeout: 20_000 });
     // A's own session shows as the current device (≥2 active sessions total).
     await expect(pageA.getByText("this device").first()).toBeVisible();
