@@ -69,10 +69,10 @@ tests/
 | Station-scoped views | Data is org-scoped | 1.2.4 `test.fixme` |
 | Read-only hides write buttons | Write-protection is at RLS/RPC (see 1.7) | 1.2.2 `test.fixme` |
 | Route-level SSO/admin gating | SSO page renders for members; save is RPC-gated | 1.3.2 `test.fixme` |
-| Login-time MFA challenge | Not enforced (enrollment exists, no AAL gate) | 1.4.2/1.4.3 `test.fixme` |
+| Login-time MFA challenge | Enroll+verify works (1.4.1, aal2), but the app never challenges for MFA at sign-in (no AAL gate in login/middleware) | 1.4.2/1.4.3 `test.fixme` — need a login-time AAL gate (product change) |
 | 2FA-required on API key create | API-key create is admin-gated; step-up only gates Index publish | 1.4.4 `test.fixme` |
 | Auth-hook audit of login/failure | Supabase Auth doesn't call `log_audit_event` | 1.6.1/1.6.3 `test.fixme`; 1.6.2 (app RPC) implemented |
-| Live session tracking | `user_sessions` are seeded, not written on real sign-in | 1.5.2 `test.fixme`; 1.5.1 (page render) implemented |
+| Live session tracking | **Now live**: middleware records `user_sessions` on every authed navigation (insert-once + touch); terminated sessions bounce to `/login` | 1.5.1 asserts the live session; 1.5.2 (cross-context terminate) **implemented** |
 | Guard = Supabase secret `AVIR_ALLOW_TEST_PERSONAS` | Migrations can't read edge-fn secrets | Modeled as DB GUC `app.allow_test_personas`; migration opts in for the demo DB |
 
 Everything else in Module 1 (sign-in for all 10 personas, invalid-credential

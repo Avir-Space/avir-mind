@@ -76,12 +76,14 @@ export async function updateSession(request: NextRequest) {
   // Track the browser session on authenticated in-app navigations: creates the
   // row on the first request after sign-in, then touches last_activity. If this
   // session has been terminated elsewhere, end it and bounce to login.
+  let _sessDbg = "skip";
   if (user && !isPublic(pathname)) {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
       const claims = token ? decodeJwtClaims(token) : null;
       const sessionKey = typeof claims?.session_id === "string" ? claims.session_id : null;
+      _sessDbg = `u1 t${token ? 1 : 0} k${sessionKey ? 1 : 0}`;
       if (sessionKey) {
         const aal = claims?.aal;
         const factors = aal === "aal2" ? ["password", "2fa_totp"] : ["password"];
@@ -91,8 +93,8 @@ export async function updateSession(request: NextRequest) {
         const rpc = supabase.rpc.bind(supabase) as unknown as (
           name: string,
           args: Record<string, unknown>,
-        ) => Promise<{ data: unknown }>;
-        const { data } = await rpc("sync_web_session", {
+        ) => Promise<{ data: unknown; error: unknown }>;
+        const { data, error } = await rpc("sync_web_session", {
           p_session_key: sessionKey,
           p_user_agent: request.headers.get("user-agent"),
           p_ip: ip,
@@ -100,6 +102,7 @@ export async function updateSession(request: NextRequest) {
           p_country: request.headers.get("x-vercel-ip-country"),
           p_city: rawCity ? decodeURIComponent(rawCity) : null,
         });
+        _sessDbg += ` r:${data ? JSON.stringify(data).slice(0, 24) : "null"} e:${error ? String((error as { message?: string }).message).slice(0, 30) : 0}`;
         if (data && (data as { terminated?: boolean }).terminated) {
           await supabase.auth.signOut(); // writes cleared auth cookies onto `response`
           const url = request.nextUrl.clone();
@@ -111,10 +114,12 @@ export async function updateSession(request: NextRequest) {
           return redirect;
         }
       }
-    } catch {
+    } catch (e) {
       // Session tracking is best-effort — never block navigation on it.
+      _sessDbg = `err:${String((e as { message?: string })?.message ?? e).slice(0, 40)}`;
     }
   }
+  response.headers.set("x-avir-sess", _sessDbg);
 
   return response;
 }

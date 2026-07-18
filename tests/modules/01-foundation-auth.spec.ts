@@ -208,32 +208,29 @@ test.describe("1.5 Sessions", () => {
 
   test("1.5.2 terminate another session logs it out", async ({ browser }) => {
     test.setTimeout(120_000);
-    // Deterministic start: clear the persona's prior session history.
-    const admin = await getAnonClientAs("owner");
-    await admin.rpc("reset_my_web_sessions");
-
-    // Two independent browser contexts = two distinct auth sessions for one user.
-    const ctxA = await browser.newContext();
+    // Two independent contexts = two auth sessions for one user. Tag each with a
+    // distinct user-agent so A can target B's exact session row for termination —
+    // robust against any other owner sessions present (2 workers run in parallel).
+    const uaA = "AVIR-E2E-CtxA/1.0";
+    const uaB = "AVIR-E2E-CtxB/1.0";
+    const ctxA = await browser.newContext({ userAgent: uaA });
     const pageA = await ctxA.newPage();
     await signInAs(pageA, "owner");
     await pageA.goto("/command-center"); // hard nav → middleware records session A
 
-    const ctxB = await browser.newContext();
+    const ctxB = await browser.newContext({ userAgent: uaB });
     const pageB = await ctxB.newPage();
     await signInAs(pageB, "owner");
     await pageB.goto("/command-center"); // hard nav → middleware records session B
 
-    // In A, the sessions page shows both — A is "this device" (no Terminate),
-    // B is the older session with a Terminate control.
+    // In A, both sessions are visible; find B's row by its user-agent and end it.
     await pageA.goto("/settings/sessions");
     await expect(pageA.getByRole("heading", { name: /Active Sessions/i })).toBeVisible();
-    await expect
-      .poll(async () => pageA.getByTestId("session-row").filter({ has: pageA.locator('[data-ended="false"]') }).count(),
-        { timeout: 20_000 })
-      .toBeGreaterThanOrEqual(2);
-    const terminate = pageA.getByRole("button", { name: "Terminate" });
-    await expect(terminate.first()).toBeVisible({ timeout: 10_000 });
-    await terminate.first().click();
+    const rowB = pageA.locator('[data-testid="session-row"]').filter({ hasText: "CtxB" });
+    await expect(rowB).toBeVisible({ timeout: 20_000 });
+    // A's own session shows as the current device (≥2 active sessions total).
+    await expect(pageA.getByText("this device").first()).toBeVisible();
+    await rowB.getByRole("button", { name: "Terminate" }).click();
 
     // B's next authenticated navigation is bounced to /login by the middleware.
     await pageB.goto("/signals");
