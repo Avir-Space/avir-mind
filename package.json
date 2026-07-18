@@ -9,6 +9,10 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
+    "test": "playwright test --config tests/playwright.config.ts",
+    "test:module": "playwright test --config tests/playwright.config.ts tests/modules/",
+    "test:smoke": "AVIR_TEST_TARGET=https://mind.avirspace.com playwright test --config tests/playwright.config.ts tests/modules/01-foundation-auth.spec.ts",
+    "test:ui": "playwright test --config tests/playwright.config.ts --ui",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
     "db:push": "supabase db push",
     "db:types": "supabase gen types typescript --linked > src/types/database.ts"
@@ -42,6 +46,8 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@faker-js/faker": "^10.5.0",
+    "@playwright/test": "^1.61.1",
     "@types/leaflet": "^1.9.21",
     "@types/node": "^22.10.5",
     "@types/react": "^19.0.4",
@@ -50,6 +56,8 @@
     "eslint": "^9.18.0",
     "eslint-config-next": "15.5.20",
     "eslint-config-prettier": "^9.1.0",
+    "otplib": "^13.4.1",
+    "pdf-lib": "^1.17.1",
     "postcss": "^8.4.49",
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.9",

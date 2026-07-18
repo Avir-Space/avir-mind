@@ -20,6 +20,14 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async rewrites() {
+    return [
+      // Phase 14: the public AVIR Index landing. `/index` collides with Next's
+      // root normalization, so the page lives at /avir-index and `/index` (and
+      // the intended avir.space/index) rewrites to it.
+      { source: "/index", destination: "/avir-index" },
+    ];
+  },
 };
 
 export default nextConfig;
