@@ -78,6 +78,13 @@ function decodeJwtClaims(token: string): Record<string, unknown> | null {
  * Must run in middleware so the refreshed cookie is written to the response.
  */
 export async function updateSession(request: NextRequest) {
+  // The public JSON API (`/api/*`) authenticates via a Bearer API key inside the
+  // route handler / edge function — it must NEVER be gated on a browser session
+  // cookie, otherwise a keyed curl gets 307-redirected to the /login HTML.
+  if (request.nextUrl.pathname.startsWith("/api/")) {
+    return NextResponse.next({ request });
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient<Database>(

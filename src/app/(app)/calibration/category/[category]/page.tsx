@@ -3,6 +3,7 @@
 import { Check, ChevronLeft, Minus, X } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useState } from "react";
 
 import { MonoText } from "@/components/avir/mono-text";
 import { PageHeader } from "@/components/avir/page-header";
@@ -14,6 +15,7 @@ import type { SampleSignal } from "@/types/calibration";
 const dd = (iso: string) => new Date(iso).toLocaleDateString();
 
 function MiniHistory({ points }: { points: { snapshot_date: string; accuracy_pct: number | null }[] }) {
+  const [hover, setHover] = useState<{ x: number; y: number; date: string; acc: number } | null>(null);
   if (points.length < 2) return <p className="text-sm text-hint">Not enough history for a trend.</p>;
   const W = 560, H = 140, pad = 24;
   const xs = (i: number) => pad + (i / (points.length - 1)) * (W - pad * 2);
@@ -21,11 +23,24 @@ function MiniHistory({ points }: { points: { snapshot_date: string; accuracy_pct
   const d = points.map((p, i) => `${i === 0 ? "M" : "L"}${xs(i).toFixed(1)},${ys(p.accuracy_pct ?? 0).toFixed(1)}`).join(" ");
   return (
     <div className="overflow-x-auto">
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full min-w-[460px]" role="img" aria-label="Accuracy history">
-        {[0, 50, 100].map((g) => <line key={g} x1={pad} y1={ys(g)} x2={W - pad} y2={ys(g)} stroke="currentColor" strokeOpacity={0.1} />)}
-        <path d={d} fill="none" stroke="#1019EC" strokeWidth={2} />
-        {points.map((p, i) => <circle key={i} cx={xs(i)} cy={ys(p.accuracy_pct ?? 0)} r={2.5} fill="#1019EC" />)}
-      </svg>
+      <div className="relative min-w-[460px]">
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label="Accuracy history">
+          {[0, 50, 100].map((g) => <line key={g} x1={pad} y1={ys(g)} x2={W - pad} y2={ys(g)} stroke="currentColor" strokeOpacity={0.1} />)}
+          <path d={d} fill="none" stroke="#1019EC" strokeWidth={2} />
+          {points.map((p, i) => (
+            <circle key={i} cx={xs(i)} cy={ys(p.accuracy_pct ?? 0)} r={hover?.date === p.snapshot_date ? 4 : 2.5} fill="#1019EC"
+              style={{ cursor: "pointer" }}
+              onMouseEnter={() => setHover({ x: xs(i), y: ys(p.accuracy_pct ?? 0), date: p.snapshot_date, acc: p.accuracy_pct ?? 0 })}
+              onMouseLeave={() => setHover(null)} />
+          ))}
+        </svg>
+        {hover && (
+          <div className="pointer-events-none absolute -translate-x-1/2 -translate-y-full whitespace-nowrap border border-border bg-card px-1.5 py-0.5 font-mono text-[10px] text-foreground shadow"
+            style={{ left: `${(hover.x / W) * 100}%`, top: `${(hover.y / H) * 100}%` }}>
+            {dd(hover.date)} · {hover.acc}%
+          </div>
+        )}
+      </div>
     </div>
   );
 }

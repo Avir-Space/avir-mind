@@ -2,7 +2,7 @@
 
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { startTransition, useEffect, useState } from "react";
 
 import {
   Dialog,
@@ -118,7 +118,7 @@ export function CreateTaskDialog({
         title: "Task created",
         description: createdTitle,
         action: newId ? (
-          <Button size="sm" variant="outline" onClick={() => router.push(`/tasks/${newId}`)}>
+          <Button size="sm" variant="outline" onClick={() => startTransition(() => router.push(`/tasks/${newId}`))}>
             View task
           </Button>
         ) : undefined,

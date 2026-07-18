@@ -146,11 +146,12 @@
   }
 }
 
-/* Phase 10 — clean PDF print of the backtest executive summary only. */
+/* Clean PDF print of presentation-grade reports (backtest + customer). */
 @media print {
   body * { visibility: hidden !important; }
-  #backtest-report, #backtest-report * { visibility: visible !important; }
-  #backtest-report {
+  #backtest-report, #backtest-report *,
+  #customer-report, #customer-report * { visibility: visible !important; }
+  #backtest-report, #customer-report {
     position: absolute !important;
     left: 0; top: 0; width: 100%;
     padding: 24px 32px !important;

@@ -2,3 +2,10 @@ project_id = "jktzwgaqnyjzhbmryqya"
 
 [db]
 major_version = 17
+
+# Public API gateway. The key lives in the Authorization: Bearer header (an API
+# key, NOT a Supabase JWT), so gateway JWT verification must be OFF — otherwise
+# the gateway 401s before the function's own key auth runs. Deploy with:
+#   supabase functions deploy api-v1 --no-verify-jwt
+[functions.api-v1]
+verify_jwt = false

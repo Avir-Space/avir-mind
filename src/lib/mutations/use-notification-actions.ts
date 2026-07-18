@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 
 import { createClient } from "@/lib/supabase/client";
+import { toastMutationError } from "@/lib/mutations/mutation-error";
 import type { PolicyTestResult } from "@/types/notifications";
 
 export function useNotificationActions() {
@@ -22,6 +23,7 @@ export function useNotificationActions() {
       if (error) throw error;
     },
     onSuccess: invalidate,
+    onError: toastMutationError, // surface a specific error instead of failing silently
   });
 
   const escalate = useMutation({
@@ -30,6 +32,7 @@ export function useNotificationActions() {
       if (error) throw error;
     },
     onSuccess: invalidate,
+    onError: toastMutationError,
   });
 
   const updateChannel = useMutation({

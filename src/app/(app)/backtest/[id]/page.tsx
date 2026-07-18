@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, FileText, Loader2, Play, Upload } from "lucide-react";
+import { ChevronLeft, Download, FileText, Loader2, Play, Sparkles, Upload } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useRef, useState } from "react";
@@ -61,6 +61,21 @@ export default function BacktestDetailPage() {
     finally { setUploading(false); if (fileRef.current) fileRef.current.value = ""; }
   }
 
+  // Load the bundled sample dataset (public/samples/backtest-sample.csv) directly,
+  // so a user can exercise the full ingest → run → report flow without their own file.
+  async function loadSample() {
+    setUploading(true);
+    try {
+      const res = await fetch("/samples/backtest-sample.csv");
+      if (!res.ok) throw new Error("sample file not found");
+      const content = await res.text();
+      const r = await ingest({ projectId: id, sourceType: "csv_component_events", fileName: "backtest-sample.csv", content });
+      if (r.error) throw new Error(r.error);
+      toast({ title: "Sample data loaded", description: `${r.states_ingested ?? 0} states · ${r.actual_events_ingested ?? 0} events · ${r.error_count ?? 0} errors` });
+    } catch (e) { toast({ title: "Could not load sample", description: String((e as Error).message).slice(0, 100) }); }
+    finally { setUploading(false); }
+  }
+
   async function run() {
     setRunning(true);
     try {
@@ -104,6 +119,8 @@ export default function BacktestDetailPage() {
                 </div>
                 <input ref={fileRef} type="file" accept=".csv,.json,text/csv,application/json" className="hidden" onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])} />
                 <Button size="sm" onClick={() => fileRef.current?.click()} disabled={uploading}>{uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />} Upload file</Button>
+                <Button size="sm" variant="outline" onClick={loadSample} disabled={uploading}>{uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />} Load sample data</Button>
+                <Button size="sm" variant="ghost" asChild><a href="/samples/backtest-sample.csv" download><Download className="h-3.5 w-3.5" /> Download sample CSV</a></Button>
                 <span className="font-mono text-[11px] text-hint">CSV or JSON · extra columns ignored · dates normalized to UTC</span>
               </div>
 

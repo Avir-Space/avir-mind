@@ -38,6 +38,7 @@ function AccBar({ pct }: { pct: number | null }) {
 }
 
 function TrendChart({ points }: { points: { snapshot_date: string; accuracy_pct: number | null; high_conf_accuracy_pct: number | null }[] }) {
+  const [hover, setHover] = useState<{ x: number; y: number; date: string; acc: number } | null>(null);
   if (points.length < 2) return <p className="text-sm text-hint">Not enough history yet for a trend line.</p>;
   const W = 640, H = 180, pad = 28;
   const xs = (i: number) => pad + (i / (points.length - 1)) * (W - pad * 2);
@@ -46,14 +47,27 @@ function TrendChart({ points }: { points: { snapshot_date: string; accuracy_pct:
     points.map((p, i) => `${i === 0 ? "M" : "L"}${xs(i).toFixed(1)},${ys(p[key] ?? 0).toFixed(1)}`).join(" ");
   return (
     <div className="overflow-x-auto">
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full min-w-[520px]" role="img" aria-label="Calibration trend">
+      <div className="relative min-w-[520px]">
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label="Calibration trend">
         {[0, 25, 50, 75, 100].map((g) => (
           <g key={g}><line x1={pad} y1={ys(g)} x2={W - pad} y2={ys(g)} stroke="currentColor" strokeOpacity={0.1} /><text x={4} y={ys(g) + 3} className="fill-hint" style={{ fontSize: 9 }}>{g}</text></g>
         ))}
         <path d={line("accuracy_pct")} fill="none" stroke="#1019EC" strokeWidth={2} />
         <path d={line("high_conf_accuracy_pct")} fill="none" stroke="#16A34A" strokeWidth={1.5} strokeDasharray="4 3" />
-        {points.map((p, i) => <circle key={i} cx={xs(i)} cy={ys(p.accuracy_pct ?? 0)} r={2.5} fill="#1019EC" />)}
+        {points.map((p, i) => (
+          <circle key={i} cx={xs(i)} cy={ys(p.accuracy_pct ?? 0)} r={hover?.date === p.snapshot_date ? 4 : 2.5} fill="#1019EC"
+            style={{ cursor: "pointer" }}
+            onMouseEnter={() => setHover({ x: xs(i), y: ys(p.accuracy_pct ?? 0), date: p.snapshot_date, acc: p.accuracy_pct ?? 0 })}
+            onMouseLeave={() => setHover(null)} />
+        ))}
       </svg>
+      {hover && (
+        <div className="pointer-events-none absolute -translate-x-1/2 -translate-y-full whitespace-nowrap border border-border bg-card px-1.5 py-0.5 font-mono text-[10px] text-foreground shadow"
+          style={{ left: `${(hover.x / W) * 100}%`, top: `${(hover.y / H) * 100}%` }}>
+          {new Date(hover.date).toLocaleDateString()} · {hover.acc}%
+        </div>
+      )}
+      </div>
       <div className="flex gap-4 px-2 font-mono text-[10px] text-hint">
         <span className="inline-flex items-center gap-1"><span className="h-0.5 w-4 bg-primary" /> Overall</span>
         <span className="inline-flex items-center gap-1"><span className="h-0.5 w-4" style={{ background: "#16A34A" }} /> High confidence</span>

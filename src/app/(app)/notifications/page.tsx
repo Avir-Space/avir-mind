@@ -18,6 +18,9 @@ import { useAuth } from "@/lib/providers/auth-provider";
 import type { NotificationEvent } from "@/types/notifications";
 
 const dt = (x: string | null) => (x ? new Date(x).toLocaleString() : "—");
+/** Only strings are safe to render as React children — guard jsonb fields that
+ * could be null/objects on legacy rows (root cause of the click error). */
+const asText = (v: unknown): string => (typeof v === "string" ? v : "");
 
 function Row({ n, onOpen }: { n: NotificationEvent; onOpen: () => void }) {
   const st = deliveryStatus(n.delivery_status); const ch = channel(n.channel_type);
@@ -25,7 +28,7 @@ function Row({ n, onOpen }: { n: NotificationEvent; onOpen: () => void }) {
     <button type="button" onClick={onOpen} className="flex w-full flex-wrap items-center gap-x-4 gap-y-1 border-b border-border/60 px-3 py-2.5 text-left last:border-b-0 hover:bg-surface/40"
       style={{ borderLeft: `3px solid ${severityHex(n.severity)}` }}>
       <span className="w-4">{!n.acknowledged_at_utc && <span className="inline-block h-2 w-2 rounded-full bg-primary" />}</span>
-      <span className="flex-1 truncate text-[13px] text-foreground">{n.notification_content?.subject ?? eventTypeLabel(n.notification_content?.event_type ?? "")}</span>
+      <span className="flex-1 truncate text-[13px] text-foreground">{asText(n.notification_content?.subject) || eventTypeLabel(asText(n.notification_content?.event_type))}</span>
       {n.escalation_of_notification_id && <span className="font-mono text-[10px] uppercase text-severity-critical">escalation</span>}
       {n.notification_content?.deferred && <span className="font-mono text-[10px] uppercase text-severity-medium">deferred</span>}
       <span className="font-mono text-[11px]" style={{ color: ch.hex }}>{ch.label}</span>
@@ -88,10 +91,10 @@ export default function NotificationsPage() {
 
       <Sheet open={Boolean(open)} onOpenChange={(o) => !o && setOpen(null)}>
         <SheetContent className="w-full overflow-y-auto avir-scroll sm:max-w-md">
-          <SheetHeader><SheetTitle className="pr-6">{open?.notification_content?.subject ?? "Notification"}</SheetTitle></SheetHeader>
+          <SheetHeader><SheetTitle className="pr-6">{asText(open?.notification_content?.subject) || "Notification"}</SheetTitle></SheetHeader>
           {open && (
             <div className="mt-4 space-y-3">
-              <p className="text-sm text-subtext">{open.notification_content?.body}</p>
+              <p className="text-sm text-subtext">{asText(open.notification_content?.body)}</p>
               <div className="grid grid-cols-2 gap-2 border-y border-border py-3 font-mono text-[12px]">
                 <div><span className="text-hint">Channel</span><p className="text-foreground">{channel(open.channel_type).label}</p></div>
                 <div><span className="text-hint">Severity</span><p style={{ color: severityHex(open.severity) }}>{open.severity ?? "—"}</p></div>

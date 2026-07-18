@@ -1,8 +1,9 @@
 # AVIR Mind — End-to-end tests (Playwright)
 
-An 8-module E2E suite. **Module 1 (Foundation & Auth) is fully implemented** as
-the reference pattern; Modules 2–8 are scaffolded (`test.fixme` placeholders)
-and follow the same shape.
+An 8-module E2E suite. **All 8 modules are implemented** against real app
+behavior (Module 1 is the reference pattern); genuinely-unsupported or
+enterprise-tier cases are `test.fixme` with documented reasons (see the
+deviation tables below).
 
 ## Setup
 
@@ -58,7 +59,7 @@ tests/
     tasks.ts       addComment / logWork / createTaskFromSignal
     downloads.ts   interceptDownload / assertPDFStructure
     seed.ts        createFreshOrgWithPersonas / resetPersonaState
-  modules/01..08-*.spec.ts     # 01,02,03 implemented; 04–08 scaffolded
+  modules/01..08-*.spec.ts     # all implemented against real app behavior
 ```
 
 ### Modules 2 & 3 deviations (implemented against real app behavior)
@@ -114,3 +115,25 @@ real app behavior.
 | Dispatch releases seeded | 0 seeded | 5.4.2 creates one test-scoped via `create_dispatch_release` |
 | `/weather` route with TAF | It's `/flight-ops/weather`; board shows METAR (TAF on flight detail) | assert board + METAR |
 | delay_pattern references route | Keys on delay_code (recurring cause), not origin/destination | assert real evidence + note |
+
+### Modules 6, 7 & 8 deviations (implemented against real app behavior)
+
+| Spec assumption | Reality in the app | Handling |
+|---|---|---|
+| AD detail page `/compliance/ads/[id]` | AD "detail" is a query-param master-detail `/compliance/ads?ad=<id>`; register columns are AD/Authority/Title/Deadline/Compliance (no days_remaining scalar) | 6.1.3 uses the query-param view; 6.1.2 asserts real columns |
+| Defer New MEL from the UI | `defer_mel_item` RPC exists but is **unwired** (only View/Extend/Rectify on /compliance/mel) | 6.2.2 `test.fixme` (product gap) |
+| DS.AI at `/ds-ai` | It's `/compliance/dsai` | assert the real route |
+| Immutable audit tables blocked by trigger; test as service_role | Enforced by **absent UPDATE/DELETE RLS policy** → authenticated write affects 0 rows, no error; **service_role bypasses** | 6.3.4/6.4.4/8.5.3 assert 0-rows via the RLS-scoped persona client |
+| Calibration honesty language on the drill-down | Lives on the **By Confidence** tab / published scoreboards | 6.4.3 asserts drill-down + By Confidence copy |
+| Signal calibration/audit footers on `/signals` | Render on the aircraft profile Signals tab (`/aircraft/[id]`), not the /signals queue; calibration footer is conditional on a sufficiently-sampled category | 6.5.x target the aircraft profile; 6.5.1 skips when no sampled signal |
+| Backtest "Create Project" modal; status `completed` | `/backtest` → "New Project" → `/backtest/new` ("Create project"); `backtest_runs.status='complete'` | assert real labels + status |
+| Large-file CSV via signed URL | Ingest is inline text → `ingest-backtest-data` edge fn; no signed-URL path | 7.2.2 `test.fixme` |
+| Executive summary = downloadable PDF >100KB | Browser print (`window.print()`); `storage_path_pdf` never populated | 7.4.1 asserts print HTML structure; 7.4.2 (file >100KB) `test.fixme` |
+| `notification_events.acknowledged_by_user_id` / dismissed | Ack sets `acknowledged_at_utc` + `delivery_status='acknowledged'` (recipient = recipient_user_id) | 7.5.2 asserts those; realtime origination 7.5.3 `test.fixme` |
+| Escalation stages table | jsonb `escalation_ladder` on `notification_policies`; on-call rotation is `/settings/on-call` | 7.6.3 asserts the ladder; 7.6.1 checks both pages |
+| Owner sees a tenant switcher (operator↔MRO) | Switcher renders only when `orgs.length>1`; seeded personas are single-org | 8.1.1/8.1.2 `test.fixme`; 8.1.3 proves MRO nav via `mro_owner` |
+| /customers list shows WIP + SLA | Those are detail-page tiles; list = Customer/Code/Type/Status/Contracts/In service | assert real columns |
+| notify_customer inserts `notification_events` | Sets `customer_notified` + inserts a draft `customer_reports` row | 8.2.4 asserts the flag + report |
+| SLA credit = min(annual*0.02, breach_days*rate) | `$250 per point below the 90%` target (`compute_sla_performance`) | 8.3.2 asserts the real formula |
+| API key `sk_…`; scopes `signals:read`; `/v1/*` Next route | Keys are `avir_live_<hex>`; scopes `read:/write:<resource>`; API is a Supabase edge fn `.../functions/v1/api-v1/v1/*` | 8.4.x mint via RPC + hit the edge fn; gated on gateway reachability |
+| AVIR Index publishable in test env | 8 defs, all below the 5-tenant minimum → nothing publishable/visible; `/avir-index` 404s, `/embed/index/<code>` 200s "not yet published" | 8.5.2 asserts gated; 8.5.4/8.5.5 assert 404/200; publish flow `test.fixme` |

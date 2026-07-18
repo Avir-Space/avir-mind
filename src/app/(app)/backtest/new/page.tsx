@@ -3,7 +3,7 @@
 import { ChevronLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { startTransition, useState } from "react";
 
 import { PageHeader } from "@/components/avir/page-header";
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,7 @@ export default function NewBacktestPage() {
         data_period_start: start || null, data_period_end: end || null, notes: notes || null,
       });
       toast({ title: "Project created" });
-      router.push(`/backtest/${res.id}`);
+      startTransition(() => router.push(`/backtest/${res.id}`));
     } catch (e) { toast({ title: "Could not create project", description: String((e as Error).message).slice(0, 90) }); }
   }
 

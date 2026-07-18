@@ -1,0 +1,50 @@
+timestamp_utc,aircraft_registration,component_part_number,component_serial,event_type,finding_severity,finding_description,cycles_at_event,hours_at_event
+2026-04-02T08:15:00Z,N701AV,ENG-1010,SN10001,borescope,minor,Stage-1 HPC blade light coating wear,4200,9800
+2026-04-05T10:40:00Z,N701AV,ENG-1010,SN10001,finding_recorded,moderate,Combustor liner hot-streak within limits,4260,9910
+2026-04-09T14:05:00Z,N702AV,ENG-1020,SN10002,borescope,minor,No defects noted on scheduled scope,3800,8600
+2026-04-12T09:20:00Z,N703AV,ENG-1030,SN10003,finding_recorded,major,HPT blade tip erosion beyond soft limit,5100,11200
+2026-04-15T16:35:00Z,N703AV,ENG-1030,SN10003,removed,major,Unscheduled removal for HPT erosion,5140,11280
+2026-04-18T07:50:00Z,N704AV,LDG-2200,SN22001,inspection,minor,Brake wear pin within tolerance,2200,5400
+2026-04-21T11:10:00Z,N705AV,APU-3100,SN31001,finding_recorded,moderate,APU EGT margin trending down,900,4100
+2026-04-24T13:25:00Z,N706AV,AVN-4400,SN44001,finding_recorded,minor,Intermittent EFIS pixel dropout,,7300
+2026-04-27T08:00:00Z,N701AV,ENG-1010,SN10001,borescope,moderate,HPC coating wear progressing,4520,10450
+2026-04-30T15:45:00Z,N702AV,ENG-1020,SN10002,finding_recorded,critical,Foreign object damage on fan blade,4010,9020
+2026-05-03T09:30:00Z,N702AV,ENG-1020,SN10002,removed,critical,Unscheduled removal following FOD,4030,9060
+2026-05-06T12:15:00Z,N704AV,LDG-2200,SN22001,inspection,minor,Strut servicing completed,2360,5620
+2026-05-09T10:05:00Z,N705AV,APU-3100,SN31001,finding_recorded,major,APU starter generator bearing noise,980,4260
+2026-05-12T14:50:00Z,N706AV,AVN-4400,SN44002,finding_recorded,moderate,Radio altimeter self-test fault,,7580
+2026-05-15T08:40:00Z,N703AV,ENG-1030,SN10004,borescope,minor,Replacement engine baseline scope,120,340
+2026-05-18T16:20:00Z,N701AV,ENG-1010,SN10001,finding_recorded,moderate,Oil consumption slightly elevated,4780,10990
+2026-05-21T09:55:00Z,N704AV,LDG-2200,SN22002,inspection,moderate,Tire wear approaching limit,1800,4400
+2026-05-24T11:35:00Z,N705AV,APU-3100,SN31001,finding_recorded,minor,APU inlet door actuator lubricated,1020,4390
+2026-05-27T13:10:00Z,N706AV,AVN-4400,SN44001,finding_recorded,major,EFIS display flicker under vibration,,7860
+2026-05-30T08:25:00Z,N702AV,ENG-1020,SN10005,borescope,minor,Replacement engine baseline scope,90,210
+2026-06-02T10:15:00Z,N701AV,ENG-1010,SN10001,finding_recorded,major,HPC coating breach at stage 2,5010,11510
+2026-06-05T15:00:00Z,N703AV,LDG-2200,SN22003,inspection,minor,Brake unit within limits,2600,6100
+2026-06-08T09:45:00Z,N705AV,APU-3100,SN31002,finding_recorded,moderate,APU replacement baseline check,60,180
+2026-06-11T12:30:00Z,N706AV,AVN-4400,SN44002,finding_recorded,minor,Software reload cleared RA fault,,8020
+2026-06-14T14:20:00Z,N704AV,LDG-2200,SN22002,removed,major,Tire and wheel assembly replaced,1980,4720
+2026-06-17T08:10:00Z,N701AV,ENG-1010,SN10001,borescope,critical,Blade liberation risk — immediate action,5230,11940
+2026-06-20T16:40:00Z,N702AV,ENG-1020,SN10005,finding_recorded,minor,No anomalies on 500-cycle scope,610,1350
+2026-06-23T10:55:00Z,N703AV,ENG-1030,SN10004,finding_recorded,moderate,HPT margin trending down,780,1720
+2026-06-26T13:35:00Z,N705AV,APU-3100,SN31002,finding_recorded,minor,APU load test nominal,320,940
+2026-06-29T09:05:00Z,N706AV,AVN-4400,SN44001,inspection,minor,Scheduled avionics bay inspection,,8240
+2026-04-03T09:00:00Z,N707AV,ENG-1040,SN10006,finding_recorded,moderate,Vibration survey slightly elevated,3300,7600
+2026-04-14T11:30:00Z,N707AV,ENG-1040,SN10006,finding_recorded,minor,Vibration within limits after balance,3360,7720
+2026-05-01T10:20:00Z,N708AV,LDG-2200,SN22004,inspection,minor,Gear cycle limit check nominal,2400,5900
+2026-05-19T14:15:00Z,N708AV,APU-3100,SN31003,finding_recorded,major,APU oil pressure low at idle,700,3200
+2026-06-04T08:35:00Z,N708AV,APU-3100,SN31003,removed,major,APU removed for oil pressure fault,720,3260
+2026-06-22T15:25:00Z,N707AV,AVN-4400,SN44003,finding_recorded,moderate,Transponder mode-S dropout,,6800
+2026-04-08T07:30:00Z,N709AV,ENG-1010,SN10007,borescope,minor,Baseline scope clean,150,400
+2026-05-11T09:10:00Z,N709AV,ENG-1010,SN10007,finding_recorded,moderate,Minor coating wear at stage 1,1200,2600
+2026-06-13T13:45:00Z,N709AV,ENG-1010,SN10007,finding_recorded,major,Coating wear accelerating,2100,4700
+2026-04-10T12:00:00Z,N710AV,LDG-2200,SN22005,inspection,minor,Nominal brake inspection,1500,3600
+2026-05-16T12:00:00Z,N710AV,AVN-4400,SN44004,finding_recorded,minor,GPS antenna reseated,,5200
+2026-06-19T12:00:00Z,N710AV,APU-3100,SN31004,finding_recorded,moderate,APU fuel filter bypass indication,540,2100
+2026-06-30T10:00:00Z,N705AV,APU-3100,SN31001,finding_recorded,critical,APU uncontained failure precursor,1180,4980
+2026-04-22T09:40:00Z,N711AV,ENG-1030,SN10008,borescope,minor,HPC scope nominal,2600,5900
+2026-05-25T11:20:00Z,N711AV,ENG-1030,SN10008,finding_recorded,moderate,HPT blade coating wear noted,3100,6800
+2026-06-27T14:05:00Z,N711AV,ENG-1030,SN10008,finding_recorded,major,HPT blade crack indication,3600,7700
+2026-05-05T08:50:00Z,N712AV,LDG-2200,SN22006,inspection,moderate,Shock strut nitrogen low,1900,4600
+2026-06-09T10:30:00Z,N712AV,LDG-2200,SN22006,removed,major,Main gear strut overhaul,2050,4900
+2026-06-28T16:10:00Z,N712AV,AVN-4400,SN44005,finding_recorded,minor,Weather radar magnetron test pass,,5400

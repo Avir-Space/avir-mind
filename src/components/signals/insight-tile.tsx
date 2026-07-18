@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { startTransition } from "react";
 
 import { categoryMeta } from "@/lib/design/tasks";
 import { SIGNAL_SEVERITY } from "@/lib/design/signals";
@@ -17,7 +18,9 @@ export function InsightTile({ insight }: { insight: Insight }) {
     const params = new URLSearchParams();
     if (typeof q.category === "string") params.set("category", q.category);
     if (Array.isArray(q.severity)) params.set("severity", (q.severity as string[]).join(","));
-    router.push(`/signals${params.toString() ? `?${params}` : ""}`);
+    // Wrap in a transition so the URL commits immediately and the destination's
+    // loading.tsx shows, instead of the click feeling stuck.
+    startTransition(() => router.push(`/signals${params.toString() ? `?${params}` : ""}`));
   }
 
   return (
