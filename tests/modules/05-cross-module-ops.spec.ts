@@ -25,6 +25,7 @@ let partId: string;
 let crew: { id: string }[] = [];
 let flights: { id: string; status: string; actual_out_utc: string | null }[] = [];
 let supplySignalId: string | null = null;
+let partHasHoldings = false;
 
 test.beforeAll(async () => {
   owner = await getAnonClientAs("owner");
@@ -37,6 +38,8 @@ test.beforeAll(async () => {
     .order("scheduled_departure_utc")
     .limit(12)).data ?? []) as typeof flights;
   supplySignalId = (await owner.from("signals").select("id").eq("category", "stock_transfer_opportunity").limit(1)).data?.[0]?.id ?? null;
+  const { data: holdings } = await owner.from("stock_holdings").select("location_id").eq("part_id", partId).limit(1);
+  partHasHoldings = (holdings ?? []).length > 0;
 });
 
 // ── 5.1 Inventory dashboard ──────────────────────────────────────────────────
@@ -73,6 +76,47 @@ test.describe("5.1 Inventory", () => {
     await expect(page.getByRole("cell", { name: /Location/i }).or(page.getByText("Location").first())).toBeVisible();
     await page.getByRole("tab", { name: "Suppliers" }).click();
     await expect(page.getByText(/lead \d+d/).first().or(page.getByText("No suppliers linked to this part."))).toBeVisible();
+  });
+
+  test("5.1.4 Inventory Alerts tab shows low-stock and transfer-opportunity sections", async ({ page }) => {
+    await signInAs(page, "owner");
+    await page.goto("/inventory");
+    await page.getByRole("tab", { name: /^Alerts/ }).click();
+    // Section headers render regardless of data, each with its own graceful
+    // empty state — assert the sections themselves, not the (possibly empty) rows.
+    await expect(page.getByText("Low stock", { exact: true })).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText("No holdings below reorder point.").or(page.getByText(/\/\d+ at /).first())).toBeVisible();
+    await expect(page.getByText("Transfer opportunities", { exact: true })).toBeVisible();
+    await expect(page.getByText("No transfer opportunities.").or(page.getByText(/·/).first())).toBeVisible();
+  });
+
+  test("5.1.5 Reserve 1 unit on the part Stock tab increments quantity_reserved", async ({ page }) => {
+    test.skip(!partHasHoldings, "no stock holding seeded for this part");
+    const { data: beforeRows } = await owner.from("stock_holdings").select("location_id, quantity_reserved").eq("part_id", partId);
+    const beforeMap = new Map((beforeRows ?? []).map((h) => [h.location_id as string, h.quantity_reserved as number]));
+    const beforeTotal = [...beforeMap.values()].reduce((s, v) => s + v, 0);
+
+    await signInAs(page, "owner");
+    await page.goto(`/inventory/parts/${partId}`);
+    await page.getByRole("tab", { name: "Stock" }).click();
+    try {
+      await page.getByRole("button", { name: "Reserve", exact: true }).first().click();
+      await expect(page.getByText("Reserved 1 unit").first()).toBeVisible({ timeout: 10_000 });
+      await expect.poll(async () => {
+        const { data } = await owner.from("stock_holdings").select("quantity_reserved").eq("part_id", partId);
+        return (data ?? []).reduce((s, h) => s + (h.quantity_reserved as number), 0);
+      }, { timeout: 10_000 }).toBe(beforeTotal + 1);
+    } finally {
+      // Restore whichever location row absorbed the reservation.
+      const { data: afterRows } = await owner.from("stock_holdings").select("location_id, quantity_reserved").eq("part_id", partId);
+      for (const r of afterRows ?? []) {
+        const prev = beforeMap.get(r.location_id as string) ?? 0;
+        const delta = (r.quantity_reserved as number) - prev;
+        if (delta > 0) {
+          await owner.rpc("unreserve_stock", { p_part_id: partId, p_location: r.location_id, p_quantity: delta });
+        }
+      }
+    }
   });
 });
 
@@ -153,6 +197,19 @@ test.describe("5.3 Crew", () => {
     });
     expect(error).not.toBeNull(); // "assignment blocked: FTL violation (requires admin override)"
   });
+
+  test("5.3.5 /crew Roster tab renders the 14-day duty grid", async ({ page }) => {
+    await signInAs(page, "owner");
+    await page.goto("/crew");
+    // Roster is the default tab — the duty grid, not the tabular Directory (5.3.1).
+    await expect(page.getByRole("tab", { name: "Roster" })).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByRole("button", { name: /^Role/i })).toBeVisible();
+    for (const label of ["Flight", "Training", "Standby", "Reserve", "Deadhead"]) {
+      await expect(page.getByText(label, { exact: true }).first()).toBeVisible();
+    }
+    // Grid body: either duty cells or the "No crew match." empty state.
+    await expect(page.locator("table tbody tr").first().or(page.getByText("No crew match."))).toBeVisible({ timeout: 15_000 });
+  });
 });
 
 // ── 5.4 Flight Ops ───────────────────────────────────────────────────────────
@@ -201,6 +258,39 @@ test.describe("5.4 Flight Ops", () => {
     const { data } = await owner.from("flights").select("status, actual_out_utc").eq("id", flight!.id).single();
     expect(data?.actual_out_utc).not.toBeNull(); // Out time recorded → status taxiing
   });
+
+  test("5.4.4 Attribute Delay on a flight records a delay_attribution row", async ({ page }) => {
+    // Pick a flight other than 5.4.2's/5.4.3's targets to avoid state races.
+    const flight = flights[2] ?? flights[flights.length - 1];
+    test.skip(!flight, "no upcoming flight available to attribute a delay");
+    const { data: before } = await owner.from("flights").select("status, delay_minutes, delay_codes").eq("id", flight!.id).single();
+
+    await signInAs(page, "owner");
+    await page.goto(`/flight-ops/flights/${flight!.id}`);
+    try {
+      await page.getByRole("button", { name: "Attribute Delay" }).click();
+      const dialog = page.getByRole("dialog");
+      await expect(dialog).toBeVisible();
+      const reason = `E2E delay ${Date.now()}`;
+      await dialog.locator("#dm").fill("22");
+      await dialog.locator("#dr").fill(reason);
+      await dialog.getByRole("button", { name: "Attribute", exact: true }).click();
+      await expect(dialog).toBeHidden({ timeout: 15_000 });
+
+      await expect.poll(async () => {
+        const { data } = await owner.from("delay_attribution").select("id").eq("flight_id", flight!.id).eq("delay_reason", reason);
+        return (data ?? []).length;
+      }, { timeout: 10_000 }).toBeGreaterThan(0);
+    } finally {
+      // delay_attribution has no delete policy (audit log — same as 5.4.2's
+      // test-scoped dispatch_releases); restore the flight row it touched.
+      await owner.from("flights").update({
+        status: before?.status ?? "scheduled",
+        delay_minutes: before?.delay_minutes ?? 0,
+        delay_codes: before?.delay_codes ?? null,
+      }).eq("id", flight!.id);
+    }
+  });
 });
 
 // ── 5.5 Weather ──────────────────────────────────────────────────────────────
@@ -221,6 +311,16 @@ test.describe("5.5 Weather", () => {
     await expect(wx).toHaveClass(/bg-primary/);
     await wx.click();
     await expect(wx).not.toHaveClass(/bg-primary/);
+  });
+
+  test("5.5.3 clicking a weather station card expands its METAR detail panel", async ({ page }) => {
+    await signInAs(page, "owner");
+    await page.goto("/flight-ops/weather");
+    const card = page.getByRole("button", { name: /^LHR/ });
+    await expect(card).toBeVisible({ timeout: 20_000 });
+    await card.click();
+    await expect(page.getByText(/^Observed /)).toBeVisible({ timeout: 10_000 });
+    await card.click(); // collapse — toggling off is a no-op on the board itself
   });
 });
 
@@ -249,6 +349,19 @@ test.describe("5.6 Cross-module signals", () => {
     // route origin/destination the spec assumed — asserting the real evidence.
     const primary = (data![0]!.evidence_refs as { primary?: { type: string }[] })?.primary ?? [];
     expect(primary[0]?.type).toBe("delay_code");
+  });
+});
+
+// ── 5.7 Dispatch Queue ───────────────────────────────────────────────────────
+test.describe("5.7 Dispatch Queue", () => {
+  test("5.7.1 /flight-ops/dispatch renders the queue grouped by release status", async ({ page }) => {
+    await signInAs(page, "owner");
+    await page.goto("/flight-ops/dispatch");
+    await expect(page.getByRole("heading", { name: "Dispatch Queue" })).toBeVisible({ timeout: 20_000 });
+    // Each status group renders its own heading with a count, even when empty ("None.").
+    for (const label of [/Pending captain acceptance/, /^Drafts/, /Recently accepted/]) {
+      await expect(page.getByText(label).first()).toBeVisible();
+    }
   });
 });
 

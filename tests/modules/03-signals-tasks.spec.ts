@@ -24,6 +24,7 @@ let activeSignals: { id: string; title: string; aircraft_id: string }[] = [];
 let anyTaskId: string;
 let queued: { id: string; board_rank: number | null }[] = [];
 let tailByState: Map<string, { id: string; tail: string }>;
+let freshTaskId: string | undefined; // unassigned, un-pinned, not acknowledged by owner
 
 test.beforeAll(async () => {
   ownerClient = await getAnonClientAs("owner");
@@ -57,6 +58,24 @@ test.beforeAll(async () => {
     if (!tailByState.has(s.state) && tailById.has(s.aircraft_id)) {
       tailByState.set(s.state, { id: s.aircraft_id, tail: tailById.get(s.aircraft_id)! });
     }
+  }
+
+  // A task with no assignee/pin, safe for assign/acknowledge/pin toggling tests.
+  const { data: freshCandidates } = await ownerClient
+    .from("tasks")
+    .select("id")
+    .is("assignee_user_id", null)
+    .eq("pinned", false)
+    .limit(10);
+  const candidateIds = (freshCandidates ?? []).map((t) => t.id as string);
+  if (candidateIds.length) {
+    const { data: acks } = await ownerClient
+      .from("task_acknowledgements")
+      .select("task_id")
+      .eq("user_id", ownerId)
+      .in("task_id", candidateIds);
+    const acked = new Set((acks ?? []).map((a) => a.task_id as string));
+    freshTaskId = candidateIds.find((id) => !acked.has(id));
   }
 });
 
@@ -112,6 +131,19 @@ test.describe("3.1 Signals inbox", () => {
     await w.click();
     await expect(w).toHaveClass(/bg-primary/);
   });
+
+  test("3.1.6 Class=Observations swaps the derived queue for raw observation signals", async ({ page }) => {
+    await signInAs(page, "owner");
+    await page.goto("/signals");
+    await page.getByTestId("filter-class").getByRole("button", { name: "Observations", exact: true }).click();
+    // Either populated observation cards (with a Create-task/View-task/Fleet-wide
+    // CTA row) or the class-specific empty state — never the old TaskCard queue.
+    const observationLabel = page.getByText("Observation", { exact: true });
+    const createCta = page.getByRole("button", { name: "Create task" });
+    const emptyState = page.getByText("No observation signals in this view");
+    await expect(observationLabel.or(createCta).or(emptyState).first()).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole("button", { name: "Acknowledge" })).toHaveCount(0); // no more TaskCards
+  });
 });
 
 // ── 3.2 Signal card interactions ─────────────────────────────────────────────
@@ -163,6 +195,25 @@ test.describe("3.2 Signal interactions", () => {
     const { data: sigRow } = await ownerClient.from("signals").select("is_active").eq("id", sig.id).single();
     expect(sigRow?.is_active).toBe(false);
   });
+
+  test("3.2.5 mark a signal Correct then Incorrect on the detail page", async ({ page }) => {
+    // Distinct from the signals 3.2.3/3.2.4 mutate, so this doesn't race them.
+    test.skip(activeSignals.length < 2, "need a spare active signal to mark");
+    const sig = activeSignals[1]!;
+    await signInAs(page, "owner");
+    await page.goto(`/signals/${sig.id}`);
+    await page.getByRole("button", { name: "Correct" }).first().click();
+    await expect.poll(async () => {
+      const { data } = await ownerClient.from("signal_actions").select("id").eq("signal_id", sig.id).eq("action_type", "marked_correct");
+      return (data ?? []).length;
+    }, { timeout: 10_000 }).toBeGreaterThan(0);
+
+    await page.getByRole("button", { name: "Incorrect" }).first().click();
+    await expect.poll(async () => {
+      const { data } = await ownerClient.from("signal_actions").select("id").eq("signal_id", sig.id).eq("action_type", "marked_incorrect");
+      return (data ?? []).length;
+    }, { timeout: 10_000 }).toBeGreaterThan(0);
+  });
 });
 
 // ── 3.3 Task substrate ───────────────────────────────────────────────────────
@@ -211,6 +262,45 @@ test.describe("3.3 Task detail", () => {
     expect(data?.board_rank).toBe(q.board_rank); // rank preserved across the transition
     const { data: ev } = await ownerClient.from("task_events").select("id").eq("task_id", q.id).eq("event_type", "status_change").limit(5);
     expect((ev ?? []).length).toBeGreaterThan(0);
+  });
+
+  test("3.3.5 Assign to me then Acknowledge on task detail", async ({ page }) => {
+    test.skip(!freshTaskId, "no unassigned/unacknowledged task seeded");
+    const taskId = freshTaskId!;
+    await signInAs(page, "owner");
+    await page.goto(`/tasks/${taskId}`);
+    try {
+      await page.getByRole("button", { name: "Assign to me" }).click();
+      await expect(page.getByRole("button", { name: "Unassign" })).toBeVisible({ timeout: 10_000 });
+      await expect(page.getByText("You", { exact: true }).first()).toBeVisible();
+
+      await page.getByRole("button", { name: "Acknowledge" }).click();
+      await expect(page.getByText("Acknowledged").first()).toBeVisible({ timeout: 10_000 });
+      const { data } = await ownerClient.from("task_acknowledgements").select("task_id").eq("task_id", taskId).eq("user_id", ownerId);
+      expect((data ?? []).length).toBeGreaterThan(0);
+    } finally {
+      await ownerClient.rpc("assign_task", { p_task_id: taskId, p_assignee_user_id: null });
+      await ownerClient.from("task_acknowledgements").delete().eq("task_id", taskId).eq("user_id", ownerId);
+    }
+  });
+
+  test("3.3.6 Pin a task from the detail header, then Unpin to restore", async ({ page }) => {
+    test.skip(!freshTaskId, "no candidate task seeded");
+    const taskId = freshTaskId!;
+    await signInAs(page, "owner");
+    await page.goto(`/tasks/${taskId}`);
+    try {
+      await page.getByRole("button", { name: "Pin" }).click();
+      const unpin = page.getByRole("button", { name: "Unpin" });
+      await expect(unpin).toBeVisible({ timeout: 10_000 });
+      await expect(page.getByText("Pinned", { exact: true }).first()).toBeVisible();
+
+      await unpin.click();
+      await expect(page.getByRole("button", { name: "Pin" })).toBeVisible({ timeout: 10_000 });
+      await expect(page.getByText("Pinned", { exact: true })).toHaveCount(0);
+    } finally {
+      await ownerClient.from("tasks").update({ pinned: false }).eq("id", taskId);
+    }
   });
 });
 
@@ -334,5 +424,46 @@ test.describe("3.7 Cross-persona", () => {
     // sees the full Category filter list including Compliance. There is no
     // per-role category restriction to assert. (Same gap family as Module 1's
     // 1.2.3.) Would require role-scoped category filtering.
+  });
+});
+
+// ── 3.8 Tasks list (/tasks) ──────────────────────────────────────────────────
+test.describe("3.8 Tasks list", () => {
+  test("3.8.1 /tasks list filters by status and links into a task", async ({ page }) => {
+    await signInAs(page, "owner");
+    await page.goto("/tasks");
+    await expect(page.getByRole("columnheader", { name: "Title" })).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator("tbody tr").first()).toBeVisible({ timeout: 20_000 });
+    const before = await page.locator("tbody tr").count();
+
+    const chip = page.getByTestId("filter-status").getByRole("button", { name: "Queued", exact: true });
+    if (await chip.count()) {
+      await chip.click();
+      await expect.poll(async () => page.locator("tbody tr").count()).toBeLessThanOrEqual(before);
+      await chip.click(); // clear back to baseline
+      await expect.poll(async () => page.locator("tbody tr").count()).toBe(before);
+    }
+
+    const link = page.locator("tbody tr td a").first();
+    const title = (await link.textContent())?.trim() ?? "";
+    await link.click();
+    await expect(page).toHaveURL(/\/tasks\/[0-9a-fA-F-]{36}/);
+    if (title) await expect(page.getByRole("heading", { name: title })).toBeVisible({ timeout: 15_000 });
+  });
+
+  test("3.8.2 /tasks search narrows the list then clears back", async ({ page }) => {
+    await signInAs(page, "owner");
+    await page.goto("/tasks");
+    await expect(page.locator("tbody tr").first()).toBeVisible({ timeout: 20_000 });
+    const before = await page.locator("tbody tr").count();
+    const firstTitle = (await page.locator("tbody tr td a").first().textContent())?.trim() ?? "";
+    test.skip(firstTitle.length < 4, "no task title long enough to search on");
+    const fragment = firstTitle.slice(0, Math.min(8, firstTitle.length));
+
+    const search = page.getByPlaceholder("Tail or title…");
+    await search.fill(fragment);
+    await expect.poll(async () => page.locator("tbody tr").count()).toBeLessThanOrEqual(before);
+    await search.fill("");
+    await expect.poll(async () => page.locator("tbody tr").count()).toBe(before);
   });
 });

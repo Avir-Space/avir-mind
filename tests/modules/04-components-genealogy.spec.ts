@@ -21,7 +21,8 @@ import { getAnonClientAs } from "../helpers/supabase";
  */
 
 let owner: SupabaseClient;
-let comp: { id: string; serial_number: string; health_score: number | null };
+let comp: { id: string; serial_number: string; health_score: number | null; position_code: string | null; aircraft_id: string | null };
+let spareOnWing: { id: string; aircraft_id: string | null; position_code: string | null } | null = null;
 let genComp: { id: string; serial_id: string };
 let predComponentId: string | null = null;
 
@@ -29,11 +30,18 @@ test.beforeAll(async () => {
   owner = await getAnonClientAs("owner");
   const { data: comps } = await owner
     .from("components")
-    .select("id, serial_number, health_score, status")
+    .select("id, serial_number, health_score, status, position_code, aircraft_id")
     .eq("status", "on_wing")
     .order("serial_number")
-    .limit(1);
+    .limit(3);
   comp = comps![0] as typeof comp;
+  if (comps && comps.length > 1) {
+    spareOnWing = {
+      id: comps[1]!.id as string,
+      aircraft_id: (comps[1]!.aircraft_id as string | null) ?? null,
+      position_code: (comps[1]!.position_code as string | null) ?? null,
+    };
+  }
 
   const { data: gr } = await owner
     .from("genealogy_records")
@@ -98,6 +106,45 @@ test.describe("4.1 Components inventory", () => {
     const labels: Record<string, RegExp> = { healthy: /Healthy/, watch: /Watch/, degraded: /Degraded/, critical: /Critical/, unknown: /Unknown/ };
     await expect(page.getByText(labels[band]!).first()).toBeVisible();
   });
+
+  test("4.1.5 Status filter (Inventory) narrows the list", async ({ page }) => {
+    await signInAs(page, "owner");
+    await page.goto("/components");
+    await expect(page.locator("tbody tr").first()).toBeVisible({ timeout: 20_000 });
+    const all = await page.locator("tbody tr").count();
+    await page.getByRole("button", { name: /^Status/i }).first().click();
+    const panel = page.locator("div.absolute.z-50.w-60");
+    await panel.getByRole("button", { name: /Inventory/i }).click();
+    await page.keyboard.press("Escape");
+    await expect.poll(async () => page.locator("tbody tr").count(), { timeout: 10_000 }).toBeLessThan(all);
+  });
+
+  test("4.1.6 Health band filter narrows the list", async ({ page }) => {
+    await signInAs(page, "owner");
+    await page.goto("/components");
+    await expect(page.locator("tbody tr").first()).toBeVisible({ timeout: 20_000 });
+    const all = await page.locator("tbody tr").count();
+    await page.getByRole("button", { name: /^Health/i }).first().click();
+    const panel = page.locator("div.absolute.z-50.w-60");
+    // Prefer Critical — sparse band so the list shrinks; fall back to Watch.
+    const critical = panel.getByRole("button", { name: /Critical/i });
+    if (await critical.count()) await critical.click();
+    else await panel.getByRole("button", { name: /Watch/i }).click();
+    await page.keyboard.press("Escape");
+    await expect.poll(async () => page.locator("tbody tr").count(), { timeout: 10_000 }).toBeLessThan(all);
+  });
+
+  test("4.1.7 serial link navigates to the component detail page", async ({ page }) => {
+    await signInAs(page, "owner");
+    await page.goto("/components");
+    await expect(page.locator("tbody tr").first()).toBeVisible({ timeout: 20_000 });
+    const link = page.locator("tbody tr").first().locator("a[href^='/components/']").first();
+    const href = await link.getAttribute("href");
+    expect(href).toMatch(/^\/components\/[0-9a-f-]+$/i);
+    await link.click();
+    await expect(page).toHaveURL(new RegExp(`${href}$`));
+    await expect(page.getByRole("tab", { name: "Overview" })).toBeVisible({ timeout: 20_000 });
+  });
 });
 
 // ── 4.2 Component detail ──────────────────────────────────────────────────────
@@ -137,6 +184,85 @@ test.describe("4.2 Component detail", () => {
     const { data } = await owner.from("component_events").select("id").eq("component_id", comp.id).eq("event_type", "finding_recorded").limit(20);
     expect((data ?? []).length).toBeGreaterThan(0);
   });
+
+  test("4.2.5 Overview tab shows life limits and identity fields", async ({ page }) => {
+    await signInAs(page, "owner");
+    await page.goto(`/components/${comp.id}`);
+    await expect(page.getByRole("heading", { name: comp.serial_number })).toBeVisible({ timeout: 20_000 });
+    await page.getByRole("tab", { name: "Overview" }).click();
+    await expect(page.getByText("Life & limits")).toBeVisible();
+    // Identity grid — prefer scoped labels over bare text that can collide.
+    for (const label of ["Current cycles", "Manufacturer", "Position", "Status"]) {
+      await expect(page.getByText(label, { exact: true }).first()).toBeVisible();
+    }
+  });
+
+  test("4.2.6 Change Position updates position_code", async ({ page }) => {
+    const original = comp.position_code;
+    const next = `E2E-${Date.now().toString(36).slice(-4).toUpperCase()}`;
+    await signInAs(page, "owner");
+    await page.goto(`/components/${comp.id}`);
+    await expect(page.getByRole("heading", { name: comp.serial_number })).toBeVisible({ timeout: 20_000 });
+    try {
+      await page.getByRole("button", { name: "Change Position" }).click();
+      const dialog = page.getByRole("dialog");
+      await expect(dialog).toBeVisible();
+      await dialog.locator("#pos").fill(next);
+      await dialog.getByRole("button", { name: "Save" }).click();
+      await expect(dialog).toBeHidden({ timeout: 10_000 });
+      await expect.poll(async () => {
+        const { data } = await owner.from("components").select("position_code").eq("id", comp.id).single();
+        return data?.position_code;
+      }, { timeout: 10_000 }).toBe(next);
+    } finally {
+      await owner.from("components").update({ position_code: original }).eq("id", comp.id);
+    }
+  });
+
+  test("4.2.7 Move Off-wing clears aircraft assignment and sets inventory status", async ({ page }) => {
+    test.skip(!spareOnWing, "need a spare on-wing component");
+    const target = spareOnWing!;
+    await signInAs(page, "owner");
+    await page.goto(`/components/${target.id}`);
+    await expect(page.getByRole("button", { name: "Move Off-wing" })).toBeVisible({ timeout: 20_000 });
+    try {
+      await page.getByRole("button", { name: "Move Off-wing" }).click();
+      await expect.poll(async () => {
+        const { data } = await owner.from("components").select("status, aircraft_id").eq("id", target.id).single();
+        return data?.status;
+      }, { timeout: 15_000 }).toBe("off_wing_inventory");
+      const { data } = await owner.from("components").select("aircraft_id").eq("id", target.id).single();
+      expect(data?.aircraft_id).toBeNull();
+      const { data: ev } = await owner
+        .from("component_events")
+        .select("id")
+        .eq("component_id", target.id)
+        .eq("event_type", "removed")
+        .limit(1);
+      expect((ev ?? []).length).toBeGreaterThan(0);
+    } finally {
+      // installed RPC restores status but not aircraft_id — write both back.
+      await owner
+        .from("components")
+        .update({
+          status: "on_wing",
+          aircraft_id: target.aircraft_id,
+          position_code: target.position_code,
+          removed_at_utc: null,
+        })
+        .eq("id", target.id);
+    }
+  });
+
+  test("4.2.8 Health Trend tab surfaces a chart or empty-history message", async ({ page }) => {
+    await signInAs(page, "owner");
+    await page.goto(`/components/${comp.id}`);
+    await page.getByRole("tab", { name: "Health Trend" }).click();
+    await expect(page.getByText("Health score over time")).toBeVisible({ timeout: 20_000 });
+    const chart = page.locator("svg").first();
+    const empty = page.getByText("Not enough history to chart a trend yet.");
+    await expect(chart.or(empty).first()).toBeVisible();
+  });
 });
 
 // ── 4.3 Genealogy hash-chained ledger ────────────────────────────────────────
@@ -146,7 +272,10 @@ test.describe("4.3 Genealogy ledger", () => {
     await page.goto(`/components/${genComp.id}`);
     await page.getByRole("tab", { name: "Genealogy" }).click();
     await expect(page.getByText(/Record ledger · \d+/)).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByText(/genesis/i).first()).toBeVisible();
+    // Birth Certificate is the genesis record type label (hash "— genesis —" only
+    // appears after expanding a row with a null previous_record_hash).
+    await expect(page.getByRole("button", { name: "Birth Certificate" }).first()).toBeVisible();
+    await expect(page.getByText(/Hash chain verified/i)).toBeVisible();
   });
 
   test("4.3.2 hash chain is intact (SQL)", async () => {
@@ -176,6 +305,21 @@ test.describe("4.3 Genealogy ledger", () => {
     await owner.from("genealogy_records").delete().eq("id", id);
     const { data } = await owner.from("genealogy_records").select("id").eq("id", id);
     expect((data ?? []).length).toBe(1); // still exists
+  });
+
+  test("4.3.5 ledger search narrows visible genealogy records", async ({ page }) => {
+    await signInAs(page, "owner");
+    await page.goto(`/components/${genComp.id}`);
+    await page.getByRole("tab", { name: "Genealogy" }).click();
+    await expect(page.getByText(/Record ledger · \d+/)).toBeVisible({ timeout: 20_000 });
+    const search = page.getByPlaceholder("Search records…");
+    await expect(search).toBeVisible();
+    // Nonsense query empties the ledger; clearing restores rows (and type chips).
+    await search.fill("zzzz-no-match-e2e");
+    await expect(page.getByText("No records match.")).toBeVisible({ timeout: 10_000 });
+    await search.fill("");
+    await expect(page.getByText("No records match.")).toBeHidden();
+    await expect(page.getByRole("button", { name: "Birth Certificate" }).first()).toBeVisible();
   });
 });
 
