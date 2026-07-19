@@ -100,6 +100,21 @@ test.describe("7.2 CSV ingestion", () => {
     // (source_file_size_bytes = content.length). There is no createSignedUploadUrl
     // / direct-to-storage path, so a 20MB+ upload path can't be exercised. Deferred.
   });
+
+  test("7.2.3 Load sample data on a fresh project", async ({ page }) => {
+    const id = await createBacktestProjectViaRpc(owner, {
+      project_name: `E2E Sample ${Date.now()}`,
+      purpose: "internal_validation",
+    });
+    await signInAs(page, "owner");
+    await page.goto(`/backtest/${id}`);
+    await page.getByRole("tab", { name: "Data Sources" }).click();
+    await page.getByRole("button", { name: "Load sample data" }).click();
+    await expect(page.getByText("Sample data loaded").first()).toBeVisible({ timeout: 30_000 });
+    const { data } = await owner.from("backtest_data_sources").select("id, rows_ingested").eq("backtest_project_id", id);
+    expect((data ?? []).length).toBeGreaterThanOrEqual(1);
+    expect(Number(data![0]!.rows_ingested)).toBeGreaterThan(0);
+  });
 });
 
 // ── 7.3 Backtest run + would-have-caught report ──────────────────────────────
@@ -161,6 +176,26 @@ test.describe("7.3 Backtest run + report", () => {
     await page.goto(`/backtest/${projectA!.id}`);
     await page.getByRole("tab", { name: "Configuration" }).click();
     await expect(page.getByText(/deterministic/i).first()).toBeVisible({ timeout: 15_000 });
+  });
+
+  test("7.3.4 Results tab match-confidence filter narrows the simulated-signal list", async ({ page }) => {
+    test.skip(!projectA, "seeded 'Northstar' project not found");
+    await signInAs(page, "owner");
+    await page.goto(`/backtest/${projectA!.id}`);
+    await page.getByRole("tab", { name: "Results" }).click();
+    await expect(page.getByText("Simulated signals").first()).toBeVisible({ timeout: 20_000 });
+    const select = page.locator("select");
+    await expect(select).toBeVisible({ timeout: 15_000 });
+
+    await select.selectOption("exact");
+    await expect
+      .poll(async () => page.locator("span").filter({ hasText: "No match" }).count(), { timeout: 10_000 })
+      .toBe(0);
+
+    await select.selectOption("no_match");
+    const noMatchRows = page.locator("span").filter({ hasText: "No match" }).first();
+    const emptyMsg = page.getByText("No signals.");
+    await expect(noMatchRows.or(emptyMsg)).toBeVisible({ timeout: 10_000 });
   });
 });
 
@@ -232,6 +267,54 @@ test.describe("7.5 Notification center", () => {
     // wiring itself is covered by use-notification-realtime + the ack propagation;
     // a two-browser origination test is deferred (same rationale as 3.6.1).
   });
+
+  test("7.5.4 notification Sheet shows Channel/Severity/Status metadata", async ({ page }) => {
+    // Prefer Active (unacked); fall back to Recent so the Sheet journey still
+    // runs after ack-heavy suites have drained the Active queue.
+    await signInAs(page, "owner");
+    await page.goto("/notifications");
+    await page.getByRole("tab", { name: /^Active/ }).click();
+    let firstRow = page.getByRole("tabpanel").getByRole("button").first();
+    const empty = page.getByText("Nothing needs your attention.");
+    await expect(firstRow.or(empty)).toBeVisible({ timeout: 15_000 });
+    if (await empty.isVisible()) {
+      await page.getByRole("tab", { name: /^Recent/ }).click();
+      firstRow = page.getByRole("tabpanel").getByRole("button").first();
+      await expect(firstRow).toBeVisible({ timeout: 15_000 });
+    }
+    await firstRow.click();
+    for (const label of ["Channel", "Severity", "Status"]) {
+      await expect(page.getByText(label, { exact: true }).first()).toBeVisible({ timeout: 15_000 });
+    }
+  });
+
+  test("7.5.5 Escalate an unacknowledged notification runs the escalation check", async ({ page }) => {
+    // Escalate is only on Active (unacked) rows. Discover a recipient persona.
+    const keys = ["owner", "dom", "dispatcher", "line_maint", "dispatch_supervisor"] as const;
+    let persona: (typeof keys)[number] | null = null;
+    for (const key of keys) {
+      const c = await getAnonClientAs(key);
+      const uid = (await c.auth.getUser()).data.user!.id;
+      const { count } = await c
+        .from("notification_events")
+        .select("id", { count: "exact", head: true })
+        .eq("recipient_user_id", uid)
+        .is("acknowledged_at_utc", null)
+        .in("delivery_status", ["queued", "sending", "delivered", "retried"]);
+      if ((count ?? 0) > 0) { persona = key; break; }
+    }
+    test.skip(!persona, "no persona has an unacknowledged notification in seed (Active queue drained)");
+    await signInAs(page, persona!);
+    await page.goto("/notifications");
+    await page.getByRole("tab", { name: /^Active/ }).click();
+    const firstRow = page.getByRole("tabpanel").getByRole("button").first();
+    await expect(firstRow).toBeVisible({ timeout: 15_000 });
+    await firstRow.click();
+    const escalateBtn = page.getByRole("button", { name: "Escalate" });
+    await expect(escalateBtn).toBeVisible({ timeout: 10_000 });
+    await escalateBtn.click();
+    await expect(page.getByText("Escalation check run").first()).toBeVisible({ timeout: 15_000 });
+  });
 });
 
 // ── 7.6 Notification policies + escalation ───────────────────────────────────
@@ -266,5 +349,27 @@ test.describe("7.6 Policies + escalation", () => {
     const ladder = (data![0]!.escalation_ladder ?? []) as unknown[];
     expect(Array.isArray(ladder)).toBe(true);
     expect(ladder.length).toBeGreaterThanOrEqual(2);
+  });
+
+  test("7.6.5 Rotate on-call schedule advances the roster", async ({ page }) => {
+    await signInAs(page, "owner");
+    await page.goto("/settings/on-call");
+    await expect(page.getByRole("heading", { name: "On-Call Scheduler", level: 1 })).toBeVisible({ timeout: 20_000 });
+    const rotateBtn = page.getByRole("button", { name: "Rotate" }).first();
+    await expect(rotateBtn).toBeVisible({ timeout: 15_000 });
+    await rotateBtn.click();
+    await expect(page.getByText("Rotated").first()).toBeVisible({ timeout: 15_000 });
+  });
+});
+
+// ── 7.7 Notification preferences ─────────────────────────────────────────────
+test.describe("7.7 Preferences", () => {
+  test("7.7.1 /settings/notifications renders channels + mute/verify controls", async ({ page }) => {
+    await signInAs(page, "owner");
+    await page.goto("/settings/notifications");
+    await expect(page.getByRole("heading", { name: "Notification Preferences", level: 1 })).toBeVisible({ timeout: 20_000 });
+    const mute = page.getByRole("button", { name: "Mute 60 min" });
+    const verify = page.getByRole("button", { name: "Verify" }).first();
+    await expect(mute.or(verify)).toBeVisible({ timeout: 15_000 });
   });
 });

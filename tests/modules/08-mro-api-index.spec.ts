@@ -128,6 +128,54 @@ test.describe("8.2 MRO lifecycle", () => {
       .toBe(true);
     expect((await mro.from("customer_reports").select("*", { count: "exact", head: true })).count ?? 0).toBeGreaterThan(reportsBefore);
   });
+
+  test("8.2.5 work package status transition updates the record", async ({ page }) => {
+    const { data } = await mro.from("work_packages").select("id, status").limit(1);
+    test.skip(!data || data.length === 0, "no MRO work package seeded");
+    const wp = data![0]!;
+    const original = String(wp.status);
+    const target = original === "held" ? "planned" : "held"; // avoid in_progress/complete side-effect timestamps
+    const targetLabel = target === "held" ? "Held" : "Planned";
+    await signInAs(page, "mro_owner");
+    await page.goto(`/work-packages/${wp.id}`);
+    await expect(page.getByRole("combobox").first()).toBeVisible({ timeout: 20_000 });
+    try {
+      await page.getByRole("combobox").first().click();
+      await page.getByRole("option", { name: targetLabel, exact: true }).click();
+      await expect(page.getByText("Status updated").first()).toBeVisible({ timeout: 15_000 });
+      await expect
+        .poll(async () => {
+          const { data: d2 } = await mro.from("work_packages").select("status").eq("id", wp.id).single();
+          return d2?.status;
+        }, { timeout: 10_000 })
+        .toBe(target);
+    } finally {
+      await mro.rpc("transition_work_package_status", { p_id: wp.id, p_status: original });
+    }
+  });
+
+  test("8.2.6 record a finding on a work package", async ({ page }) => {
+    const { data } = await mro.from("work_packages").select("id").limit(1);
+    test.skip(!data || data.length === 0, "no MRO work package seeded");
+    const wpId = data![0]!.id as string;
+    const before = (await mro.from("work_package_findings").select("*", { count: "exact", head: true }).eq("work_package_id", wpId)).count ?? 0;
+    await signInAs(page, "mro_owner");
+    await page.goto(`/work-packages/${wpId}`);
+    await page.getByRole("button", { name: "Finding" }).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog.getByText("Record finding")).toBeVisible({ timeout: 10_000 });
+    await dialog.getByRole("combobox").first().click();
+    await page.getByRole("option", { name: "damage found" }).click();
+    await dialog.getByRole("combobox").nth(1).click();
+    await page.getByRole("option", { name: "major", exact: true }).click();
+    const desc = `E2E finding ${Date.now()}`;
+    await dialog.getByPlaceholder("What was found").fill(desc);
+    await dialog.getByRole("button", { name: "Record" }).click();
+    await expect(page.getByText("Finding recorded").first()).toBeVisible({ timeout: 15_000 });
+    await expect
+      .poll(async () => (await mro.from("work_package_findings").select("*", { count: "exact", head: true }).eq("work_package_id", wpId)).count ?? 0, { timeout: 10_000 })
+      .toBeGreaterThan(before);
+  });
 });
 
 // ── 8.3 SLA measurements ─────────────────────────────────────────────────────
@@ -154,6 +202,20 @@ test.describe("8.3 SLA", () => {
       expect(credit).toBeGreaterThanOrEqual(0);
       if (perf != null && perf < 90) expect(credit).toBeGreaterThan(0);
     }
+  });
+
+  test("8.3.3 Compute SLA on a contract creates a new SLA measurement", async ({ page }) => {
+    const { data } = await mro.from("service_contracts").select("id").limit(1);
+    test.skip(!data || data.length === 0, "no MRO contract seeded");
+    const contractId = data![0]!.id as string;
+    const before = (await mro.from("sla_measurements").select("*", { count: "exact", head: true }).eq("service_contract_id", contractId)).count ?? 0;
+    await signInAs(page, "mro_owner");
+    await page.goto(`/contracts/${contractId}`);
+    await page.getByRole("button", { name: "Compute SLA" }).click();
+    await expect(page.getByText("SLA computed").first()).toBeVisible({ timeout: 15_000 });
+    await expect
+      .poll(async () => (await mro.from("sla_measurements").select("*", { count: "exact", head: true }).eq("service_contract_id", contractId)).count ?? 0, { timeout: 10_000 })
+      .toBeGreaterThan(before);
   });
 });
 
@@ -212,6 +274,17 @@ test.describe("8.4 Public API", () => {
     expect(limited!.status()).toBe(429);
     expect(limited!.headers()["retry-after"]).toBeTruthy();
   });
+
+  test("8.4.6 GET /v1/aircraft and /v1/tasks return 200 with matching read scopes", async ({ request }) => {
+    test.skip(!apiUp, "public API gateway not reachable");
+    const key = await createApiKey(owner, `e2e-multiscope-${Date.now()}`, ["read:aircraft", "read:tasks"], 60);
+    const aircraftRes = await fetchApi(request, "/aircraft", key.api_key);
+    expect(aircraftRes.status()).toBe(200);
+    expect(Array.isArray((await aircraftRes.json()).data)).toBe(true);
+    const tasksRes = await fetchApi(request, "/tasks", key.api_key);
+    expect(tasksRes.status()).toBe(200);
+    expect(Array.isArray((await tasksRes.json()).data)).toBe(true);
+  });
 });
 
 // ── 8.5 AVIR Index ───────────────────────────────────────────────────────────
@@ -251,6 +324,32 @@ test.describe("8.5 AVIR Index", () => {
     const body = await res.text();
     expect(body).toContain("not yet published");
     expect(body).toContain("Powered by AVIR");
+  });
+
+  test("8.5.6 publish page shows a below-threshold banner for a gated computation", async ({ page }) => {
+    const { data } = await owner.from("index_computations").select("id").eq("meets_minimum_threshold", false).limit(1);
+    test.skip(!data || data.length === 0, "no gated index computation seeded");
+    await signInAs(page, "owner");
+    await page.goto(`/admin/index/publish/${data![0]!.id}`);
+    await expect(page.getByText(/below the minimum participating-tenant threshold/i)).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByRole("button", { name: "Confirm & publish" })).toHaveCount(0);
+  });
+});
+
+// ── 8.6 Shop Floor ────────────────────────────────────────────────────────────
+test.describe("8.6 Shop Floor", () => {
+  test("8.6.1 /shop-floor renders the board for mro_owner", async ({ page }) => {
+    await signInAs(page, "mro_owner");
+    await page.goto("/shop-floor");
+    await expect(page.getByRole("heading", { name: "Shop Floor", level: 1 })).toBeVisible({ timeout: 20_000 });
+    const empty = page.getByText("No aircraft in service. Assign a customer aircraft to get started.");
+    if ((await empty.count()) > 0) {
+      await expect(empty).toBeVisible();
+    } else {
+      for (const label of ["Arrived", "In Service", "Awaiting Parts", "Awaiting Customer", "Ready for Release"]) {
+        await expect(page.getByText(label, { exact: true }).first()).toBeVisible({ timeout: 15_000 });
+      }
+    }
   });
 });
 

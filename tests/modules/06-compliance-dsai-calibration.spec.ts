@@ -74,6 +74,32 @@ test.describe("6.1 Compliance + AD", () => {
     await expect(page.getByText("2024-30-URGENT").first()).toBeVisible({ timeout: 20_000 });
     await expect(page.getByText("Tail").first()).toBeVisible(); // per-aircraft matrix header
   });
+
+  test("6.1.4 Mark an AD Complied on the matrix updates aircraft_ad_status", async ({ page }) => {
+    const { ad, statuses } = await getADStatus("2024-30-URGENT", owner);
+    const target = statuses.find((s) => s.status !== "complied");
+    test.skip(!ad || !target, "no non-complied AD status row seeded");
+    const { data: acRow } = await owner.from("aircraft").select("tail_number").eq("id", target!.aircraft_id).single();
+
+    await signInAs(page, "owner");
+    await page.goto(`/compliance/ads?ad=${ad!.id}`);
+    await expect(page.getByText("2024-30-URGENT").first()).toBeVisible({ timeout: 20_000 });
+    // Scope to the matrix row for this aircraft's tail (Link > MonoText → row div is
+    // the nearest ancestor carrying the border-b class, two levels up from the text node).
+    const row = page.getByText(acRow!.tail_number, { exact: true }).locator("xpath=ancestor::div[contains(@class,'border-b')][1]");
+    try {
+      await row.getByRole("button", { name: "Complied" }).click();
+      await expect(page.getByText("Marked complied").first()).toBeVisible({ timeout: 15_000 });
+      await expect
+        .poll(async () => {
+          const { data } = await owner.from("aircraft_ad_status").select("status").eq("aircraft_id", target!.aircraft_id).eq("ad_id", ad!.id).single();
+          return data?.status;
+        }, { timeout: 10_000 })
+        .toBe("complied");
+    } finally {
+      await owner.rpc("update_aircraft_ad_status", { p_aircraft_id: target!.aircraft_id, p_ad_id: ad!.id, p_status: target!.status, p_attrs: {} });
+    }
+  });
 });
 
 // ── 6.2 MEL defer / rectify ──────────────────────────────────────────────────
@@ -111,6 +137,49 @@ test.describe("6.2 MEL", () => {
       .not("rectified_at_utc", "is", null)
       .limit(1);
     expect((data ?? []).length).toBe(1);
+  });
+
+  test("6.2.4 MEL View dialog shows the category + operational/maintenance procedures", async ({ page }) => {
+    const { data } = await owner.from("aircraft_mel_items").select("id").in("status", ["open", "extended"]).limit(1);
+    test.skip(!data || data.length === 0, "no active MEL item to view");
+    await signInAs(page, "owner");
+    await page.goto("/compliance/mel");
+    await expect(page.getByRole("heading", { name: "MEL Management", level: 1 })).toBeVisible({ timeout: 20_000 });
+    await page.getByRole("button", { name: "View" }).first().click();
+    const dialog = page.getByRole("dialog");
+    // Category grid shows "{A|B|C|D} · {interval}" (seed catalog rows always carry both procedures).
+    await expect(dialog.getByText(/^[ABCD] · /).first()).toBeVisible({ timeout: 15_000 });
+    await expect(dialog.getByText("Operational procedure (O)", { exact: true })).toBeVisible();
+    await expect(dialog.getByText("Maintenance procedure (M)", { exact: true })).toBeVisible();
+  });
+
+  test("6.2.5 Extend a MEL deferral records the new authority + due date", async ({ page }) => {
+    const { data } = await owner.from("aircraft_mel_items").select("id").eq("status", "open").limit(1);
+    test.skip(!data || data.length === 0, "no open MEL item to extend");
+    await signInAs(page, "owner");
+    await page.goto("/compliance/mel");
+    await expect(page.getByRole("button", { name: "Extend" }).first()).toBeVisible({ timeout: 20_000 });
+    await page.getByRole("button", { name: "Extend" }).first().click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog.getByText(/^Extend deferral —/)).toBeVisible({ timeout: 10_000 });
+    const authority = `E2E deferral authority ${Date.now()}`;
+    const newDue = new Date(Date.now() + 200 * 86_400_000).toISOString().slice(0, 10);
+    await dialog.getByPlaceholder("e.g. CAMO / Regulator approval ref").fill(authority);
+    await dialog.locator('input[type="date"]').fill(newDue);
+    await dialog.getByRole("button", { name: "Extend", exact: true }).click();
+    await expect(page.getByText("Deferral extended").first()).toBeVisible({ timeout: 15_000 });
+
+    let item: { id: string; repair_by_date: string; status: string } | undefined;
+    await expect
+      .poll(async () => {
+        const { data: found } = await owner.from("aircraft_mel_items").select("id, repair_by_date, status").eq("extension_authority", authority).limit(1);
+        item = found?.[0] as typeof item;
+        return Boolean(item);
+      }, { timeout: 10_000 })
+      .toBe(true);
+    expect(item!.status).toBe("extended");
+    expect(item!.repair_by_date).toBe(newDue);
+    await owner.from("aircraft_mel_items").update({ status: "open", extension_authority: null, extension_new_due_date: null }).eq("id", item!.id);
   });
 });
 
@@ -171,6 +240,20 @@ test.describe("6.3 DS.AI", () => {
     const { data: still } = await owner.from("ai_decision_records").select("id").eq("id", id);
     expect((still ?? []).length).toBe(1); // row survives
   });
+
+  test("6.3.5 Data Lineage tab traces source snapshots (or shows the empty state)", async ({ page }) => {
+    await signInAs(page, "owner");
+    await page.goto("/compliance/dsai");
+    await expect(page.getByRole("heading", { name: "DS.AI Audit Trail", level: 1 })).toBeVisible({ timeout: 20_000 });
+    await page.getByRole("tab", { name: "Data Lineage" }).click();
+    const decisionBtn = page.getByRole("tabpanel").locator("button").first();
+    if ((await decisionBtn.count()) > 0) {
+      await decisionBtn.click();
+      await expect(page.getByText(/data source\(s\)/).first()).toBeVisible({ timeout: 15_000 });
+    } else {
+      await expect(page.getByText("Select a decision to trace the exact data used to generate it.")).toBeVisible({ timeout: 15_000 });
+    }
+  });
 });
 
 // ── 6.4 Calibration scoreboard ───────────────────────────────────────────────
@@ -226,6 +309,28 @@ test.describe("6.4 Calibration", () => {
     const { data: still } = await owner.from("calibration_events").select("id").eq("id", id);
     expect((still ?? []).length).toBe(1);
   });
+
+  test("6.4.5 By Model tab renders after switching to the 90d window", async ({ page }) => {
+    await signInAs(page, "owner");
+    await page.goto("/calibration");
+    await expect(page.getByRole("heading", { name: "Calibration", level: 1 })).toBeVisible({ timeout: 20_000 });
+    const w90 = page.getByRole("button", { name: "90d", exact: true });
+    await w90.click();
+    await expect(w90).toHaveClass(/bg-primary/);
+
+    const empty = page.getByText("No calibration snapshots yet for this window.");
+    if ((await empty.count()) > 0) {
+      await expect(empty).toBeVisible();
+    } else {
+      await page.getByRole("tab", { name: "By Model" }).click();
+      const modelRows = page.getByRole("tabpanel").locator("div.border.border-border.bg-card");
+      if ((await modelRows.count()) > 0) {
+        await expect(modelRows.first().getByText(/measured/)).toBeVisible({ timeout: 15_000 });
+      } else {
+        await expect(page.getByRole("tab", { name: "By Model", selected: true })).toBeVisible();
+      }
+    }
+  });
 });
 
 // ── 6.5 Signal card calibration + decision-audit footers ─────────────────────
@@ -274,6 +379,17 @@ test.describe("6.5 Signal footers", () => {
     // Provenance: model version + prompt version (+ decided timestamp) in the drawer.
     await expect(page.getByText("Model version").first()).toBeVisible();
     await expect(page.getByText("Prompt version").first()).toBeVisible();
+  });
+});
+
+// ── 6.6 Life-limited parts ───────────────────────────────────────────────────
+test.describe("6.6 LLP tracker", () => {
+  test("6.6.1 /compliance/llps lists parts with % used and a tail link", async ({ page }) => {
+    await signInAs(page, "owner");
+    await page.goto("/compliance/llps");
+    await expect(page.getByRole("heading", { name: "Life-Limited Parts", level: 1 })).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText(/^\d+%$/).first()).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('a[href^="/aircraft/"]').first()).toBeVisible();
   });
 });
 
